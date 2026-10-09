@@ -104,8 +104,7 @@ const config: Config = {
         {to: '/blog', label: 'Blog', position: 'right'},
       ],
     },
-    footer: {
-      },
+
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
