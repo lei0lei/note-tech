@@ -95,7 +95,27 @@ const config: Config = {
             },
           ],
         },
-                {
+        {
+          label: 'ai',
+          position: 'left',
+          items: [
+            {
+              label: 'ai',
+              to: '/docs/ai',
+            },
+          ],
+        },
+        {
+          label: 'algo',
+          position: 'left',
+          items: [
+            {
+              label: 'algo',
+              to: '/docs/algo',
+            },
+          ],
+        },
+        {
           type: 'docSidebar',
           sidebarId: 'docusaurus',
           position: 'right',
