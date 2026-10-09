@@ -75,7 +75,7 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'My Site',
+      title: 'leis blog',
       logo: {
         alt: 'My Site Logo',
         src: 'img/logo.svg',
@@ -88,6 +88,20 @@ const config: Config = {
           label: 'Tutorial',
         },
         {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          label: 'Language',
+          position: 'left',
+          items: [
+            {
+              label: 'Python',
+              to: '/docs/language/python',
+            },
+            {
+              label: 'C++',
+              to: '/docs/language/cpp',
+            },
+          ],
+        },
         {
           href: 'https://github.com/facebook/docusaurus',
           label: 'GitHub',
