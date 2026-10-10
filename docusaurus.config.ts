@@ -90,8 +90,24 @@ const config: Config = {
               to: '/docs/language/python',
             },
             {
+              label: 'C',
+              to: '/docs/language/c',
+            },
+            {
               label: 'C++',
               to: '/docs/language/cpp',
+            },
+            {
+              label: 'go',
+              to: '/docs/language/go',
+            },
+            {
+              label: 'js',
+              to: '/docs/language/js',
+            },
+            {
+              label: 'lua',
+              to: '/docs/language/lua',
             },
           ],
         },
