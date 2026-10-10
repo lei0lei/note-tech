@@ -112,9 +112,41 @@ const config: Config = {
           ],
         },
         {
-          label: 'ai',
+          label: 'AI',
           position: 'left',
           items: [
+            {
+              label: 'ai基础',
+              to: '/docs/ai/基础',
+            },
+            {
+              label: 'yolo系列',
+              to: '/docs/ai/yolo',
+            },
+            {
+              label: '其他模型',
+              to: '/docs/ai/其他模型',
+            },
+            {
+              label: 'DINO',
+              to: '/docs/ai/DINO',
+            },
+            {
+              label: 'ai/SAM',
+              to: '/docs/ai/SAM',
+            },
+            {
+              label: 'stable diffusion',
+              to: '/docs/ai/stable-diffusion',
+            },
+            {
+              label: 'transformer',
+              to: '/docs/ai/transformer',
+            },
+            {
+              label: '项目',
+              to: '/docs/ai/项目',
+            },
             {
               label: 'ai',
               to: '/docs/ai',
@@ -122,12 +154,16 @@ const config: Config = {
           ],
         },
         {
-          label: 'algo',
+          label: '算法',
           position: 'left',
           items: [
             {
-              label: 'algo',
-              to: '/docs/algo',
+              label: '通用算法',
+              to: '/docs/algo/通用算法',
+            },
+            {
+              label: '图像算法',
+              to: '/docs/algo/图像算法',
             },
           ],
         },
