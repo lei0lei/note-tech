@@ -161,6 +161,14 @@ const config: Config = {
               label: '图像算法',
               to: '/docs/algo/图像算法',
             },
+            {
+              label: '内存管理',
+              to: '/docs/algo/内存管理',
+            },
+            {
+              label: '数据结构',
+              to: '/docs/algo/数据结构',
+            },
           ],
         },
         {
