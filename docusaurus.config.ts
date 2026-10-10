@@ -132,7 +132,7 @@ const config: Config = {
               to: '/docs/ai/DINO',
             },
             {
-              label: 'ai/SAM',
+              label: 'SAM',
               to: '/docs/ai/SAM',
             },
             {
