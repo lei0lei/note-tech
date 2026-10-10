@@ -147,10 +147,6 @@ const config: Config = {
               label: '项目',
               to: '/docs/ai/项目',
             },
-            {
-              label: 'ai',
-              to: '/docs/ai',
-            },
           ],
         },
         {
