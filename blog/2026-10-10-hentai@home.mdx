@@ -1,0 +1,62 @@
+---
+title: hentai@home部署
+
+date: 2026-10-10
+
+---
+
+
+
+# java安装
+
+```
+sudo apt update
+sudo apt install default-jre unzip -y
+java -version
+```
+
+```
+wget https://repo.e-hentai.org/hath/HentaiAtHome_1.6.5.zip
+```
+
+# 启动
+
+```
+java -jar HentaiAtHome.jar
+```
+
+输入client key和id
+
+# 放行端口
+
+```
+sudo ufw allow 443/tcp
+```
+
+# 设置后台运行
+
+```
+sudo nano /etc/systemd/system/exhentai.service
+```
+
+```
+[Unit]
+Description=Hentai@Home
+After=network.target
+
+[Service]
+User=exhentai
+WorkingDirectory=/home/HentaiAtHome_1.6.5
+ExecStart=/usr/bin/java -jar HentaiAtHome.jar
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable exhentai
+sudo systemctl start exhentai
+systemctl status hath
+```
