@@ -1,17 +1,108 @@
 ---
-
 title: 部署docusaurus
 
 date: 2026-10-10
 
 ---
 
-部署docusaurus到github pages的步骤。
+部署docusaurus到github pages的步骤，假设接下来要部署一个note-tech的网页。
+
+
 
 # 1. 创建github仓库
 
 创建的时候不要默认添加readme文件这样可以避免初次提交需要Merge.
 
-# 2. 先在本地创建仓库
+# 2. 先在本地创建项目
 
+创建项目
 
+```shell
+npx create-docusaurus@latest note-tech classic
+npm run start
+```
+
+本地创建仓库
+
+```shell
+git init -b main
+git add .
+git commit -m "Initial commit"
+```
+
+```shell
+git remote add origin https://github.com/你的用户名/note-tech.git
+git push -u origin main
+```
+
+打开本地 `docusaurus.config.ts`，修改以下字段：
+
+```shell
+url: 'https://你的用户名.github.io',
+baseUrl: '/note-tech/',
+organizationName: '你的用户名',
+projectName: 'note-tech',
+```
+
+将用户名替换为你的 GitHub 用户名。
+
+在项目根目录新建文件：`.github/workflows/deploy.yml`
+
+```yml
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
+```
+
+推送:
+
+```shell
+git add .
+git commit -m "Add GitHub Pages deployment"
+git push
+```
+
+进入 GitHub 仓库：
+
+1. 打开 Settings → Pages。
+
+2. 将 Source 设置为 `GitHub Actions`。
+
+3. 打开 Actions 标签，查看部署任务是否成功。
+
+部署成功后访问：
+
+`https://你的用户名.github.io/note-tech/`
