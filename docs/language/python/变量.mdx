@@ -3,9 +3,742 @@ title: 变量
 sidebar_position: 1
 ---
 
-
 ## [变量](https://realpython.com/python-variables/)
 
-https://realpython.com/python-variables/
+### 认识 Python 中的变量
 
+在 Python 中，变量是与计算机内存中存储的具体对象或值相关联的名称。通过将变量与值关联，你可以使用具有描述性的名称来引用该值，并在代码中根据需要多次复用它。
 
+变量的行为就像它们所引用的值一样。要在代码中使用变量，首先需要学习如何创建它们，这在 Python 中非常直观明了。
+
+### 通过赋值创建变量
+
+在 Python 中创建变量的主要方式是使用赋值运算符（assignment operator），其语法如下：
+
+```python
+variable_name = value
+```
+
+在该语法中，左侧是变量名，接着是赋值运算符（`=`），右侧则是要赋给该变量的值。此处的赋值对象可以是任何 Python 对象，包括[字符串](https://realpython.com/python-strings/)、[数字](https://realpython.com/python-numbers/)、[列表](https://realpython.com/python-list/)、[字典](https://realpython.com/python-dicts/)，甚至是自定义对象。
+
+---
+
+## Python 中的变量命名
+
+前面的示例使用的是简短的变量名。在实际开发中，变量名应当具有描述性以提高代码的可读性，因此变量名往往较长且包含多个单词。
+
+在以下部分中，你将学习在 Python 中创建有效变量名所要遵循的规则，以及变量命名的最佳实践。
+
+### 变量命名规则
+
+Python 中的变量名可以是任意长度，可以由大写字母（A-Z）、小写字母（a-z）、数字（0-9）和下划线（`_`）组成。唯一的限制是：**虽然变量名可以包含数字，但变量名的第一个字符不能是数字**。
+
+:::note 提示
+Python 目前具备完整的 [Unicode](https://realpython.com/python-encodings-guide/) 支持，变量名中可以使用许多 Unicode 字符。例如，以下变量名都是有效的：
+
+```python
+>>> α = 45
+>>> β = 90
+>>> δ = 180
+>>> π = 3.14
+```
+
+这些变量名在常规 Python 代码中可能不常见，但完全合法。在执行科学计算时，如果你希望代码贴合对应学科的符号表示，可以使用它们。
+:::
+
+以下都是合法的变量名：
+
+```python
+>>> name = "Bob"
+>>> year_of_birth = 1970
+>>> is_adult = True
+```
+
+这些变量符合在 Python 中创建有效变量名的规则，同时也遵循了最佳命名实践。
+
+而下面的变量名不符合规则：
+
+```python
+>>> 1099_filed = False
+  File "<input>", line 1
+    1099_filed = False
+    ^
+SyntaxError: invalid decimal literal
+```
+
+此例中的变量名以数字开头，这在 Python 中是不允许的，因此会引发 [SyntaxError](https://realpython.com/invalid-syntax-python/) 异常。
+
+另外需要特别注意：**变量名大小写敏感**。小写字母和大写字母被视为不同的字符：
+
+```python
+>>> age = 1
+>>> Age = 2
+>>> aGe = 3
+>>> AGE = 4
+>>> age
+1
+>>> Age
+2
+>>> aGe
+3
+>>> AGE
+4
+```
+
+在此示例中，Python 将这些名称解释为完全不同且相互独立的变量。因此在 Python 中命名变量时必须考虑大小写。
+
+虽然语法上并不阻止你在同一个程序中创建名为 `age`、`Age` 或 `agE` 的多个变量，但极不推荐这种做法，因为它会让阅读代码的人（甚至是过了一段时间后的你自己）感到困惑。通常情况下，创建变量名时应一律使用小写字母。
+
+下划线字符的作用也十分关键。你可以使用下划线来分隔变量名中的多个单词：
+
+```python
+>>> first_name = "John"
+>>> pen_color = "red"
+>>> next_node = 123
+```
+
+在这些变量名中，下划线用作多单词之间的分隔符，通过替代空格来提高代码的可读性。对比一下如果没有下划线的效果：
+
+```python
+>>> firstname = "John"
+>>> pencolor = "red"
+>>> nextnode = 123
+```
+
+尽管这些名称在技术上合法，但一眼看上去很难阅读和理解。缺少分隔让快速理解每个变量的含义变得更加困难。使用下划线能显著提高代码的清晰度与可维护性。
+
+### 变量命名最佳实践
+
+应当始终给变量赋予具有描述性、能清晰解释其用途的名称。有时可以用单个单词来命名变量：
+
+```python
+>>> temperature = 25
+>>> weight = 54.5
+>>> message = "Hello, Pythonista!"
+```
+
+变量始终引用具体的对象，因此其名称通常应为**名词**。应当为变量寻找具体的名字以唯一标识所引用的对象。类似 `variable`、`data` 或 `value` 这样的名字过于宽泛，虽然在简短的示例中可用，但在生产代码中缺乏足够的描述性。
+
+通常应避免使用单字母名称：
+
+```python
+>>> t = 25  # 不推荐
+>>> temperature = 25  # 推荐
+```
+
+单字母名称难以辨析，尤其是在与其他类似名称一起出现在复杂表达式中时，会导致代码可读性变差。当然也有例外，例如在处理嵌套列表或矩阵时，可以使用单字母名称表示索引：
+
+```python
+>>> matrix = [
+...     [9, 3, 8],
+...     [4, 5, 2],
+...     [6, 4, 3],
+... ]
+>>> for i in matrix:
+...     for j in i:
+...         print(j)
+...
+9
+3
+8
+4
+5
+2
+6
+4
+3
+```
+
+通常使用 `i`、`j`、`k` 表示索引，在合适的上下文中这样使用是完全可接受的；同样，使用 `x`、`y`、`z` 表示坐标点也是常见做法。
+
+不鼓励使用缩写来命名变量，提倡使用完整名称：
+
+```python
+>>> doc = "Freud"  # 不推荐
+>>> doctor = "Freud"  # 推荐
+```
+
+使用完整名称更为清晰易读。不过，在一些已被广泛接受和通用的缩写场景下也是可以的：
+
+```python
+>>> cmd = "python -m pip list"
+>>> msg = "Hello, Pythonista!"
+```
+
+在这些示例中，`cmd` 是 `command` 的公认缩写，`msg` 是 `message` 的公认缩写。Python 中广泛使用的缩写经典例子还有 `cls`，用于在[类方法（class method）](https://realpython.com/ref/glossary/class-method/)中表示当前类对象。
+
+有时需要多个单词才能组成一个具有描述性的变量名。如果多单词之间没有明显界限，阅读起来会非常费力：
+
+```python
+>>> numberofgraduates = 200
+```
+
+这种变量名难以阅读，必须仔细辨认单词边界才能理解其含义。
+
+多单词变量名最常见的命名风格有以下几种：
+
+- **[蛇形命名法（Snake case）](https://realpython.com/ref/glossary/snake-case/)**：小写单词之间用下划线分隔。例如：`number_of_graduates`。
+- **[驼峰命名法（Camel case）](https://realpython.com/ref/glossary/camel-case/)**：第二个及后续单词首字母大写。例如：`numberOfGraduates`。
+- **[帕斯卡命名法（Pascal case）](https://realpython.com/ref/computer-science-glossary/pascal-case/)**：与驼峰命名类似，但第一个单词的首字母也大写。例如：`NumberOfGraduates`。
+
+Python 代码风格指南（PEP 8）包含了各类对象名称的命名约定建议。对于变量，**PEP 8 推荐使用蛇形命名法（snake_case）**。
+
+当需要多单词名称时，通常将形容词修饰语与名词结合使用：
+
+```python
+>>> initial_temperature = 25
+>>> current_file = "marketing_personnel.csv"
+>>> next_point = (2, 4)
+```
+
+通过组合形容词和名词，可以极大地提升代码可读性。另外要避免以 `my_` 开头的多单词名称（如 `my_file`、`my_color` 等），因为 `my_` 前缀并不能为命名提供任何有用的信息。
+
+布尔标志变量也是多单词命名的典型用例：
+
+```python
+>>> is_authenticated = True
+>>> has_permission = False
+```
+
+对于列表和字典，多数情况下应使用复数名词：
+
+```python
+>>> fruits = ["apple", "banana", "cherry"]
+>>> colors = {
+...     "Red": (255, 0, 0),
+...     "Green": (0, 255, 0),
+...     "Blue": (0, 0, 255),
+...     "Yellow": (255, 255, 0),
+...     "Black": (0, 0, 0),
+...     "White": (255, 255, 255),
+... }
+```
+
+使用复数名词清晰地传达了该变量是一个存储多个同类对象的容器。
+
+在命名元组时，考虑到它们通常用于存储不同类型或含义的对象，因此可以使用单数名词：
+
+```python
+>>> color = (255, 0, 0)
+>>> row = ("Jane", 25, "Python Dev", "Canada")
+```
+
+虽然这些元组存储了多个对象，但它们表示一个单一实体。第一个元组表示一种 RGB 颜色，第二个则表示数据库表中的一行记录。
+
+### 公开与非公开变量名
+
+Python 中广泛使用的变量命名约定是：当你需要表明某个变量是 Python 中所谓的非公开（non-public）变量时，在变量名前加上**单下划线前缀**。非公开变量是不应在其所属模块之外使用的变量，仅供内部（internal）使用：
+
+```python
+# timeout.py
+
+_timeout = 30
+
+def get_timeout():
+    return _timeout
+
+def set_timeout(seconds):
+    global _timeout
+    _timeout = seconds
+```
+
+在该模块中，有一个名为 `_timeout` 的非公开变量，以及两个操作该变量的函数。该变量本身并不打算在包含模块的外部直接使用。
+
+### 受限与不推荐使用的名称
+
+Python 保留了一小组被称为关键字（keywords）的词汇，它们是语言语法的一部分。可以通过以下代码获取 Python 的关键字列表：
+
+```python
+>>> import keyword
+>>> keyword.kwlist
+['False', 'None', 'True', 'and', 'as', 'assert', 'async', ..., 'yield']
+```
+
+大多数情况下，如果直接将这些词用作变量名，会导致语法错误：
+
+```python
+>>> class = "Business"
+  File "<input>", line 1
+    class = "Business"
+          ^
+SyntaxError: invalid syntax
+```
+
+如果确实需要使用与关键字重名的名称，可以遵循 PEP 8 的建议：**在名称末尾添加单下划线**：
+
+```python
+>>> class_ = "Business"
+```
+
+虽然这种约定可行，但有时更优雅的做法是换用更具体的名称：
+
+```python
+>>> passenger_class = "Business"
+```
+
+此时变量名更加具体且具描述性，可读性更佳。
+
+此外还有软关键字（soft keywords），它们仅在特定语境下被视作关键字。例如 `match` 关键字仅在结构化模式匹配中才是关键字。因为 `match` 是软关键字，所以你仍可以将其用作变量名：
+
+```python
+>>> import re
+>>> text = "Some text containing a number: 123"
+>>> match = re.search("123", text)
+>>> if match:
+...     print("Found a match 😃")
+... else:
+...     print("No match found 😔")
+...
+Found a match 😃
+```
+
+另一个应避免的做法是使用内置名称（built-in names）来命名变量。例如，学习列表时写了如下代码：
+
+```python
+>>> list = [1, 2, 3, 4]
+>>> list
+[1, 2, 3, 4]
+```
+
+这会导致原始的内置 `list` 类型被遮蔽（shadowing），后续调用内置函数时将发生错误：
+
+```python
+>>> list(range(10))
+Traceback (most recent call last):
+  ...
+TypeError: 'list' object is not callable
+```
+
+因此切忌使用内置名称作为变量名。
+
+:::note 提示
+在交互式会话中运行以下代码可查看内置名称的完整列表：
+
+```python
+>>> import builtins
+>>> dir(builtins)
+['ArithmeticError', 'AssertionError', 'AttributeError', ..., 'tuple', 'type', 'vars', 'zip']
+```
+
+要检查变量名是否遮蔽了内置名称，可以使用 `"name" in dir(builtins)`。如果返回 `True`，建议换用其他名称。此规则对于第三方库中定义的对象名称同样适用。
+:::
+
+---
+
+## 探索变量的核心特性
+
+深入探究 Python 变量的底层工作原理时，会发现几个有趣的特性：
+
+### 变量持有对象的引用
+
+使用赋值语句创建变量时底层到底发生了什么？在 Python 中，这个问题的答案与许多其他编程语言不同。
+
+Python 是一门面向对象编程语言。Python 程序中的每块数据都是特定类型或类的对象。看下面的代码：
+
+```python
+>>> 300
+300
+```
+
+当执行 `300` 语句时，Python 完成了以下操作：
+
+1. 创建一个整型对象；
+2. 赋予其值 300；
+3. 将其显示在屏幕上。
+
+使用内置的 [type()](https://realpython.com/python-built-in-functions/#creating-and-checking-types-type-isinstance-and-issubclass) 函数可以确认该整型对象的创建：
+
+```python
+>>> type(300)
+<class 'int'>
+```
+
+Python 变量是一个**符号名称**，它**引用**或指向像 300 这样的对象。一旦将对象赋值给变量，就可以通过变量名来引用它，但数据本身始终包含在对象内部。
+
+例如，考虑以下变量定义：
+
+```python
+>>> n = 300
+```
+
+该赋值语句创建了一个值为 300 的整型对象，并使变量 `n` 指向该对象。
+
+在 Python 中，**变量并不存储对象本身，而是指向或引用对象**。每次在 Python 中创建对象时，该对象都会被分配一个唯一的标识编号，然后该编号与变量相关联。
+
+内置的 [id()](https://realpython.com/python-built-in-functions/#knowing-an-objects-identity-id) 函数返回对象的唯一标识符（identity）：
+
+```python
+>>> n = 300
+>>> id(n)
+4399012816
+```
+
+在标准 Python 实现 CPython 中，对象的 identity 即为其内存地址。因此，CPython 变量中实际存储的是内存地址，通过该内存地址来访问内存中的具体对象。
+
+你可以创建多个指向同一对象的变量（即持有相同内存地址的变量）：
+
+```python
+>>> m = n
+>>> id(n) == id(m)
+True
+```
+
+在此示例中，Python 没有创建新对象，而是创建了一个新的变量名（引用）`m`，指向 `n` 所指向的同一对象。
+
+接着假设执行：
+
+```python
+>>> m = 400
+```
+
+此时 Python 会创建一个值为 400 的新整型对象，并将 `m` 改为指向它。
+
+最后执行：
+
+```python
+>>> n = "foo"
+```
+
+Python 创建了一个值为 `"foo"` 的字符串对象，并让 `n` 引用该对象。
+
+经过对 `n` 和 `m` 的重新赋值，原先的整型对象 300 不再有任何引用，变成了“孤儿对象”（orphaned object），你将无法再次访问它。
+
+当一个对象的引用计数降为 0 时，该对象将无法再被访问，生命周期随之结束。Python 会回收分配的内存以便再利用。在编程术语中，此过程被称为垃圾回收（Garbage Collection）。
+
+### 变量具有动态类型
+
+在许多静态类型语言中，变量在整个生命周期中被声明为具有固定的特定数据类型，赋予该变量的值必须属于该类型。
+
+而 Python 变量并非如此。在 Python 中，你可以在不同时刻将不同数据类型的值赋给同一个变量：
+
+```python
+>>> value = "A string value"
+>>> value
+'A string value'
+>>> # 之后重新赋值
+>>> value = 23.5
+>>> value
+23.5
+```
+
+变量数据类型的变更可能引发运行时错误。例如，如果变量类型发生意外改变，可能导致类型相关的 Bug 甚至抛出异常：
+
+```python
+>>> value = "A string value"
+>>> value.upper()
+'A STRING VALUE'
+>>> # 之后
+>>> value = 23.5
+>>> # 再次尝试使用 .upper()
+>>> value.upper()
+Traceback (most recent call last):
+  ...
+AttributeError: 'float' object has no attribute 'upper'
+```
+
+### 变量可以使用类型提示
+
+你可以使用类型提示（Type Hints）为变量添加显式的类型信息。语法如下：
+
+```python
+variable: data_type [= value]
+```
+
+方括号表示该部分是可选的。在 Python 中，确实可以声明一个变量而不为其赋值：
+
+```python
+>>> number: int
+>>> number
+Traceback (most recent call last):
+  ...
+NameError: name 'number' is not defined
+```
+
+第一行的变量声明是合法的 Python 语法，但并没有真正创建变量实体，因此访问时会引发 NameError。尽管如此，Python 已经在内部记录了该类型提示。
+
+对于数字、字符串等基础数据类型，类型提示有时略显多余：
+
+```python
+>>> language: str = "Python"
+>>> number: int = 42
+>>> coefficient: float = 2.87
+```
+
+但对于列表、元组、字典和集合等容器类型，为其包含的数据提供类型提示就很有价值了。例如：
+
+```python
+>>> colors: dict[str, str] = {
+...     "red": "#FF0000",
+...     "green": "#00FF00",
+...     "blue": "#0000FF",
+...     "yellow": "#FFFF00",
+...     "black": "#000000",
+...     "white": "#FFFFFF",
+... }
+```
+
+或者使用 RGB 元组的字典：
+
+```python
+>>> colors: dict[str, tuple[int, int, int]] = {
+...     "Red": (255, 0, 0),
+...     "Green": (0, 255, 0),
+...     "Blue": (0, 0, 255),
+...     "Yellow": (255, 255, 0),
+...     "Black": (0, 0, 0),
+...     "White": (255, 255, 255),
+... }
+```
+
+在用空容器初始化变量时，类型提示尤其实用：
+
+```python
+>>> fruits: list[str] = []
+>>> rows: list[tuple[str, int, str]] = []
+```
+
+这样即使容器为空，静态类型检查器（Linter）与读者也能明确容器内预期存放的对象类型。后续可以使用相关方法追加数据：
+
+```python
+>>> fruits.append("apple")
+>>> fruits.append("orange")
+>>> rows.append(("Jane", 25, "Python Dev"))
+>>> rows.append(("John", 30, "Web Dev"))
+```
+
+---
+
+## 创建变量的补充方式
+
+除了最基本的赋值外，Python 还提供了多种创建变量的方式：
+
+### 并行赋值
+
+Python 允许在单行代码中执行多次赋值，从而可以同时将相同的值赋给多个变量：
+
+```python
+>>> is_authenticated = is_active = is_admin = False
+>>> is_authenticated
+False
+>>> is_active
+False
+>>> is_admin
+False
+```
+
+相比逐行单独赋值，并行赋值更加简洁紧凑。
+
+### 可迭代对象解包
+
+可迭代对象解包（Iterable Unpacking，也称元组解包）是 Python 的一大特色功能，它将可迭代对象中的各个值分配给一系列变量：
+
+```python
+>>> person = ("Jane", 25, "Python Dev")
+>>> name, age, job = person
+>>> name
+'Jane'
+>>> age
+25
+>>> job
+'Python Dev'
+```
+
+解包的一个绝佳用例是在无需临时变量的情况下交换两个变量的值：
+
+```python
+>>> a = 5
+>>> b = 10
+>>> a, b = b, a
+>>> a
+10
+>>> b
+5
+```
+
+在此示例中，等号右侧是一个元组 `(b, a)`，通过解包直接完成了值交换。
+
+### 赋值表达式（海象运算符）
+
+赋值表达式允许在条件语句或 `while` 循环中一步完成“求值并赋值”。例如传统的循环输入：
+
+```python
+>>> line = input("Type some text: ")
+>>> while line != "stop":
+...     print(line)
+...     line = input("Type some text: ")
+...
+```
+
+使用赋值表达式（海象运算符 `:=`）可以将其重写为：
+
+```python
+>>> while (line := input("Type some text: ")) != "stop":
+...     print(line)
+...
+Type some text: Python
+Python
+Type some text: Walrus
+Walrus
+Type some text: stop
+```
+
+在 `(line := input("Type some text: "))` 中，创建了新变量 `line` 并将输入数据赋给它，同时将该表达式的值与 `"stop"` 进行比较，避免了重复调用 `input()`。
+
+:::note 提示
+想要了解关于赋值表达式的更多详情，请参阅教程 [海象运算符：Python 的赋值表达式](https://realpython.com/python-walrus-operator/)。
+:::
+
+### 模式匹配
+
+结构化模式匹配（Structural pattern matching） 也能通过捕获模式来创建变量。当 `case` 子句匹配成功时，Python 会将捕获到的值绑定到新变量：
+
+```python
+>>> command = ("move", 10, 25)
+>>> match command:
+...     case ("move", x, y):
+...         print(f"Moving to ({x}, {y})")
+...
+Moving to (10, 25)
+```
+
+在此示例中，`x` 和 `y` 在 `match` 语句之前并不存在，`case` 模式通过提取匹配元组的第 2 和第 3 个元素创建了它们。
+
+---
+
+## 理解变量作用域
+
+作用域（Scope）决定了变量和名称在代码中的可见性与查找方式。变量的作用域取决于创建该变量的位置。
+
+Python 中最多存在 4 种不同的作用域，通常用 **LEGB** 规则表示：
+
+- **L**ocal（局部作用域）
+- **E**nclosing（闭包/外层嵌套函数作用域）
+- **G**lobal（全局作用域）
+- **B**uilt-in（内置作用域）
+
+:::note 提示
+想要深入了解 Python 作用域机制，请参阅：
+
+- [Python 作用域与 LEGB 规则](https://realpython.com/python-scope-legb-rule/)
+- [Python 中的命名空间与作用域](https://realpython.com/python-namespaces-scope/)
+  :::
+
+### 全局、局部与非局部变量
+
+- **全局变量（Global variables）**：在模块级别创建的变量。在包含该变量的模块内部以及导入该模块的其他模块中均可见。在交互式 REPL 中，当前全局作用域定义在 `__main__` 模块中。
+- **局部变量（Local variables）**：在函数内部定义的变量，仅在其所属函数内可见。函数执行完毕返回后，局部变量即销毁。
+- **非局部变量（Non-local variables）**：在包含内部嵌套函数的外层函数中创建的变量。对于外层函数它是局部变量，但对于内部函数它属于非局部（non-local）变量，常用于闭包（closure）和装饰器（decorator）。
+
+看下面的示例：
+
+```python
+# scopes.py
+
+# 全局作用域
+global_variable = "global"
+
+def outer_func():
+    # 闭包/非局部作用域
+    nonlocal_variable = "nonlocal"
+
+    def inner_func():
+        # 局部作用域
+        local_variable = "local"
+        print(f"Hi from the '{local_variable}' scope!")
+        print(f"Hi from the '{nonlocal_variable}' scope!")
+        print(f"Hi from the '{global_variable}' scope!")
+
+    inner_func()
+```
+
+调用 `outer_func()`：
+
+```python
+>>> from scopes import outer_func
+>>> outer_func()
+Hi from the 'local' scope!
+Hi from the 'nonlocal' scope!
+Hi from the 'global' scope!
+```
+
+:::note 提示
+内部函数可以直接**访问**全局变量和非局部变量。但若要在内部函数中**修改**它们，必须显式使用 [`global`](https://realpython.com/python-scope-legb-rule/#the-global-statement) 或 [`nonlocal`](https://realpython.com/python-scope-legb-rule/#the-nonlocal-statement) 语句声明。
+:::
+
+### 类变量与实例变量（属性）
+
+在面向对象编程中，在类中创建的变量称为属性（attributes）。分为类属性和实例属性：
+
+- **类属性**：在类定义级别创建的变量，由该类及其所有实例共享。
+- **实例属性**：绑定到特定对象实例上的变量，每个实例独立拥有。
+
+```python
+# employees.py
+
+class Employee:
+    count = 0  # 类属性
+
+    def __init__(self, name, position, salary):
+        self.name = name          # 实例属性
+        self.position = position  # 实例属性
+        self.salary = salary      # 实例属性
+        Employee.count += 1
+
+    def display_profile(self):
+        print(f"Name: {self.name}")
+        print(f"Position: {self.position}")
+        print(f"Salary: ${self.salary}")
+```
+
+使用示例：
+
+```python
+>>> from employees import Employee
+>>> jane = Employee("Jane Doe", "Software Engineer", 90000)
+>>> john = Employee("John Doe", "Product Manager", 120000)
+>>> jane.display_profile()
+Name: Jane Doe
+Position: Software Engineer
+Salary: $90000
+>>> john.display_profile()
+Name: John Doe
+Position: Product Manager
+Salary: $120000
+>>> f"Total employees: {Employee.count}"
+'Total employees: 2'
+```
+
+:::note 提示
+不能通过 `self` 来直接修改类属性的值。例如执行 `self.count += 1` 会在当前实例上创建一个遮蔽类属性的同名实例属性，而不会更改 `Employee.count`。要修改类属性，必须通过类名操作（如 `Employee.count = 100`）或 `type(self).count`。
+:::
+
+### 从作用域中删除变量
+
+在 Python 中，可以使用 `del` 语句显式地从给定作用域中删除变量：
+
+```python
+>>> city = "New York"
+>>> city
+'New York'
+>>> del city
+>>> city
+Traceback (most recent call last):
+  ...
+NameError: name 'city' is not defined
+```
+
+需要注意的是，`del` 删除的是对对象的**引用**，并不一定会立即释放内存。只有当对象的全部引用都归零时，Python 垃圾回收器才会回收该内存。
+
+---
+
+## 总结
+
+现在你已经掌握了在 Python 中使用变量的基础知识与核心机制：
+
+- 创建变量并为其赋值
+- 动态改变变量引用的数据类型
+- 在表达式、计数器、累加器和布尔标志中使用变量
+- 遵循变量命名的规则与最佳实践（PEP 8 蛇形命名法）
+- 在特定作用域（LEGB、类与实例属性）中创建、访问和管理变量
+
+掌握这些技能后，你便可以自信地在 Python 程序中管理数据，编写出更清晰、易读且易于维护的代码。
