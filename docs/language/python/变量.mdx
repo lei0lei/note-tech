@@ -314,7 +314,7 @@ TypeError: 'list' object is not callable
 
 因此切忌使用内置名称作为变量名。
 
-:::note 提示
+:::note [提示]
 
 在交互式会话中运行以下代码可查看内置名称的完整列表：
 
@@ -589,7 +589,7 @@ Type some text: stop
 
 在 `(line := input("Type some text: "))` 中，创建了新变量 `line` 并将输入数据赋给它，同时将该表达式的值与 `"stop"` 进行比较，避免了重复调用 `input()`。
 
-:::note 提示
+:::note [提示]
 
 想要了解关于赋值表达式的更多详情，请参阅教程 [海象运算符：Python 的赋值表达式](https://realpython.com/python-walrus-operator/)。
 
@@ -623,7 +623,7 @@ Python 中最多存在 4 种不同的作用域，通常用 **LEGB** 规则表示
 - **G**lobal（全局作用域）
 - **B**uilt-in（内置作用域）
 
-:::note 提示
+:::note [提示]
 
 想要深入了解 Python 作用域机制，请参阅：
 
@@ -670,7 +670,7 @@ Hi from the 'nonlocal' scope!
 Hi from the 'global' scope!
 ```
 
-:::note 提示
+:::note [提示]
 
 内部函数可以直接**访问**全局变量和非局部变量。但若要在内部函数中**修改**它们，必须显式使用 [`global`](https://realpython.com/python-scope-legb-rule/#the-global-statement) 或 [`nonlocal`](https://realpython.com/python-scope-legb-rule/#the-nonlocal-statement) 语句声明。
 
@@ -719,7 +719,7 @@ Salary: $120000
 'Total employees: 2'
 ```
 
-:::note 提示
+:::note [提示]
 
 不能通过 `self` 来直接修改类属性的值。例如执行 `self.count += 1` 会在当前实例上创建一个遮蔽类属性的同名实例属性，而不会更改 `Employee.count`。要修改类属性，必须通过类名操作（如 `Employee.count = 100`）或 `type(self).count`。
 
