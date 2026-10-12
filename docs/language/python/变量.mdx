@@ -48,9 +48,6 @@ Python 目前具备完整的 [Unicode](https://realpython.com/python-encodings-g
 
 :::
 
-:::note[提示]
-test
-:::
 
 以下都是合法的变量名：
 
@@ -318,6 +315,7 @@ TypeError: 'list' object is not callable
 因此切忌使用内置名称作为变量名。
 
 :::note 提示
+
 在交互式会话中运行以下代码可查看内置名称的完整列表：
 
 ```python
@@ -327,6 +325,7 @@ TypeError: 'list' object is not callable
 ```
 
 要检查变量名是否遮蔽了内置名称，可以使用 `"name" in dir(builtins)`。如果返回 `True`，建议换用其他名称。此规则对于第三方库中定义的对象名称同样适用。
+
 :::
 
 ---
@@ -591,7 +590,9 @@ Type some text: stop
 在 `(line := input("Type some text: "))` 中，创建了新变量 `line` 并将输入数据赋给它，同时将该表达式的值与 `"stop"` 进行比较，避免了重复调用 `input()`。
 
 :::note 提示
+
 想要了解关于赋值表达式的更多详情，请参阅教程 [海象运算符：Python 的赋值表达式](https://realpython.com/python-walrus-operator/)。
+
 :::
 
 ### 模式匹配
@@ -623,11 +624,13 @@ Python 中最多存在 4 种不同的作用域，通常用 **LEGB** 规则表示
 - **B**uilt-in（内置作用域）
 
 :::note 提示
+
 想要深入了解 Python 作用域机制，请参阅：
 
 - [Python 作用域与 LEGB 规则](https://realpython.com/python-scope-legb-rule/)
 - [Python 中的命名空间与作用域](https://realpython.com/python-namespaces-scope/)
-  :::
+
+:::
 
 ### 全局、局部与非局部变量
 
@@ -668,7 +671,9 @@ Hi from the 'global' scope!
 ```
 
 :::note 提示
+
 内部函数可以直接**访问**全局变量和非局部变量。但若要在内部函数中**修改**它们，必须显式使用 [`global`](https://realpython.com/python-scope-legb-rule/#the-global-statement) 或 [`nonlocal`](https://realpython.com/python-scope-legb-rule/#the-nonlocal-statement) 语句声明。
+
 :::
 
 ### 类变量与实例变量（属性）
@@ -715,7 +720,9 @@ Salary: $120000
 ```
 
 :::note 提示
+
 不能通过 `self` 来直接修改类属性的值。例如执行 `self.count += 1` 会在当前实例上创建一个遮蔽类属性的同名实例属性，而不会更改 `Employee.count`。要修改类属性，必须通过类名操作（如 `Employee.count = 100`）或 `type(self).count`。
+
 :::
 
 ### 从作用域中删除变量
