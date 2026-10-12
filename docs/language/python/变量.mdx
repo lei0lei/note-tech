@@ -744,14 +744,687 @@ NameError: name 'city' is not defined
 
 ---
 
-## 总结
+全局变量是指可以在代码的任何地方访问和修改的变量。在 Python 中，通常在模块级别定义全局变量。因此，包含它们的模块就是它们的作用域。
 
-现在你已经掌握了在 Python 中使用变量的基础知识与核心机制：
+:::note
+您也可以在函数内部定义全局变量，正如您将在“在函数内部创建全局变量”一节中了解到的那样。
+:::
 
-- 创建变量并为其赋值
-- 动态改变变量引用的数据类型
-- 在表达式、计数器、累加器和布尔标志中使用变量
-- 遵循变量命名的规则与最佳实践（PEP 8 蛇形命名法）
-- 在特定作用域（LEGB、类与实例属性）中创建、访问和管理变量
+一旦定义了全局变量，您就可以在模块本身或代码中的其他模块内使用它。您也可以在函数中使用全局变量。然而，由于在函数中访问和修改全局变量之间存在差异，这些情况可能会变得有些令人困惑。
 
-掌握这些技能后，你便可以自信地在 Python 程序中管理数据，编写出更清晰、易读且易于维护的代码。
+为了理解这些差异，请考虑 Python 可以在四种不同的作用域中查找变量：
+* 存在于函数内部的局部（或函数级别）作用域。
+* 存在于嵌套函数中的闭包（或非局部）作用域。
+* 存在于模块级别的全局作用域。
+* Python 内置名称的特殊作用域，即内置作用域。
+
+举例来说，假设您位于一个内部函数中。在这种情况下，Python 可以在所有四个作用域中查找名称。
+
+当您在该内部函数中访问一个变量时，Python 首先在该函数内部进行查找。如果该变量在那里不存在，那么 Python 将继续在外部函数的闭包作用域中查找。如果那里也没有定义该变量，那么 Python 将按顺序移动到全局作用域和内置作用域。如果 Python 找到了该变量，那么您将获得该返回值。否则，您将收到一个 `NameError`：
+
+```python
+>>> # Global scope
+>>> def outer_func():
+...     # Non-local scope
+...     def inner_func():
+...         # Local scope
+...         print(some_variable)
+...     inner_func()
+...
+>>> outer_func()
+Traceback (most recent call last):
+    ...
+NameError: name 'some_variable' is not defined
+>>> some_variable = "Hello from global scope!"
+>>> outer_func()
+Hello from global scope!
+
+```
+
+当您启动交互式会话时，它从全局作用域的模块级别开始。在这个例子中，您有 `outer_func()`，它将 `inner_func()` 定义为一个嵌套函数。从这个嵌套函数的角度来看，它自己的代码块代表局部作用域，而在调用 `inner_func()` 之前的 `outer_func()` 代码块代表非局部作用域。
+
+如果您在没有在当前任何作用域中定义 `some_variable` 的情况下调用 `outer_func()`，那么您会得到一个 `NameError` 异常，因为该名称未定义。
+
+如果您在全局作用域中定义了 `some_variable`，然后调用 `outer_func()`，那么您会在屏幕上看到 `Hello!`。在内部，Python 已经搜索了局部、非局部和全局作用域来找到 `some_variable` 并打印其内容。请注意，您可以在这三个作用域的任何一个中定义此变量，Python 都会找到它。
+
+这种搜索机制使得从函数内部使用全局变量成为可能。然而，在利用这一特性的同时，您可能会面临一些问题。例如，访问变量是可行的，但直接修改变量却行不通：
+
+```python
+>>> number = 42
+>>> def access_number():
+...     return number
+...
+>>> access_number()
+42
+>>> def modify_number():
+...     number = 7
+...
+>>> modify_number()
+>>> number
+42
+
+```
+
+`access_number()` 函数运行良好。它寻找 `number` 并在全局作用域中找到了它。相比之下，`modify_number()` 并没有按预期工作。为什么这个函数没有更新您的全局变量 `number` 的值呢？问题在于变量的作用域。您不能在像局部作用域这样的低级作用域中直接修改像全局作用域这样的高级作用域中的变量。
+
+在内部，Python 假定在函数内直接分配的任何名称都是该函数的局部变量。因此，局部名称 `number` 遮蔽了它的全局同名变量。
+
+在这个意义上，全局变量表现为只读名称。您可以访问它们的值，但不能修改它们。
+
+:::note
+关于在函数内部修改全局变量的讨论围绕的是赋值操作，而不是对可变对象的原地修改。您将在“理解可变性如何影响全局变量”一节中了解可变性对全局变量的影响。
+:::
+
+当您尝试在函数内部修改全局变量时，遇到 `UnboundLocalError` 异常是另一个常见问题。考虑以下尝试使用一些全局变量的演示函数：
+
+```python
+>>> a = 10
+>>> b = 20
+>>> c = 30
+>>> def print_globals():
+...     print(a, b, c)
+...     c = 100
+...     print(c)
+...
+
+```
+
+在 `print_globals()` 内部，您首先打印全局变量 `a`、`b` 和 `c`。然后您直接更新 `c` 的值。最后，您打印更新后的 `c` 版本。您可能会期待以下输出：
+
+```python
+>>> # Expected output
+>>> print_globals()
+10 20 30
+100
+
+```
+
+然而，这个输出永远不会出现在您的屏幕上。相反，您会收到一个可能会让您惊讶的错误：
+
+```python
+>>> print_globals()
+Traceback (most recent call last):
+    ...
+UnboundLocalError: cannot access local variable 'c'
+    where it is not associated with a value
+
+```
+
+问题在于赋值 `c = 100` 创建了一个新的局部变量，它覆盖了原始的全局变量 `c`。因此，您遇到了名称冲突。异常来自于第一次调用 `print()`，因为在那时，局部版本的 `c` 还未被定义。因此，您得到了 `UnboundLocalError`。
+
+在实践中，这个问题最常出现在对全局变量进行增强赋值操作时：
+
+```python
+>>> counter = 0
+>>> def increment():
+...     counter += 1
+...
+>>> increment()
+Traceback (most recent call last):
+    ...
+UnboundLocalError: cannot access local variable 'counter'
+    where it is not associated with a value
+
+```
+
+在 Python 中，如果您的函数只是从全局作用域引用一个变量，那么该函数假定该变量是全局的。如果您在函数体内的任何地方为该变量名赋值，那么您就定义了一个与原始全局变量同名的新局部变量。
+
+在函数内部，如果您在函数的任何地方定义了同名的局部变量，则无法直接访问全局变量。
+
+如果想在函数内部修改全局变量，则需要显式告诉 Python 使用全局变量，而不是创建一个新的局部变量。为此，您可以使用以下方法之一：
+
+1. `global` 关键字。
+2. 内置的 `globals()` 函数。
+
+在接下来的部分中，您将学习如何在代码中使用这两种工具来从函数内部更改全局变量。
+
+## `global` 关键字
+
+您已经了解到，从函数内部直接访问全局变量是完全可能的，除非包含它的函数中有同名的局部变量。除此之外，如果您还需要更改变量的值怎么办？在这种情况下，您可以使用 `global` 关键字来声明您想要引用该全局变量。
+
+编写 `global` 语句的一般语法如下：
+
+```python
+global variable_0, variable_1, ..., variable_n
+
+```
+
+请注意，第一个变量是必需的，而其余的变量是可选的。为了说明如何使用此语句，回到 `counter` 和 `increment()` 示例。您可以通过执行类似以下操作来修复代码：
+
+```python
+>>> counter = 0
+>>> def increment():
+...     global counter
+...     counter += 1
+...
+>>> increment()
+>>> counter
+1
+>>> increment()
+>>> counter
+2
+
+```
+
+在这个新版本的 `increment()` 中，您使用 `global` 关键字来声明希望函数更新全局变量 `counter`。通过此语句，您现在能够修改函数内部 `counter` 的值，正如您在上面看到的。
+
+:::note
+Python 有一个 `nonlocal` 关键字，其工作原理类似于 `global`。它允许您在嵌套函数中使用非局部变量。非局部变量是指您在包含嵌套函数的函数中定义的变量。这些变量对内部或嵌套函数来说将是非局部的。
+:::
+
+需要注意的是，您必须在使用目标变量之前进行全局声明。否则，您将收到一个 `SyntaxError`：
+
+```python
+>>> counter = 0
+>>> def increment():
+...     counter += 1
+...     global counter
+...
+SyntaxError: name 'counter' is assigned to before global declaration
+
+```
+
+在这个例子中，您试图在没有在 `increment()` 内将其声明为 `global` 的情况下递增 `counter`。因此，您得到了一个 `SyntaxError`。
+
+`global` 语句告诉 Python 解释器，当您在这个函数中找到名称 `counter` 时，它指的是全局变量，所以不要创建局部变量。
+
+总之，只有在您想在函数内重新分配全局变量时，才需要使用 `global` 关键字。如果您只需要从函数内部读取或访问全局变量的值，则不需要 `global` 关键字。
+
+尽管 `global` 关键字的目的是在函数中处理全局变量，但这个关键字并不是您可用于此目的的唯一工具。您也可以使用内置的 `globals()` 函数。
+
+## `globals()` 函数
+
+内置的 `globals()` 函数允许您访问全局作用域的名称表，这是一个可写字典，包含您当前的全局名称及其对应的值。您可以使用此函数从函数内部访问或修改全局变量的值。
+
+例如，当您有与目标全局变量同名的局部变量，并且仍然需要在函数内部使用全局变量时，此函数非常有用：
+
+```python
+>>> a = 10
+>>> b = 20
+>>> c = 30
+>>> def print_globals():
+...     print(a, b, globals()["c"])
+...     c = 100
+...     print(c)
+...
+>>> print_globals()
+10 20 30
+100
+>>> c
+30
+
+```
+
+在这个 `print_globals()` 的新实现中，`c` 指的是变量的局部版本，而 `globals()["c"]` 指的是全局版本。
+
+由于 `globals()` 返回一个字典，因此您可以像访问常规字典的键一样访问其键。请注意，您需要使用变量的名称作为字符串来访问 `globals()` 中的对应键。
+
+`globals()` 返回的名称字典是可变的，这意味着您可以利用该字典更改现有全局变量的值。在最后一个示例中，您可以看到全局变量 `c` 仍然持有相同的值。
+
+这是另一个版本的 `increment()`。它稍微有点难读，但它有效：
+
+```python
+>>> counter = 0
+>>> def increment():
+...     globals()["counter"] += 1
+...
+>>> increment()
+>>> counter
+1
+>>> increment()
+>>> counter
+2
+
+```
+
+在这个例子中，您使用 `globals()` 而不是 `global` 关键字实现了 `increment()`。这两种实现的工作方式相同，您可以通过连续调用函数后 `counter` 的内容来确认这一点。
+
+请注意，使用 `globals()` 来访问和更新全局变量可能会使您的代码难以阅读和理解，特别是对于大型程序。一般情况下，除非您有与目标全局变量同名的局部变量，否则最好使用 `global` 关键字。
+
+## 理解可变性如何影响全局变量
+
+Python 拥有可变和不可变的数据类型。可变类型（例如列表和字典）允许您就地更改或变异它们的值。相比之下，不可变类型（如数字、字符串和元组）不允许您就地修改它们的值。
+
+为了快速说明可变性和不可变性在 Python 中是如何工作的，考虑以下示例，您就地变异一个列表，更改其元素或项目的值：
+
+```python
+>>> numbers = [1, 2, 3]
+>>> id(numbers)
+4390329600
+>>> numbers[0] = 10
+>>> numbers[1] = 20
+>>> numbers[2] = 30
+>>> numbers
+[10, 20, 30]
+>>> id(numbers)
+4390329600
+
+```
+
+在这个例子中，您变异了 `numbers` 的值。由于 Python 列表是可变对象，这种变异不会改变您列表对象的标识，仅改变其值。在进行变异前后，您可以通过比较内置 `id()` 函数的输出来确认这一点。
+
+现在，如果您尝试在诸如元组这样的不可变类型上执行类似操作会发生什么？在这个代码示例中，您尝试了一下：
+
+```python
+>>> letters = ("a", "b", "c", "d")
+>>> letters[0] = "aa"
+Traceback (most recent call last):
+    ...
+TypeError: 'tuple' object does not support item assignment
+
+```
+
+这里，您使用元组来存储字母。Python 元组是不可变的，因此您不能像对数字列表那样就地更改它们的项目。如果您尝试这样做，就会得到一个 `TypeError`。
+
+当在函数内部使用指向可变对象的全局变量时，您会注意到可以直接就地更改它们的值。
+
+例如，假设您正在创建一个 REST API 应用程序。为了方便起见，您使用一个全局字典跨应用代码共享 API 配置。同样为了方便，您编写了一个允许您更新配置参数的简短函数：
+
+```python
+>>> config = {
+...     "base_url": "[https://example.com/api](https://example.com/api)",
+...     "timeout": 3,
+... }
+>>> def update_config(**kwargs):
+...     for key, value in kwargs.items():
+...         if key in {"api_key", "base_url", "timeout"}:
+...             config[key] = value
+...         else:
+...             raise KeyError(key)
+...
+>>> update_config(api_key="111222333")
+>>> config
+{
+    'api_key': '111222333',
+    'base_url': '[https://example.com/api](https://example.com/api)',
+    'timeout': 3
+}
+>>> update_config(timeout=5)
+>>> config
+{
+    'api_key': '111222333',
+    'base_url': '[https://example.com/api](https://example.com/api)',
+    'timeout': 5
+}
+
+```
+
+在此示例中，`update_config()` 函数允许您更新应用程序的配置参数。该函数接受仅限关键字的参数。每个参数必须是具有相应值的有效配置参数。在条件语句中，您使用 `in` 运算符检查此条件。如果参数无效，那么函数会引发 `KeyError`。
+
+因为 Python 字典是可变数据类型，所以无需使用 `global` 或 `globals()` 即可在 `update_config()` 内部就地更改 `config` 的值。如果它们是有效的配置参数，您甚至可以添加新的键值对。例如，对 `update_config()` 的第一次调用添加了 `api_key` 参数，而第二次调用更新了 `timeout` 参数。
+
+需要注意的是，配置和设置通常是应用程序或系统全局状态的重要组成部分。在系统运行时更改配置会变异其全局状态。您应仅在非常小心的情况下进行此类更改。某些应用和软件系统在您更改其某些配置参数后要求重新启动或重新加载。这是处理这类状态变异的好方法。
+
+## 在函数内部创建全局变量
+
+正如您已经了解到的，您可以使用 `global` 关键字或内置的 `globals()` 函数在函数内部访问和修改全局变量。真正有趣且可能令人惊讶的是，您还可以使用这些工具在函数内部创建全局变量。
+
+:::warning
+虽然您可以使用 `global` 关键字或 `globals()` 函数在函数内部创建全局变量，但这是非常罕见的，而且不是最佳实践。它会使您的代码难以理解和维护。
+:::
+
+最好在任何函数外部的模块级别定义全局变量。这样，它们的作用域就很清楚了，而且如果您在调用定义函数之前使用该变量，就不会有遇到 `NameError` 的风险。
+
+在这个例子中，您使用 `global` 关键字在函数内部创建了一个全局变量：
+
+```python
+>>> def set_global_variable():
+...     global number
+...     number = 7
+...
+>>> set_global_variable()
+>>> number
+7
+
+```
+
+在这里，`set_global_variable()` 函数使用 `global` 关键字将 `number` 定义为全局变量。当您调用函数时，`number` 被定义，并且它的值被设置为 7。在调用之后，您可以从程序中的任何其他位置访问 `number`。
+
+您还可以使用 `globals()` 函数在函数内部定义新的全局变量。该工具为您提供了额外的灵活性，使您能够动态地创建全局变量：
+
+```python
+>>> def dynamic_global_variable(name, value):
+...     globals()[name] = value
+...
+>>> dynamic_global_variable("number", 42)
+>>> number
+42
+
+```
+
+在此示例中，`dynamic_global_variable()` 函数使用 `globals()` 函数通过字符串名称和值定义新的全局变量。对函数的调用创建了一个名为 `number` 的新全局变量，其值为 42。
+
+为了提供一个更现实的示例，假设您有一个 JSON 格式的配置文件。您想要处理该文件并将所有配置参数直接加载到您的全局命名空间中，以便您可以在代码的其他部分将这些参数用作全局变量。
+
+您的 `config.json` 文件可能如下所示：
+
+```json
+{
+    "database": {
+      "host": "localhost",
+      "port": 5432,
+      "name": "database.db",
+      "user": "username",
+      "password": "secret"
+    },
+    "api_key": "111222333",
+    "base_url": "[https://example.com/api](https://example.com/api)",
+    "timeout": 60
+}
+
+```
+
+该文件定义了一个 `"database"` 键，其值是一个包含键和值的字典。您将把此字典用作应用程序数据库的初始设置。该文件还定义了用于连接 API 的 API 密钥、基础 URL 和超时。
+
+以下代码负责加载 JSON 文件并为您创建所需的一组全局变量：
+
+```python
+>>> import json
+>>> def set_config_key(key, value):
+...     globals()[key] = value
+...
+>>> with open("config.json") as json_config:
+...     for key, value in json.load(json_config).items():
+...         set_config_key(key, value)
+...
+>>> database
+{
+    'host': 'localhost',
+    'port': 5432,
+    'name': 'database.db',
+    'user': 'username',
+    'password': 'secret'
+}
+>>> api_key
+'000111222333'
+>>> base_url
+'[https://example.com/api](https://example.com/api)'
+>>> timeout
+60
+
+```
+
+在这个代码片段中，您定义了 `set_config_key()`，它以 `key` 和 `value` 作为参数。然后您使用 `globals()`，以 `key` 作为变量名，以 `value` 作为其值来创建一个全局变量。
+
+在 `with` 语句中，您打开配置文件进行读取，并将文件对象分配给 `json_config` 变量。然后您使用一个 `for` 循环来处理加载的配置，并为每个键值对创建新的全局变量。
+
+完成此过程后，您可以将代码中所有配置参数作为全局变量进行访问。
+
+尽管在 Python 中使用 `global` 关键字或 `globals()` 函数在函数中定义全局变量是完全可能的，但这并不是最佳实践。以此方式定义全局变量时必须小心。这些变量将变得对整个程序可用，因此代码的其他部分可以修改它们。正因为如此，您最终可能会得到难以理解、测试、维护和调试的代码。
+
+也许您注意到了某种模式。在函数中使用和定义全局变量的方法有很多，但这是否意味着您应该这么做？在下一部分中，您将探讨这个问题。
+
+## 决定何时使用全局变量
+
+在您的编程之旅中，您会发现某些情况下使用全局变量可能是合适的甚至是必要的。例如，您可能会使用全局变量来处理：
+
+* 配置和设置：如果您有一些适用于整个程序的设置，那么使用全局变量可能是一个快速的解决方案，它将允许您从代码的任何地方访问这些设置。
+* 小型实用脚本：如果您正在编写小型脚本来自动化部分工作流程或完成微小的任务，那么使用全局变量可以帮助您更快地运行，并阻止您过度设计解决方案。
+* 缓存数据：如果您出于性能原因需要缓存数据，那么您可以利用全局变量来存储缓存的数据。
+
+需要注意的是，您应该谨慎地并且仅在绝对必要时使用全局变量。如果决定在代码中使用全局变量，请务必记录其使用情况，特别要注意为什么依赖它们。
+
+在实践中，在代码中使用全局变量可能会有一些缺点。例如，全局变量可能：
+
+* 使跟踪变量的更改变得困难，因为您可以从代码的任何位置更改变量。
+* 产生不必要的副作用，因为对全局变量的更改可能会影响代码其他部分的行为。
+* 使代码难以测试和调试，因为函数的行为和结果将取决于全局变量的当前值。
+* 影响代码的可重用性，因为依赖全局变量的函数与这些变量紧密耦合。
+* 导致命名冲突，因为您可能会在代码的不同部分意外地重用全局名称，从而导致意外结果。
+* 破坏封装性，因为全局变量在代码的不同部分之间引入了隐藏的依赖关系。
+* 使代码难以重构，因为代码某一部分的更改可能会影响其他部分。
+
+虽然您可以利用全局变量解决特定问题，但尽量减少在代码中的使用会更好。如果仍然需要使用它们，可以将它们作为常量，以避免它们的部分缺点。这是因为使用全局变量的大多数问题源于在代码执行期间更改它们的值。
+
+在接下来的几节中，您将学习一些常用的策略和技术，以避免在函数中使用全局变量。
+
+## 在代码和函数中避免使用全局变量
+
+正如您在上一节中所了解的，在函数和代码中依赖全局变量可能会导致一些不良影响。这些变量可能会使代码更难理解、测试和调试。它们还可能导致难以维护和重用的代码。因此，您必须小心控制地使用全局变量。
+
+幸运的是，您可以采用一些巧妙的策略来减少对全局变量的需求。
+
+### 使用全局常量
+
+也许避免全局变量最直观的策略就是使用全局常量。与变量不同，常量在代码执行期间不得更改其值。因此，它们促进了对全局名称的安全使用。
+
+:::tip
+Python 不支持严格常量或不可重新赋值的名称。要在 Python 中定义常量，应使用大写字母加下划线。然而，这只是命名约定，并不能阻止开发人员为您的常量分配新值。所以，您必须小心，千万不要编写更改常量值的代码。
+:::
+
+为了说明如何使用常量代替全局变量，假设您有一些常规配置参数，并希望可以从程序的所有部分访问它们。在这种情况下，可以使用全局常量。通常，在模块顶部导入之后定义常量。
+
+下面是一些 Python 常量的示例：
+
+```python
+API_KEY = "111222333"
+BASE_URL = "[https://example.com/api](https://example.com/api)"
+TIMEOUT = 3
+
+```
+
+您可以使用常量存储在程序执行期间不会改变的值。常量可帮助防止意外修改值。它们还提高了代码的可读性和可维护性。
+
+一旦定义了常量，即可在整个代码的函数中访问它们。您只需确保保持它们不变即可。例如，以下函数从 NASA 的主 API 页面加载图像：
+
+```python title="nasa.py"
+import webbrowser
+import requests
+
+API_KEY = "DEMO_KEY"
+BASE_URL = "[https://api.nasa.gov/planetary](https://api.nasa.gov/planetary)"
+TIMEOUT = 3
+
+def load_earth_image(date):
+    endpoint = f"{BASE_URL}/apod"
+    try:
+        response = requests.get(
+            endpoint,
+            params={
+                "api_key": API_KEY,
+                "date": date,
+            },
+            timeout=TIMEOUT,
+        )
+    except requests.exceptions.RequestException as e:
+        print(f"Error connecting to API: {e}")
+        return
+
+    try:
+        url = response.json()["url"]
+    except KeyError:
+        print(f"No image available on {date}")
+        return
+
+    webbrowser.open(url)
+
+```
+
+在此示例中，您从 Python 标准库中导入了 `webbrowser`。此模块可让您在其默认浏览器中快速打开 URL。然后导入 `requests` 库以向目标 REST API 发出 HTTP 请求。
+
+在 `load_earth_image()` 中，您可以直接访问三个全局常量，就像处理 Python 中的任何全局变量一样。但是，您在函数内部不更改任何常量的值。
+
+现在，您也可以在其他相关的函数中重复使用这些常量。以这种方式使用常量允许您改善代码的可读性和可维护性。此外，由于它们是常数，当您调试或测试代码时，您不必跟踪其当前值。您始终会知道它们的值。
+
+要测试以上示例，请继续并运行以下代码：
+
+```python
+>>> from nasa import load_earth_image
+>>> load_earth_image("2024-11-21")
+
+```
+
+对 `load_earth_image()` 的调用将为您获取 NASA 为 2024 年 11 月 21 日准备的图像。图像将在您的默认浏览器中打开。您可以尝试使用其他日期获取自己的图像。
+
+### 在函数中接收参数并返回值
+
+编写采用参数并返回值的函数，而不是依赖全局变量，这是在您的代码中避免使用全局变量的另一个好策略。这类函数被称为纯函数，并且是函数式编程的基础，该编程泛型目前十分流行。
+
+纯函数通常与代码的其他部分完全分离。更重要的是，它们不会产生任何副作用，例如更改全局变量的状态。这些功能使它们更易于重用且更容易理解、调试、测试和维护。
+
+例如，以下是不在函数内部使用全局变量的老朋友 `increment()` 的新实现。在此处，函数仅接受一个值作为参数，并将其增加 1 返回：
+
+```python
+>>> def increment(value=0):
+...     return value + 1
+...
+>>> counter = increment()
+>>> counter
+1
+>>> counter = increment(counter)
+>>> counter
+2
+>>> counter = increment(counter)
+>>> counter
+3
+
+```
+
+`increment()` 的这个新版本不再依赖全局变量中的外部值。因此，其结果仅取决于它的输入参数。无论何时，只要参数相同，此函数总是返回相同的结果，这就使得这个函数更易于测试、理解和调试。
+
+该函数与程序的任何其他部分完全解耦，以至于您甚至可以在不同的程序中重用它。
+
+在这个例子中，您仅在全局作用域内改变 `counter` 变量。您不执行跨作用域突变，所以使代码更安全且更容易理解。
+
+### 使用类、方法和属性
+
+有时候您可能具有一个或多个作用在或伴随一些全局变量运行的函数。在这些情况下，您能考虑编写一个将函数转化为方法并将全局变量转化为实例属性的类。
+
+例如，假设您正在编写一款应用程序来管理自己的银行账户。您通过创建一系列处理账户余额的函数来开始：
+
+```python title="account_global.py"
+balance = 0
+
+def deposit(amount):
+    global balance
+    balance += amount
+    print(f"Successful deposit: +${amount:,.2f}")
+
+def withdraw(amount):
+    global balance
+    if balance - amount > 0:
+        balance -= amount
+        print(f"Successful withdrawal: -${amount:,.2f}")
+    else:
+        print("Not enough funds for this transaction")
+
+def get_balance():
+    return balance
+
+def main():
+    while True:
+        operation = input(
+            "What would you like to do?\n"
+            " d) deposit  "
+            " w) withdraw  "
+            " b) balance  "
+            " q) quit\n"
+            "> "
+        )
+        if operation in "dD":
+            amount = float(input("Enter the deposit amount: "))
+            deposit(amount)
+        elif operation in "wW":
+            amount = float(input("Enter the withdrawal amount: "))
+            withdraw(amount)
+        elif operation in "bB":
+            print(f"Current balance: ${get_balance():,.2f}")
+        elif operation in "qQ":
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid operation. Please try again.")
+
+main()
+
+```
+
+在这段代码中，您依靠一个全局变量存储您的银行账户的余额。您具有三种提供共同操作账户余额功能的函数。您可以存钱、提款，并且检查您账户的现有余额。
+
+`main()` 函数定义了一条向您显示文本用户界面 (TUI) 的 `while` 循环。通过此界面，您告诉该应用将想要进行的操作执行在自己的账户中。
+
+以下是此应用在运行时的展示：
+
+```bash
+$ python account_global.py
+What would you like to do?
+ d) deposit   w) withdraw   b) balance   q) quit
+> d
+Enter the deposit amount: 6000
+Successful deposit: +$6,000.00
+What would you like to do?
+ d) deposit   w) withdraw   b) balance   q) quit
+> w
+Enter the withdrawal amount: 2380
+Successful withdrawal: -$2,380.00
+What would you like to do?
+ d) deposit   w) withdraw   b) balance   q) quit
+> b
+Current balance: $3,620.00
+What would you like to do?
+ d) deposit   w) withdraw   b) balance   q) quit
+> q
+Goodbye!
+
+```
+
+太棒了！该应用程序按预期工作。它允许您存款、提取资金并检查您的当前余额。现在，假设您不喜欢过度依赖全局变量，并且您决定使用类来重构应用程序。为此，您需要执行以下步骤：
+
+1. 用合适的名称定义一个类。`Account` 适用于此示例。
+2. 将全局变量移入该类，将它们转换为实例属性。
+3. 将函数作为实例方法移入该类。
+
+这是重构的代码：
+
+```python title="account_class.py"
+class Account:
+    def __init__(self, balance=0):
+        self.balance = balance
+
+    def deposit(self, amount):
+        self.balance += amount
+        print(f"Successful deposit: +${amount:,.2f}")
+
+    def withdraw(self, amount):
+        if self.balance - amount > 0:
+            self.balance -= amount
+            print(f"Successful withdrawal: -${amount:,.2f}")
+        else:
+            print("Not enough funds for this transaction")
+
+def main():
+    account = Account()
+    while True:
+        operation = input(
+            "What would you like to do?\n"
+            " d) deposit  "
+            " w) withdraw  "
+            " b) balance  "
+            " q) quit\n"
+            "> "
+        )
+        if operation in "dD":
+            amount = float(input("Enter the deposit amount: "))
+            account.deposit(amount)
+        elif operation in "wW":
+            amount = float(input("Enter the withdrawal amount: "))
+            account.withdraw(amount)
+        elif operation in "bB":
+            print(f"Current balance: ${account.balance:,.2f}")
+        elif operation in "qQ":
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid operation. Please try again.")
+
+main()
+
+```
+
+在会计程序的新版本中，您定义了一个名为 `Account` 的类。该类具有一个用于存储账户余额的实例属性。该属性曾是您的老全局变量 `balance`。
+
+您还把 `deposit()` 和 `withdraw()` 方法转变成了包含当前实例 `self` 作为第一参数的实例方法。最后，在循环的内部，您实例化了 `Account` 类并在实例里使用该类调用它的方法从而使该程序运转时的情况犹如上代版本一样。
+
+注意，在这个实现中，您没有 `.get_balance()` 方法。所以，要获得账户存款情况可以依靠其属性 `.balance` 实现。
+
+```
