@@ -1428,3 +1428,1048 @@ main()
 注意，在这个实现中，您没有 `.get_balance()` 方法。所以，要获得账户存款情况可以依靠其属性 `.balance` 实现。
 
 ```
+
+
+---
+
+## 理解常量与变量
+
+变量和常量是计算机编程中两个历史悠久且基础的概念。大多数编程语言都使用这些概念来高效、合乎逻辑地处理和操作数据。
+
+在你编写的每一个项目、应用程序、库或其他代码中，几乎都会出现变量和常量。问题是：在实际应用中，究竟什么是变量和常量？
+
+### 什么是变量
+
+在数学中，变量被定义为指代随时间变化的值或数量的符号。在编程中，变量同样是一个符号或名称，通常关联到一个包含值、对象或数据片段的内存地址。与数学中一样，编程中变量的内容在定义它的代码执行期间是可以改变的。
+
+变量通常具有描述性名称，该名称在某种程度上与目标值或对象相关联。此目标值可以是任何数据类型。因此，你可以使用变量来表示数字、字符串、序列、自定义对象等。
+
+你可以对变量执行两个主要操作：
+
+1. 访问其值
+2. 为其赋新值
+
+在大多数编程语言中，你只需在代码中引用变量的名称即可访问与该变量关联的值。要为给定的变量赋新值，你需要使用赋值语句，该语句通常由变量名、赋值运算符和所需的值组成。
+
+在实践中，你会发现许多可以表示为变量的大量数据、数值和对象。几个例子包括温度、速度、时间、长度。你可以当作变量处理的其他数据示例还包括：Web 应用程序中的注册用户数、视频游戏中活跃角色的数量、跑步者跑过的英里数。
+
+### 什么是常量
+
+数学中也有常量的概念。该术语指从不改变的值或数量。在编程中，常量是指在程序执行期间永不改变的值所关联的名称。
+
+就像变量一样，编程常量由两部分组成：名称和关联值。名称将清楚地描述该常量的用途。值则是常量本身的具体表现。
+
+与变量一样，给定常量关联的值可以是任何数据类型。因此，你可以定义整型常量、浮点型常量、字符型常量、字符串型常量等。
+
+定义常量后，它只允许你对其执行单一操作。你只能访问常量的值，而不能随时间更改它。这与变量不同，变量允许你访问其值，但也可以重新赋值。
+
+你将使用常量来表示不会改变的值。在日常编程中，你会发现很多这样的值。几个例子包括光速、一小时内的分钟数、项目根文件夹的名称。
+
+### 为什么使用常量
+
+在大多数编程语言中，当你凌晨两点还在写代码时，常量可以保护你免受意外更改代码中某些值的困扰，从而避免引发意外且难以调试的错误。常量还可以帮助你使代码更具可读性和可维护性。
+
+与直接在代码中使用值相比，使用常量的一些优势包括：
+
+| 优势 | 描述 |
+| --- | --- |
+| **提高可读性** | 在整个程序中代表给定值的描述性名称，总是比单纯的原始值更具可读性和明确性。例如，阅读和理解名为 `MAX_SPEED` 的常量，比直接看具体的速度值要容易得多。 |
+| **清晰传达意图** | 大多数人会假设 `3.14` 可能指圆周率常量。然而，使用 `Pi`、`pi` 或 `PI` 这样的名称比直接使用该值能更清晰地传达你的意图。这种做法可以让其他开发者快速、准确地理解你的代码。 |
+| **更好的可维护性** | 常量使你能够在整个代码中使用相同的名称来标识相同的值。如果你需要更新常量的值，则不必更改该值的所有实例。你只需要在一个地方进行更改，即常量定义处。这提高了代码的可维护性。 |
+| **降低出错风险** | 在整个程序中代表给定值的常量，比多次显式出现该值的代码更不容易出错。假设你根据目标计算需要使用不同精度的圆周率（Pi）。你在每次计算中都显式使用了所需精度的值。如果你需要在一组计算中更改精度，替换这些值可能会出错，因为你最终可能会更改错误的值。为不同的精度级别创建不同的常量并在单个地方更改代码会更安全。 |
+| **减少调试需求** | 常量在程序的整个生命周期中保持不变。因为它们始终具有相同的值，所以它们不应该引发错误和 bug。这个特性在小型项目中可能不是必需的，但在包含多名开发人员的大型项目中至关重要。开发人员无需花时间去排查任何常量的当前值。 |
+| **线程安全的数据存储** | 常量只能被访问，不能被写入。这个特性使它们成为线程安全的对象，这意味着多个线程可以同时使用常量，而不会有破坏或丢失底层数据的风险。 |
+
+正如你从这个表格中所学到的，常量是编程中一个重要的概念，这是有充分理由的。它们可以让你的生活更轻松，让你的代码更可靠、更具可维护性和可读性。现在，什么时候应该使用常量呢？
+
+### 何时使用常量
+
+生活（尤其是科学）充满了常量值或从不改变的值的例子。几个例子包括：
+
+* `3.141592653589793`：由 $\pi$ 表示的常量，在英文中拼写为 Pi，代表圆的周长与直径之比。
+* `2.718281828459045`：由 $e$ 表示并被称为欧拉数的常量，它与自然对数和复利密切相关。
+* `3,600`：一小时中的秒数，在大多数应用中被认为是常数，尽管有时会添加闰秒来解释地球自转速度的变化。
+* `-273.15`：表示摄氏温度绝对零度的常量，等于开尔文温标上的 0 开尔文。
+
+以上所有示例都是人们在生活和科学中常用的常量值。在编程中，你会经常发现自己需要处理这些以及许多其他可以被视为常量的类似值。
+
+总而言之，使用常量来表示量、数值、对象、参数或任何在生命周期内理应保持不变的数据。
+
+以下是对您提供的关于“在 Python 中定义你自己的常量”（Defining Your Own Constants in Python）文章内容的中文翻译：
+
+---
+
+## 在 Python 中定义你自己的常量
+
+到目前为止，你已经了解了常量作为生活、科学和编程中通用概念的定义。现在是时候了解 Python 是如何处理常量的了。首先，你应该知道 Python 没有用于定义常量的专用语法。
+
+换句话说，在严格意义上，Python 没有常量。它只有变量，这主要是由其动态特性决定的。因此，要在 Python 中使用常量，你需要定义一个永不改变的变量，并通过避免对变量本身执行赋值操作来维持这种行为。
+
+> **注意**：在本节中，你将重点学习如何定义自己的常量。不过，Python 中内置了一些常量。你稍后会学到它们。
+
+那么，Python 开发者是如何知道某个给定变量代表常量的呢？Python 社区决定使用一种强命名规范来区分变量和常量。请继续阅读以了解更多信息！
+
+### 用户自定义常量
+
+为了告诉其他程序员某个给定的值应该被当作常量对待，你必须为常量的标识符或名称使用广泛接受的命名规范。正如 PEP 8 的“常量”部分所述，你应该用大写字母编写名称，并用下划线分隔单词。
+
+以下是一些用户自定义 Python 常量的示例：
+
+```python
+PI = 3.14
+MAX_SPEED = 300
+DEFAULT_COLOR = "\033[1;34m"
+WIDTH = 20
+API_TOKEN = "593086396372"
+BASE_URL = "https://api.example.com"
+DEFAULT_TIMEOUT = 5
+ALLOWED_BUILTINS = ("sum", "max", "min", "abs")
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    ...]
+
+```
+
+请注意，你创建这些常量的方式与创建变量完全相同。你使用了描述性名称、赋值运算符 (`=`) 以及常量的具体值。
+
+通过仅使用大写字母，你在传达这样一种意图：当前的名称旨在被当作常量对待——或者更准确地说，是被当作一个永不改变的变量对待。因此，其他 Python 开发者会知道这一点，并且希望不会对该变量执行任何赋值操作。
+
+> **注意**：再次强调，Python 不支持常量或不可重新赋值的名称。使用大写字母只是一种规范，它并不能阻止开发人员为你的常量赋予新值。因此，任何编写你代码的程序员都需要格外小心，绝不编写改变常量值的代码。请记住这条规则，因为你也需要遵守它。
+
+由于 Python 常量本质上就是变量，因此两者遵循相似的命名规则，唯一的区别在于常量仅使用大写字母。基于这一理念，常量的名称可以：
+
+* 具有任意长度
+* 由大写字母（A–Z）组成
+* 包含数字（0–9），但不能作为首个字符
+* 使用下划线字符（`_`）来分隔单词，或将其作为首个字符
+
+使用大写字母会使你的常量从变量中脱颖而出。通过这种方式，其他开发人员能够明确地识别出它们的用途。
+
+作为一般的命名建议，在定义常量时应避免使用缩写的名称。常量名称的目的是阐明常量值的含义，以便你以后可以重复使用它。这个目标需要具有描述性的名称。应避免使用单字母名称、不常见的缩写以及诸如 `NUMBER` 或 `MAGNITUDE` 这样的通用名称。
+
+推荐的做法是在任何 `.py` 文件的顶部、紧跟在所有导入语句（import statements）之后定义常量。这样一来，阅读你代码的人就会立即明白常量的用途和预期的处理方式。
+
+### 模块级双下划线常量（Module-Level Dunder Constants）
+
+模块级双下划线名称（dunder names）是指以双下划线开头和结尾的特殊名称。一些例子包括 `__all__`、`__author__` 和 `__version__` 等名称。在 Python 项目中，这些名称通常被视为常量。
+
+> **注意**：在 Python 中，dunder 名称是具有特殊含义的名称。它以双下划线开头和结尾，“dunder”这个词是“double underscore（双下划线）”的混成词。
+
+根据 Python 的代码风格指南 PEP 8，模块级双下划线名称应该出现在模块的文档字符串（docstring）之后、除了 `__future__` 导入之外的任何导入语句之前。
+
+这是一个包含一堆双下划线名称的示例模块：
+
+文件名：`greeting.py`
+
+```python
+"""This module defines some module-level dunder names."""
+from __future__ import barry_as_FLUFL
+
+__all__ = ["greet"]
+__author__ = "Real Python"
+__version__ = "0.1.0"
+
+import sys
+
+def greet(name="World"):
+    print(f"Hello, {name}!")
+    print(f"Greetings from version: {__version__}!")
+    print(f"Yours, {__author__}!")
+
+```
+
+在这个例子中，`__all__` 在最前面定义了当你在代码中使用 `from module import *` 导入结构时 Python 将导入的名称列表。在这种情况下，使用通配符导入（wildcard import）导入 `greeting` 的人将只能取回 `greet()` 函数。他们将无法访问 `__author__`、`__version__` 以及未在 `__all__` 中列出的其他名称。
+
+> **注意**：`from module import *` 结构允许你一次性导入给定模块中定义的所有名称。`__all__` 属性将导入的名称限制为仅底层列表中的那些。
+
+Python 社区强烈反对这种通常被称为通配符导入的导入结构，因为它往往会用你可能不会在代码中使用的名称来弄乱当前的命名空间。
+
+相比之下，`__author__` 和 `__version__` 对代码的作者和用户有意义，而不是对代码本身的逻辑有意义。由于在程序执行期间不应允许任何代码更改作者或版本，因此这些名称应被视为常量。
+
+请注意，`greet()` 函数确实访问了这些双下划线名称，但并没有改变它们。`greet()` 在实践中的工作方式如下：
+
+```pycon
+>>> from greeting import *
+>>> greet()
+Hello, World!
+Greetings from version: 0.1.0!
+Yours, Real Python!
+
+```
+
+一般来说，没有什么硬性规则可以阻止你定义自己的模块级双下划线名称。但是，Python 官方文档强烈警告：不要使用社区普遍接受和使用之外的双下划线名称。核心开发人员未来可能会在没有任何警告的情况下向该语言引入新的双下划线名称。
+
+## 将常量付诸实践
+
+到目前为止，你已经了解了常量及其在编程中的角色和重要性。你还了解到 Python 不支持严格意义上的常量。这就是为什么你可以将常量视为永不改变的变量。
+
+在接下来的部分中，你将编写代码示例，体会常量在日常编码旅程中的巨大价值。
+
+### 替换“魔法数字”以提高可读性
+
+在编程中，“魔法数字”（magic number）一词指的是任何直接出现在代码中且没有任何解释的数字。它是一个毫无预兆冒出来的价值，让你的代码变得神秘且难以理解。魔法数字还会降低程序的可读性，并使维护和更新变得更加困难。
+
+例如，假设你有以下函数：
+
+```python
+def compute_net_salary(hours):
+    return hours * 35 * (1 - (0.04 + 0.1))
+
+```
+
+你能一眼看出这个计算中每个数字的含义吗？大概不能。这个函数中的不同数字都是魔法数字，因为你无法从数字本身可靠地推断出它们的含义。
+
+来看看这个函数的重构版本：
+
+```python
+HOURLY_SALARY = 35
+SOCIAL_SECURITY_TAX_RATE = 0.04
+FEDERAL_TAX_RATE = 0.10
+
+def compute_net_salary(hours):
+    return (
+        hours * HOURLY_SALARY * (1 - (SOCIAL_SECURITY_TAX_RATE + FEDERAL_TAX_RATE))
+    )
+
+```
+
+通过这些微小的更新，你的函数现在读起来顺畅多了。你和任何阅读你代码的其他开发人员一定能看出这个函数是做什么的，因为你用命名恰当的常量替换了原有的魔法数字。每个常量的名字都清晰地解释了它对应的含义。
+
+每当你发现自己在代码中使用魔法数字时，都要花时间用常量将其替换。这个常量的名称必须具有描述性，并且要明确解释目标魔法数字的含义。这种做法将自动提高代码的可读性。
+
+### 重用对象以提高可维护性
+
+常量的另一个日常用例是，当某个给定的值在代码的不同部分中反复出现时。如果你在每个需要的地方都将具体的值插入代码中，那么如果出于某种原因你需要更改该值，你就会遇到麻烦。在这种情况下，你需要在每个地方都修改该值。
+
+同时在多个地方更改目标值很容易出错。即使你依赖编辑器的“查找和替换”功能，也可能会遗漏某些未更改的值实例，这可能会在以后导致意想不到的 bug 和诡异的行为。
+
+为了防止这些令人烦恼的问题，你可以用命名恰当的常量来替换该值。这将允许你设置一次该值，并在根据需要所需的任意位置重复使用它。如果你需要更改常量的值，那么你只需在一个地方进行更改：即常量定义处。
+
+例如，假设你正在编写一个 `Circle`（圆）类，并且你需要计算圆的面积、周长等的方法。编写了几分钟代码后，你得到了以下类：
+
+文件名：`circle.py`
+
+```python
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return 3.14 * self.radius**2
+
+    def perimeter(self):
+        return 2 * 3.14 * self.radius
+
+    def projected_volume(self):
+        return 4/3 * 3.14 * self.radius**3
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(radius={self.radius})"
+
+```
+
+这个例子揭示了圆周率的近似值 (`3.14`) 是如何作为一个魔法数字写在 `Circle` 类的几个方法中的。为什么这种做法有问题？假设你需要提高圆周率的精度。那么你将不得不手动更改至少三个不同地方的值，这既繁琐又容易出错，使得你的代码难以维护。
+
+> **注意**：通常，你不需要自己定义圆周率。Python 附带了一些内置常量，包括圆周率。你稍后将看到如何利用它。
+
+使用命名常量来存储圆周率的值是解决这些问题的一种极佳方法。以下是上述代码的增强版本：
+
+文件名：`circle.py`
+
+```python
+PI = 3.14
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return PI * self.radius**2
+
+    def perimeter(self):
+        return 2 * PI * self.radius
+
+    def projected_volume(self):
+        return 4/3 * PI * self.radius**3
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(radius={self.radius})"
+
+```
+
+这个版本的 `Circle` 使用全局常量 `PI` 替换了魔法数字。与原始代码相比，这段代码有几个优点。如果你需要提高圆周率的精度，那么你只需要在文件开头更新 `PI` 常量的值。此更新将立即反映在其余代码中，而无需你采取任何额外的操作。
+
+> **注意**：常量在代码执行期间不应更改。然而，在开发过程中，你可以根据需要更改和调整你的常量。在 `Circle` 类中更新圆周率的精度，很好地说明了为什么你可能需要在代码开发过程中更改常量的值。
+
+另一个优点是，现在你的代码更具可读性，也更容易理解。常量的名称是不言自明的，并且反映了公认的数学术语。
+
+正如你在上面的示例中所做的那样，声明一次常量然后多次重用它，代表了可维护性的显著提升。如果你必须更新常量的值，那么你只需在一个地方而不是多个地方进行更新，这意味着更少的工作量和更低的错误风险。
+
+## 提供默认参数值
+
+在 Python 中，使用命名常量为函数、方法和类提供默认参数值是另一种常见的做法。在 Python 标准库中有很多这种做法的示例。
+
+例如，`zipfile` 模块提供了用于创建、读取、写入、追加和列出 ZIP 文件的工具。该模块中最相关的类是 `ZipFile`。通过 `ZipFile`，你可以高效且快速地操作 ZIP 文件。
+
+`ZipFile` 的类构造函数接受一个名为 `compression` 的参数，该参数允许你在几种可用的数据压缩方法中进行选择。此参数是可选的，并以 `ZIP_STORED` 作为其默认值，这意味着 `ZipFile` 默认不会对输入数据进行压缩。
+
+在这个例子中，`ZIP_STORED` 是 `zipfile` 中定义的常量。该常量为未压缩数据保存了一个数值。你还会发现由命名常量表示的其他压缩方法，例如用于 Deflate 压缩算法的 `ZIP_DEFLATED`。
+
+当某个参数只能接受有限数量的有效值时，`ZipFile` 类构造函数中的 `compression` 参数就是使用常量来提供默认参数值的良好示例。
+
+常量的另一个派上用场的场景是，当你拥有几个具有重复参数的函数时。假设你正在开发一个连接到本地 SQLite 数据库的应用程序。你的应用程序使用以下一组函数来管理数据库：
+
+```python
+import sqlite3
+from sqlite3 import Error
+
+def create_database(db_path):
+    # 创建初始数据库的代码写在这里...
+    pass
+
+def create_connection(db_path):
+    # 创建数据库连接的代码写在这里...
+    pass
+
+def backup_database(db_path):
+    # 备份数据库的代码写在这里...
+    pass
+
+```
+
+这些函数对你的 SQLite 数据库执行不同的操作。请注意，你所有的函数都共享 `db_path` 参数。
+
+在开发应用程序时，你决定为你的函数提供一个默认的数据库路径，以便你可以快速测试它们。在这种情况下，你可以直接将该路径用作 `db_path` 参数的默认值。
+
+然而，最好使用命名常量来提供默认数据库路径：
+
+```python
+import sqlite3
+from sqlite3Error import Error
+
+DEFAULT_DB_PATH = "/path/to/database.sqlite"
+
+def create_database(db_path=DEFAULT_DB_PATH):
+    # 创建初始数据库的代码写在这里...
+    pass
+
+def create_connection(db_path=DEFAULT_DB_PATH):
+    # 创建数据库连接的代码写在这里...
+    pass
+
+def backup_database(db_path=DEFAULT_DB_PATH):
+    # 备份数据库的代码写在这里...
+    pass
+
+```
+
+这一小小的更新使你能够在开发过程中通过指向示例数据库来快速测试你的应用程序。它还提高了代码的可维护性，因为你可以在应用程序未来版本中出现的其他数据库相关函数中重复使用该常量。
+
+最后，你会遇到这样的情况：你希望将具有某种行为的对象传递给类、方法或函数。这种做法通常被称为鸭子类型（duck typing），是 Python 中的一个基本原则。现在假设你的代码将负责提供所需对象的标准实现。如果你的用户想要一个自定义对象，那么他们应该自己提供。
+
+在这种情况下，你可以使用常量来定义默认对象，然后将此常量作为默认参数值传递给目标类、方法或函数。查看以下假设的 `FileReader` 类的示例：
+
+文件名：`file_handler.py`
+
+```python
+from readers import DEFAULT_READER
+
+class FileHandler:
+    def __init__(self, file, reader=DEFAULT_READER):
+        self._file = file
+        self._reader = reader
+
+    def read(self):
+        self._reader.read(self._file)
+
+    # FileHandler 的实现写在这里...
+
+```
+
+该类提供了一种操作不同类型文件的方法。`.read()` 方法根据输入文件的特定格式，使用注入的 reader 对象来读取输入文件。
+
+这是一个 reader 类的简单实现：
+
+文件名：`readers.py`
+
+```python
+class _DefaultReader:
+    def read(self, file):
+        with open(file, mode="r", encoding="utf-8") as file_obj:
+            for line in file_obj:
+                print(line)
+
+DEFAULT_READER = _DefaultReader()
+
+```
+
+此示例中的 `.read()` 方法接受文件的路径，将其打开，并将其内容逐行打印到屏幕上。这个类将扮演你的默认 reader 的角色。最后一步是创建一个常量 `DEFAULT_READER`，用来存储你的默认 reader 的实例。就是这样！你既拥有一个处理输入文件的类，又拥有一个提供默认 reader 的辅助类。
+
+你的用户也可以编写自定义的 reader。例如，他们可以为 CSV 和 JSON 文件编写 reader。一旦他们编写好了给定的 reader，就可以将其传入 `FileHandler` 类构造函数中，并使用生成的实例来处理使用该 reader 目标文件格式的文件。
+
+
+## 在真实的项目中处理常量
+
+现在你已经知道了如何在 Python 中创建常量，接下来是时候学习如何在真实的项目中处理和组织它们了为此，你可以使用几种方法或策略。例如，你可以将常量放在：
+
+* 与使用它们的代码相同的文件中
+* 用于全项目常量的专用模块中
+* 配置文件中
+* 某些环境变量中
+
+在下面的部分中，你将编写一些实际的示例，展示上述适当地管理常量的策略。
+
+### 将常量与相关代码放在一起
+
+组织和管理常量第一种也是最自然的方法，是将它们与使用它们的代码定义在一起。使用这种方法时，你将在包含相关代码的模块顶部定义常量。
+
+例如，假设你正在创建一个自定义模块来执行计算，并且你需要使用诸如圆周率、自然常数（欧拉数）等数学常量。在这种情况下，你可以这样做：
+
+文件名：`calculations.py`
+
+```python
+"""This module implements custom calculations."""
+
+# Imports go here...
+import numpy as np
+
+# Constants go here...
+PI = 3.141592653589793
+EULER_NUMBER = 2.718281828459045
+TAU = 6.283185307179586
+
+# Your custom calculations start here...
+def circular_land_area(radius):
+    return PI * radius**2
+
+def future_value(present_value, interest_rate, years):
+    return present_value * EULER_NUMBER ** (interest_rate * years)
+
+# ...
+
+```
+
+在这个例子中，你在使用常量的同一个模块中定义了它们。
+
+> **注意**：如果你想明确传达某个常量只能在其所在的模块中使用的意图，可以在其名称前面加上一个下划线（`_`）。例如，你可以写成 `_PI = 3.141592653589793`。这个前导下划线将该名称标记为非公共的，这意味着用户的代码不应直接使用该名称。
+
+对于仅与给定项目中的单个模块相关的狭窄范围常量来说，将常量与使用它们的代码放在一起是一种快捷且合适的策略。在这种情况下，你可能不会在包含该模块本身的外部使用这些常量。
+
+### 为常量创建一个专用模块
+
+组织和管理常量的另一种常见策略是创建一个专门的模块，将它们全部放入其中。此策略适用于在给定项目的许多模块甚至包中使用的常量。
+
+此策略的核心思想是为常量创建一个直观且唯一的命名空间。要将此策略应用于你的计算示例，你可以创建一个包含以下文件的 Python 包：
+
+```text
+calc/
+├── __init__.py
+├── calculations.py
+└── constants.py
+
+```
+
+`__init__.py` 文件会将 `calc/` 目录变成一个 Python 包。然后，你可以将以下内容添加到你的 `constants.py` 文件中：
+
+文件名：`constants.py`
+
+```python
+"""This module defines project-level constants."""
+
+PI = 3.141592653589793
+EULER_NUMBER = 2.718281828459045
+TAU = 6.283185307179586
+
+```
+
+一旦你将此代码添加到 `constants.py` 中，每当需要使用任何常量时，就可以导入该模块：
+
+文件名：`calculations.py`
+
+```python
+"""This module implements custom calculations."""
+
+# Imports go here...
+import numpy as np
+from . import constants
+
+# Your custom calculations start here...
+def circular_land_area(radius):
+    return constants.PI * radius**2
+
+def future_value(present_value, interest_rate, years):
+    return present_value * constants.EULER_NUMBER ** (interest_rate * years)
+
+# ...
+
+```
+
+请注意，你是使用相对导入直接从 `calc` 包导入 `constants` 模块的。然后，你使用完全限定名来访问计算所需的任何常量。这种做法改善了你对意图的传达。现在，由于有了 `constants` 前缀，`PI` 和 `EULER_NUMBER` 在你的项目中是常量这一事实变得完全清晰。
+
+要使用你的 calculations 模块，你可以这样做：
+
+```pycon
+>>> from calc import calculations
+>>> calculations.circular_land_area(100)
+31415.926535897932
+>>> from calc.calculations import circular_land_area
+>>> circular_land_area(100)
+31415.926535897932
+
+```
+
+现在，你的 `calculations` 模块驻留在 `calc` 包内部。这意味着如果你想使用 `calculations` 中的函数，你需要从 `calc` 导入 `calculations`。你也可以通过引用包和模块来直接导入函数，就像你在上面第二个示例中所做的那样。
+
+
+### 将常量存储在配置文件中
+
+现在，假设你想在将给定项目的常量外部化方面更进一步。你可能需要将所有的常量保存在项目的源代码之外。为此，你可以使用外部配置文件。
+
+以下是如何将常量移动到配置文件的示例：
+
+文件名：`constants.ini`
+
+```ini
+[CONSTANTS]
+PI=3.141592653589793
+EULER_NUMBER=2.718281828459045
+TAU=6.283185307179586
+
+```
+
+该文件使用 INI 文件格式。你可以使用标准库中的 `configparser` 模块来读取此类文件。
+
+现在回到 `calculations.py` 并将其更新为类似以下内容：
+
+文件名：`calculations.py`
+
+```python
+"""This module implements custom calculations."""
+
+# Imports go here...
+from configparser import ConfigParser
+import numpy as np
+
+constants = ConfigParser()
+constants.read("path/to/constants.ini")
+
+# Your custom calculations start here...
+def circular_land_area(radius):
+    return float(constants.get("CONSTANTS", "PI")) * radius**2
+
+def future_value(present_value, interest_rate, years):
+    return (
+        present_value * float(constants.get(
+            "CONSTANTS",
+            "EULER_NUMBER"
+        ))
+    ) ** (interest_rate * years)
+
+# ...
+
+```
+
+在这个例子中，你的代码首先读取配置文件，并将生成的 `ConfigParser` 对象存储在全局变量 `constants` 中。你也可以将此变量命名为 `CONSTANTS` 并将其作为常量在全局范围内使用。然后，你更新计算逻辑，从配置对象本身读取常量。
+
+请注意，`ConfigParser` 对象将配置参数存储为字符串，因此你需要使用内置的 `float()` 函数将这些值转换为数字。
+
+当你创建一个图形用户界面（GUI）应用程序，并且需要设置一些参数来定义加载和显示 GUI 时应用窗口的形状和大小等场景时，这种策略可能会非常有利。
+
+### 将常量作为环境变量处理
+
+处理常量的另一种有用策略是：如果你使用的是 Windows，则将它们定义为系统变量；如果你使用的是 macOS 或 Linux，则将它们定义为环境变量。
+
+这种方法通常用于在不同环境中配置部署。你还可以将涉及安全风险且不应直接提交到源代码中的常量保存在环境变量中。这些类型的常量的示例包括身份验证凭据、API 访问令牌等。
+
+> **注意**：在将环境变量用于敏感信息时应小心，因为它们可能会在日志中或向子进程意外泄露。所有云服务提供商都提供某种更安全的密钥管理方式。
+
+要使用此策略，你首先必须在操作系统中将常量导出为环境变量或系统变量。至少有两种方法可以做到这一点：
+
+1. 在当前的 shell 会话中手动导出常量
+2. 将你的常量添加到 shell 的配置文件中
+
+第一种技术非常快捷实用。你可以用它对代码进行一些快速测试。例如，假设你需要将 API 令牌导出为系统变量或环境变量。在这种情况下，你只需运行以下命令：
+
+* **Windows**
+```cmd
+C:\> set API_TOKEN="593086396372"
+
+```
+
+
+* **Linux + macOS**
+
+这种技术的主要缺点是，你的常量只能从定义它们的命令行会话中访问。一个好得多的方法是让你的操作系统在每次启动命令行窗口时自动加载常量。
+
+如果你使用的是 Windows，请查阅 Windows 上的 Python 编码环境：安装指南（*Your Python Coding Environment on Windows: Setup Guide*）中的“配置环境变量”（Configuring Environment Variables）部分，了解如何创建系统变量。按照该指南中的说明操作，并添加一个值为 `593086396372` 的 `API_TOKEN` 系统变量。
+
+如果你使用的是 Linux 或 macOS，则可以转到你的主文件夹并打开 shell 的配置文件。打开该文件后，在末尾添加以下行：
+
+* **Linux / macOS** (`.bashrc`)
+```bash
+export API_TOKEN="593086396372"
+
+```
+
+
+
+每当你启动终端或命令行窗口时，Linux 和 macOS 都会自动加载相应的 shell 配置文件。通过这种方式，你可以确保 `API_TOKEN` 变量在你的系统上始终可用。
+
+一旦你为 Python 常量定义了所需的环境变量，就需要将它们加载到你的代码中。为此，你可以使用 Python `os` 模块中的 `environ` 字典。`environ` 的键和值分别代表环境变量及其值的字符串。
+
+你的 `API_TOKEN` 常量现在已经存在于 `environ` 字典中。因此，你只需两行代码即可从其中读取它：
+
+```pycon
+>>> import os
+>>> os.environ["API_TOKEN"]
+'593086396372'
+
+```
+
+使用环境变量存储常量，并使用 `os.environ` 字典将它们读取到代码中，是配置依赖于应用程序部署环境的常量的一种有效方法。在处理云端服务时它特别有用，因此请将这项技术保留在你的 Python 工具包中。
+
+## 探索 Python 中的其他常量
+
+除了用户定义的常量之外，Python 还定义了几种可以被视为常量的内部名称。其中某些名称是严格的常量，这意味着一旦解释器运行，你就无法更改它们。例如，`__debug__` 常量就是这种情况。
+
+在以下部分中，你将了解一些内部的 Python 名称，它们可以而且应该在你的代码中被视为常量。首先，你将回顾一些内置常量和常量值。
+
+### 内置常量
+
+根据 Python 文档，“少量的常量存在于内置命名空间中”（来源）。文档中列出的前两个常量是 `True` 和 `False`，它们是 Python 的布尔值。这两个值也是 `int` 的实例。`True` 的值为 1，而 `False` 的值为 0：
+
+```pycon
+>>> True
+True
+>>> False
+False
+>>> isinstance(True, int)
+True
+>>> isinstance(False, int)
+True
+>>> int(True)
+1
+>>> int(False)
+0
+>>> True = 42
+    ...
+SyntaxError: cannot assign to True
+>>> True is True
+True
+>>> False is False
+True
+
+```
+
+请注意，`True` 和 `False` 名称是严格的常量。换句话说，它们不能被重新赋值。如果你尝试对它们重新赋值，就会得到一个 `SyntaxError`。这两个值在 Python 中也是单例对象（singleton objects），这意味着每个值都只有一个实例。这就是为什么恒等运算符 (`is`) 在上述最后的例子中返回 `True` 的原因。
+
+另一个重要且常见的常量值是 `None`，它是 Python 中的空值。当你想要表达可空性（nullability）的概念时，这个常量值就会派上用场。就像 `True` 和 `False` 一样，`None` 也是一个单例且严格的常量对象，不能被重新赋值：
+
+```pycon
+>>> None is None
+True
+>>> None = 42
+    ...
+SyntaxError: cannot assign to None
+
+```
+
+`None` 作为函数、方法和类构造函数中的默认参数值非常有用。它通常用于传达变量为空的概念。在内部，Python 使用 `None` 作为没有显式 `return` 语句的函数的隐式返回值。
+
+省略号字面量 (`...`) 是 Python 中的另一个常量值。这个特殊值与 `Ellipsis` 相同，并且是 `types.EllipsisType` 类型的唯一实例：
+
+```pycon
+>>> Ellipsis
+Ellipsis
+>>> ...
+Ellipsis
+>>> ... is Ellipsis
+True
+
+```
+
+你可以将 `Ellipsis` 用作未编写代码的占位符。你还可以用它来替代 `pass` 语句。在类型提示（type hints）中，`...` 字面量传达了具有统一类型的未知长度集合的概念：
+
+```pycon
+>>> def do_something():
+...     ...  # TODO: Implement this function later...
+>>> class CustomException(Exception):
+...     ...
+>>> raise CustomException("some error message")
+Traceback (most recent call last):
+    ...
+CustomException: some error message
+>>> # A tuple of integer values
+>>> numbers: tuple[int, ...]
+
+```
+
+由于 `Ellipsis` 常量值在语义上等同于英文省略号标点符号（…），因此它在许多情况下都能派上用场，并有助于提高代码的可读性。
+
+另一个有趣且潜在有用的内置常量是 `__debug__`，正如你在本节开头所了解的那样。Python 的 `__debug__` 是一个布尔常量，默认值为 `True`。它是一个严格的常量，因为一旦解释器运行，你就无法更改它的值：
+
+```pycon
+>>> __debug__
+True
+>>> __debug__ = False
+    ...
+SyntaxError: cannot assign to __debug__
+
+```
+
+`__debug__` 常量与 `assert` 语句密切相关。简而言之，如果 `__debug__` 为 `True`，则你的所有 `assert` 语句都将运行。如果 `__debug__` 为 `False`，则你的 `assert` 语句将被禁用并且根本不会运行。此功能可以稍微提高生产代码的性能。
+
+> **注意**：尽管 `__debug__` 也有一个双下划线名称，但它是一个严格的常量，因为一旦解释器运行，你就无法更改它的值。相比之下，下面一节中的内部双下划线名称应该被视为常量，但它们不是严格的常量。你可以在代码执行期间更改它们的值。然而，这种做法可能很棘手，需要高级知识。
+
+要将 `__debug__` 的值更改为 `False`，你必须使用 `-O` 或 `-OO` 命令行选项在优化模式下运行 Python，这两个选项提供了两个级别的字节码优化。这两个级别都会生成不包含断言的优化版 Python 字节码。
+
+探索 Python 中的其他常量
+
+除了用户定义的常量之外，Python 还定义了几种可以被视为常量的内部名称。其中某些名称是严格的常量，这意味着一旦解释器运行，你就无法更改它们。例如，`__debug__` 常量就是这种情况。
+
+在以下部分中，你将了解一些内部的 Python 名称，它们可以而且应该在你的代码中被视为常量。首先，你将回顾一些内置常量和常量值。
+
+### 内置常量
+
+根据 Python 文档，“少量的常量存在于内置命名空间中”（来源）。文档中列出的前两个常量是 `True` 和 `False`，它们是 Python 的布尔值。这两个值也是 `int` 的实例。`True` 的值为 1，而 `False` 的值为 0：
+
+```pycon
+>>> True
+True
+>>> False
+False
+>>> isinstance(True, int)
+True
+>>> isinstance(False, int)
+True
+>>> int(True)
+1
+>>> int(False)
+0
+>>> True = 42
+    ...
+SyntaxError: cannot assign to True
+>>> True is True
+True
+>>> False is False
+True
+
+```
+
+请注意，`True` 和 `False` 名称是严格的常量。换句话说，它们不能被重新赋值。如果你尝试对它们重新赋值，就会得到一个 `SyntaxError`。这两个值在 Python 中也是单例对象（singleton objects），这意味着每个值都只有一个实例。这就是为什么恒等运算符 (`is`) 在上述最后的例子中返回 `True` 的原因。
+
+另一个重要且常见的常量值是 `None`，它是 Python 中的空值。当你想要表达可空性（nullability）的概念时，这个常量值就会派上用场。就像 `True` 和 `False` 一样，`None` 也是一个单例且严格的常量对象，不能被重新赋值：
+
+```pycon
+>>> None is None
+True
+>>> None = 42
+    ...
+SyntaxError: cannot assign to None
+
+```
+
+`None` 作为函数、方法和类构造函数中的默认参数值非常有用。它通常用于传达变量为空的概念。在内部，Python 使用 `None` 作为没有显式 `return` 语句的函数的隐式返回值。
+
+省略号字面量 (`...`) 是 Python 中的另一个常量值。这个特殊值与 `Ellipsis` 相同，并且是 `types.EllipsisType` 类型的唯一实例：
+
+```pycon
+>>> Ellipsis
+Ellipsis
+>>> ...
+Ellipsis
+>>> ... is Ellipsis
+True
+
+```
+
+你可以将 `Ellipsis` 用作未编写代码的占位符。你还可以用它来替代 `pass` 语句。在类型提示（type hints）中，`...` 字面量传达了具有统一类型的未知长度集合的概念：
+
+```pycon
+>>> def do_something():
+...     ...  # TODO: Implement this function later...
+>>> class CustomException(Exception):
+...     ...
+>>> raise CustomException("some error message")
+Traceback (most recent call last):
+    ...
+CustomException: some error message
+>>> # A tuple of integer values
+>>> numbers: tuple[int, ...]
+
+```
+
+由于 `Ellipsis` 常量值在语义上等同于英文省略号标点符号（…），因此它在许多情况下都能派上用场，并有助于提高代码的可读性。
+
+另一个有趣且潜在有用的内置常量是 `__debug__`，正如你在本节开头所了解的那样。Python 的 `__debug__` 是一个布尔常量，默认值为 `True`。它是一个严格的常量，因为一旦解释器运行，你就无法更改它的值：
+
+```pycon
+>>> __debug__
+True
+>>> __debug__ = False
+    ...
+SyntaxError: cannot assign to __debug__
+
+```
+
+`__debug__` 常量与 `assert` 语句密切相关。简而言之，如果 `__debug__` 为 `True`，则你的所有 `assert` 语句都将运行。如果 `__debug__` 为 `False`，则你的 `assert` 语句将被禁用并且根本不会运行。此功能可以稍微提高生产代码的性能。
+
+> **注意**：尽管 `__debug__` 也有一个双下划线名称，但它是一个严格的常量，因为一旦解释器运行，你就无法更改它的值。相比之下，下面一节中的内部双下划线名称应该被视为常量，但它们不是严格的常量。你可以在代码执行期间更改它们的值。然而，这种做法可能很棘手，需要高级知识。
+
+要将 `__debug__` 的值更改为 `False`，你必须使用 `-O` 或 `-OO` 命令行选项在优化模式下运行 Python，这两个选项提供了两个级别的字节码优化。这两个级别都会生成不包含断言的优化版 Python 字节码。
+
+## 有用的字符串和数学常量
+
+你会在标准库中发现许多有用的常量。其中一些与某些特定的模块、函数和类紧密相连。其他的则更通性化，你可以在各种场景下使用它们。数学和字符串相关的常量就是这种情况，分别可以在 `math` 和 `string` 模块中找到。
+
+`math` 模块提供以下常量：
+
+```pycon
+>>> import math
+>>> # Euler's number (e)
+>>> math.e
+2.718281828459045
+>>> # Pi (π)
+>>> math.pi
+3.141592653589793
+>>> # Infinite (∞)
+>>> math.inf
+inf
+>>> # Not a number (NaN)
+>>> math.nan
+nan
+>>> # Tau (τ)
+>>> math.tau
+6.283185307179586
+
+```
+
+每当你编写与数学相关的代码，甚至是仅使用它们来执行特定计算的代码（例如“为可维护性重用对象”一节中的 `Circle` 类）时，这些常量都会派上用场。
+
+以下是使用 `math.pi` 代替自定义 `PI` 常量的 `Circle` 的更新实现：
+
+文件名：`circle.py`
+
+```python
+import math
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return math.pi * self.radius**2
+
+    def perimeter(self):
+        return 2 * math.pi * self.radius
+
+    def projected_volume(self):
+        return 4/3 * math.pi * self.radius**3
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(radius={self.radius})"
+
+```
+
+这个更新版本的 `Circle` 比原始版本更具可读性，因为它提供了关于圆周率常量来源的更多上下文，使其清楚地表明这是一个与数学相关的常量。
+
+`math.pi` 常量还有一个优点，即如果你使用的是旧版本的 Python，你将获得 32 位版本的圆周率。相比之下，如果你在现代版本的 Python 中使用 `Circle`，你将获得 64 位版本的圆周率。因此，你的程序将自适应其具体的执行环境。
+
+`string` 模块还定义了几个有用的字符串常量。下表显示了每个常量的名称和值：
+
+| 名称 | 值 |
+| --- | --- |
+| `ascii_lowercase` | `abcdefghijklmnopqrstuvwxyz` |
+| `ascii_uppercase` | `ABCDEFGHIJKLMNOPQRSTUVWXYZ` |
+| `ascii_letters` | `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz` |
+| `digits` | `0123456789` |
+| `hexdigits` | `0123456789abcdefABCDEF` |
+| `octdigits` | `01234567` |
+| `punctuation` | `!"#$%&'()*+,-./:;<=>?@[\]^_`{ |
+| `whitespace` | 空格字符、水平和垂直制表符、换行符、回车符和换页符的组合 |
+| `printable` | 数字、`ascii_letters`、`punctuation` 和 `whitespace` 的组合 |
+
+这些与字符串相关的常量在许多情况下都能派上用场。当你在进行大量的字符串处理、处理正则表达式、处理自然语言等工作时，你可以使用它们。
+
+## 为常量添加类型注解
+
+自 Python 3.8 起，`typing` 模块包含了一个 `Final` 类，允许你为常量添加类型注解。如果在定义常量时使用此类，就会告诉像 mypy 这样的静态类型检查器，你的常量不应该被重新赋值。通过这种方式，类型检查器可以帮你检测对常量的未授权赋值。
+
+以下是使用 `Final` 定义常量的的一些示例：
+
+```python
+from typing import Final
+
+MAX_SPEED: Final[int] = 300
+DEFAULT_COLOR: Final[str] = "\033[1;34m"
+ALLOWED_BUILTINS: Final[tuple[str, ...]] = ("sum", "max", "min", "abs")
+
+# Later in your code...
+MAX_SPEED = 450  # Cannot assign to final name "MAX_SPEED" mypy(error)
+
+```
+
+`Final` 类表示一种特殊的类型构造，它指示类型检查器：如果代码中的某个地方对该名称进行了重新赋值，则报告错误。请注意，尽管你会收到类型检查器的错误报告，但 Python 确实会改变 `MAX_SPEED` 的值。因此，`Final` 无法在运行时防止对常量的意外重新赋值。
+
+## 在 Python 中定义严格常量
+
+到目前为止，你已经了解了很多关于编程和 Python 常量的知识。你现在知道 Python 不支持严格的常量。它只有变量。因此，Python 社区采纳了使用大写字母的命名规范，以此传达某个特定变量实际上是一个常量的意图。
+
+所以，在 Python 中，你没有常量。相反，你拥有的是永不改变的变量。如果你正在参与一个有许多不同水平程序员参与的大型 Python 项目，这可能会成为一个问题。在这种情况下，最好有一种机制来保证严格的常量——即程序启动后任何人也无法更改的常量。
+
+因为 Python 是一种相当灵活的编程语言，你会发现有几种方法可以实现使常量不可更改的目标。在接下来的几个小节中，你将学习其中的一些方法。它们都涉及到创建一个自定义类并将其用作常量的命名空间。
+
+为什么要使用类作为常量的命名空间？在 Python 中，任何名称都可以随心所欲地重新绑定。在模块级别，你没有合适的工具来防止这种情况发生。因此，你需要使用类，因为类比模块提供了更多的自定义工具。
+
+在接下来的小节中，你将学习几种将类用作严格常量命名空间的不同方法。
+
+### .**slots** 属性
+
+Python 类允许你定义一个名为 `.__slots__` 的特殊类属性。该属性将包含一系列用作实例属性的名称。
+
+你将无法向带有 `.__slots__` 属性的类中添加新的实例属性，因为 `.__slots__` 阻止了实例 `.__dict__` 属性的创建。此外，没有 `.__dict__` 属性意味着在内存消耗方面进行了优化。
+
+通过使用 `.__slots__`，你可以创建一个用作只读常量命名空间的类：
+
+```pycon
+>>> class ConstantsNamespace:
+...     __slots__ = ()
+...     PI = 3.141592653589793
+...     EULER_NUMBER = 2.718281828459045
+...
+>>> constants = ConstantsNamespace()
+>>> constants.PI
+3.141592653589793
+>>> constants.EULER_NUMBER
+2.718281828459045
+>>> constants.PI = 3.14
+Traceback (most recent call last):
+    ...
+AttributeError: 'ConstantsNamespace' object attribute 'PI' is read-only
+
+```
+
+在这个例子中，你定义了 `ConstantsNamespace`。该类的 `.__slots__` 属性包含一个空元组，这意味着此类的实例将没有属性。然后，你将常量定义为类属性。
+
+下一步是实例化该类，以创建一个包含所有常量的命名空间变量。请注意，你可以快速访问特殊命名空间中的任何常量，但不能为其赋予新值。如果你尝试这样做，就会得到一个 `AttributeError`。
+
+通过这项技术，你可以保证团队中的其他人无法更改常量的值。你已经实现了严格常量的预期行为。
+
+### `@property` 装饰器
+
+你还可以利用 `@property` 装饰器来创建一个用作常量命名空间的类。为此，你只需要将常量定义为属性，而不为它们提供 setter 方法：
+
+```pycon
+>>> class ConstantsNamespace:
+...     @property
+...     def PI(self):
+...         return 3.141592653589793
+...     @property
+...     def EULER_NUMBER(self):
+...         return 2.718281828459045
+...
+>>> constants = ConstantsNamespace()
+>>> constants.PI
+3.141592653589793
+>>> constants.EULER_NUMBER
+2.718281828459045
+>>> constants.PI = 3.14
+Traceback (most recent call last):
+    ...
+AttributeError: can't set attribute 'PI'
+
+```
+
+因为你没有为 `PI` 和 `EULER_NUMBER` 属性提供 setter 方法，所以它们是只读属性。这意味着你只能访问它们的值，而不可能为其中任何一个赋新值。如果你尝试这样做，就会得到一个 `AttributeError`。
+
+### `namedtuple()` 工厂函数
+
+Python 的 `collections` 模块提供了一个名为 `namedtuple()` 的工厂函数。该函数允许你创建支持命名字段的元组子代类，并使用点记法来访问其项，就像 `tuple_obj.attribute` 一样。
+
+与常规元组一样，命名元组实例是不可变的，这意味着你不能就地修改现有的命名元组对象。不可变性听起来非常适合用来创建一个充当严格常量命名空间的类。
+
+具体操作如下：
+
+```pycon
+>>> from collections import namedtuple
+>>> ConstantsNamespace = namedtuple(
+...     "ConstantsNamespace", ["PI", "EULER_NUMBER"]
+... )
+>>> constants = ConstantsNamespace(3.141592653589793, 2.718281828459045)
+>>> constants.PI
+3.141592653589793
+>>> constants.EULER_NUMBER
+2.718281828459045
+>>> constants.PI = 3.14
+Traceback (most recent call last):
+    ...
+AttributeError: can't set attribute
+
+```
+
+在这个例子中，你的常量扮演了底层命名元组 `ConstantsNamespace` 中字段的角色。一旦你创建了命名元组实例 `constants`，就可以通过使用点记法（如 `constants.PI`）来访问常量。
+
+因为元组是不可变的，所以你无法修改任何字段的值。因此，你的常量命名元组对象是一个成熟的严格常量命名空间。
+
+### `@dataclass` 装饰器
+
+顾名思义，数据类（data classes）主要是包含数据的类。它们也可以有方法，但那不是它们的主要目标。要创建一个数据类，你需要使用来自 `dataclasses` 模块的 `@dataclass` 装饰器。
+
+如何使用这种类型的类来创建严格常量命名空间？`@dataclass` 装饰器接受一个 `frozen` 参数，该参数允许你将数据类标记为不可变的。如果它是不可变的，那么一旦创建了给定数据类的实例，你就无法修改其实例属性。
+
+你可以使用数据类来创建一个包含常量的命名空间，方法如下：
+
+```pycon
+>>> from dataclasses import dataclass
+>>> @dataclass(frozen=True)
+... class ConstantsNamespace:
+...     PI = 3.141592653589793
+...     EULER_NUMBER = 2.718281828459045
+...
+>>> constants = ConstantsNamespace()
+>>> constants.PI
+3.141592653589793
+>>> constants.EULER_NUMBER
+2.718281828459045
+>>> constants.PI = 3.14
+Traceback (most recent call last):
+    ...
+dataclasses.FrozenInstanceError: cannot assign to field 'PI'
+
+```
+
+在这个例子中，你首先导入了 `@dataclass` 装饰器。然后，你使用该装饰器将 `ConstantsNamespace` 转换为数据类。为了使数据类不可变，你将 `frozen` 参数设置为 `True`。最后，你将常量定义为类属性来定义 `ConstantsNamespace`。
+
+你可以创建此类的一个实例并将其用作常量命名空间。同样，你可以访问所有常量，但不能修改它们的值，因为该数据类是冻结的。
+
+### `.__setattr__()` 特殊方法
+
+Python 类允许你定义一个名为 `.__setattr__()` 的特殊方法。该方法允许你自定义属性赋值过程，因为 Python 会在每次属性赋值时自动调用该方法。
+
+在实践中，你可以重写 `.__setattr__()` 来防止所有属性重新赋值，从而使你的属性不可变。你可以通过重写此方法来创建一个用作常量命名空间的类：
+
+```pycon
+>>> class ConstantsNamespace:
+...     PI = 3.141592653589793
+...     EULER_NUMBER = 2.718281828459045
+...     def __setattr__(self, name, value):
+...         raise AttributeError(f"can't reassign constant '{name}'")
+...
+>>> constants = ConstantsNamespace()
+>>> constants.PI
+3.141592653589793
+>>> constants.EULER_NUMBER
+2.718281828459045
+>>> constants.PI = 3.14
+Traceback (most recent call last):
+    ...
+AttributeError: can't reassign constant 'PI'
+
+```
+
+你对 `.__setattr__()` 的自定义实现不会对类的属性执行任何赋值操作。当你尝试设置任何属性时，它只会引发一个 `AttributeError`。此实现使属性不可变。同样，你的 `ConstantsNamespace` 表现得就像一个常量命名空间。
+
+
+
