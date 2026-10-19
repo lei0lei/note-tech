@@ -2,3 +2,2768 @@
 title: 循环
 sidebar_position: 3
 ---
+
+## [for循环](https://realpython.com/python-for-loop/)
+以下是保持原文结构与技术术语表达的中文翻译：
+
+---
+
+### Python for 循环入门
+
+在编程中，循环是一种控制流语句，允许你重复执行一组给定的操作若干次。在实际应用中，你通常会遇到两种主要的循环类型：
+
+1. **for 循环**：多用于在迭代次数已知的情况下执行循环，这在处理包含特定数量数据项的数据集合时非常常见。
+2. **while 循环**：常用于迭代次数未知的情况，当循环次数取决于某个给定条件时尤为适用。
+
+Python 同时支持这两种循环，而在本教程中，你将学习 **for 循环**。在 Python 中，当你需要遍历某个数据集合中的各个元素时，通常会使用 for 循环。这种循环方式允许你遍历不同的数据集合，并对输入集合中的每一个元素执行特定的一组语句。
+
+在 Python 中，for 循环属于复合语句，包含一个头部（header）和一个按预定次数运行的代码块（code block）。for 循环的基本语法如下所示：
+
+```python
+for variable in iterable:
+    <body>
+
+```
+
+在此语法中：
+
+* `variable` 是**循环变量**。在每一次迭代中，该变量都会获取 `iterable` 中当前元素的值；`iterable` 代表你需要遍历的数据集合。
+* 循环体（`<body>`）可以包含一条或多条语句，并且必须正确缩进。
+
+以下是该语法的更详细解析：
+
+* `for` 是用于启动循环头部的关键字。
+* `variable` 是保存输入可迭代对象中当前元素的变量。
+* `in` 是将循环变量与可迭代对象连接起来的关键字。
+* `iterable` 是可以被迭代的数据集合。
+* `<body>` 包含每次迭代中要执行的一条或多条语句。
+
+下面是一个快速示例，演示如何使用 for 循环遍历列表：
+
+```python
+>>> colors = ["red", "green", "blue", "yellow"]
+>>> for color in colors:
+...     print(color)
+...
+red
+green
+blue
+yellow
+
+```
+
+在这个例子中，`color` 是循环变量，而 `colors` 列表是目标集合。每循环一次，`color` 就会依次获取 `colors` 中的下一个元素。在此循环中，循环体由一个 `print()` 调用组成，负责将值显示在屏幕上。目标可迭代对象中的每一个元素都会使循环执行一次。上面的代码写法正是符合 Python 惯用风格（Pythonic）的写法。
+
+不过，究竟什么是可迭代对象（iterable）呢？在 Python 中，可迭代对象是一个可以被遍历的对象，通常是某种数据集合。Python 中常见的可迭代对象包括列表（list）、元组（tuple）、字符串（string）、字典（dictionary）和集合（set），这些都是内置数据类型。你也可以创建支持迭代的自定义类。
+
+> **注意：** Python 中既有可迭代对象（iterables），也有迭代器（iterators）。可迭代对象支持包含 `.__iter__()` 特殊方法的可迭代协议。类似地，迭代器支持基于 `.__iter__()` 和 `.__next__()` 特殊方法的迭代器协议。
+
+可迭代对象和迭代器都可以被遍历。**所有迭代器都是可迭代对象，但并非所有可迭代对象都是迭代器。** Python 迭代器在 for 循环中起着基石般的作用，因为正是它们驱动了迭代过程。
+
+深入探讨可迭代对象与迭代器超出了本教程的范围。不过，如果想了解更多，可以参考《Python 中的迭代器与可迭代对象：运行高效迭代》（*Iterators and Iterables in Python: Run Efficient Iterations*）教程。
+
+你还可以使用包含**多个循环变量**的循环：
+
+```python
+>>> points = [(1, 4), (3, 6), (7, 3)]
+>>> for x, y in points:
+...     print(f"{x = } and {y = }")
+...
+x = 1 and y = 4
+x = 3 and y = 6
+x = 7 and y = 3
+
+```
+
+在这个循环中，你有两个循环变量：`x` 和 `y`。需要注意的是，使用这种语法只需提供一个循环变量元组即可。此外，只要有相应数量的元素解包到这些变量中，你就可以根据需要使用任意数量的循环变量。在遍历字典键值对或需要进行并行迭代时，你会发现这种模式非常实用。
+
+有时，输入的**可迭代对象可能为空**。在这种情况下，循环会运行一次循环头，但不会执行循环体：
+
+```python
+>>> for item in []:
+...     print(item)
+...
+
+```
+
+在这个例子中，目标可迭代对象是一个空列表。循环会检查该可迭代对象是否包含元素。如果包含元素，循环就会针对每个元素执行一次；如果没有任何元素，循环体就不会运行，程序的执行流程将直接跳到循环后面的语句。
+
+既然你已经掌握了 for 循环的基本语法，接下来就可以深入了解一些实际案例了。在接下来的小节中，你将学习如何将 for 循环与 Python 中最常见的内置数据集合结合使用。
+
+
+### 遍历 Python 的内置数据集合
+
+编写 Python 代码时，你经常需要遍历列表（list）、元组（tuple）、字符串（string）、数值范围（numeric range）、字典（dictionary）和集合（set）等内置数据类型。它们都支持迭代，并且可以直接传入 `for` 循环中。在接下来的章节中，你将学习如何以符合 Python 惯用风格（Pythonic）的方式满足这一需求。
+
+#### 序列：列表、元组、字符串与范围
+
+在遍历列表、元组、字符串和范围等序列数据类型时，迭代会严格按照元素在序列中出现的顺序进行。请看下面遍历列表中数字的示例：
+
+```python
+>>> numbers = [1, 2, 3, 4]
+>>> for number in numbers:
+...     print(number)
+...
+1
+2
+3
+4
+
+```
+
+在这个例子中，迭代按定义顺序遍历列表，从 1 开始，到 4 结束。需要注意的是，在 Python 中遍历序列时，你不需要像其他语言那样关注每个元素的索引——在那些语言中，循环往往依赖索引进行控制。
+
+通常，我们会使用复数名词为列表命名。这种命名习惯允许你在循环变量中使用对应的单数名词，从而让代码更具描述性且更易读。
+
+> **注意：** 要了解有关列表的更多内容，请参阅教程《Python 列表数据类型：实例深度剖析》（*Python’s list Data Type: A Deep Dive With Examples*）。
+
+在其他内置序列中，你也会观察到相同的行为：
+
+```python
+>>> person = ("Jane", 25, "Python Dev", "Canada")
+>>> for field in person:
+...     print(field)
+...
+Jane
+25
+Python Dev
+Canada
+>>> text = "abcde"
+>>> for character in text:
+...     print(character)
+...
+a
+b
+c
+d
+e
+>>> for index in range(5):
+...     print(index)
+...
+0
+1
+2
+3
+4
+
+```
+
+在这些示例中，你分别遍历了元组、字符串和数值范围。同样，循环会按照定义的先后顺序遍历序列。
+
+> **注意：** 有关元组、字符串和范围的更多信息，可以查看以下教程：
+> * 《Python 元组数据类型：实例深度剖析》（*Python’s tuple Data Type: A Deep Dive With Examples*）
+> * 《Python 中的字符串与字符数据》（*Strings and Character Data in Python*）
+> * 《Python range()：表示数值范围》（*Python range(): Represent Numerical Ranges*）
+> 
+> 
+
+元组通常用于表示一行行结构化数据（row of data）。在上面的示例中，`person` 元组保存了一个人的相关数据。你可以使用易读的循环来遍历每一个字段。
+
+在遍历字符串对象时，`for` 循环允许你逐字符（character-by-character）处理字符串。最后，遍历数值范围有时也是一项基本需求，特别是当你需要迭代指定次数并且需要精准控制连续索引时。
+
+---
+
+#### 集合类型：字典与集合
+
+使用 `for` 循环遍历字典时，你可以分别遍历手头字典的**键（keys）**、**值（values）**和**项（items，即键值对）**。
+
+> **注意：** 想要深入了解字典的迭代方法，请参阅教程《如何在 Python 中遍历字典》（*How to Iterate Through a Dictionary in Python*）。
+
+遍历字典的键有两种不同的方式。你可以使用：
+
+1. 直接使用字典对象
+2. 调用 `.keys()` 方法
+
+以下示例展示了这两种方法的使用方式：
+
+```python
+>>> students = {
+...     "Alice": 89.5,
+...     "Bob": 76.0,
+...     "Charlie": 92.3,
+...     "Diana": 84.7,
+...     "Ethan": 88.9,
+... }
+>>> for student in students:
+...     print(student)
+...
+Alice
+Bob
+Charlie
+Diana
+Ethan
+>>> for student in students.keys():
+...     print(student)
+...
+Alice
+Bob
+Charlie
+Diana
+Ethan
+
+```
+
+在这些示例中，第一个循环直接在循环头部使用字典来遍历它的键；第二个循环则使用 `.keys()` 方法来遍历键。这两种方式在功能上完全等价，第一种方式更常用，而第二种可能更加显式且具有更好的可读性。
+
+在这两种循环中，你都可以通过键来访问对应的字典值：
+
+```python
+>>> for student in students:
+...     print(student, "->", students[student])
+...
+Alice -> 89.5
+Bob -> 76.0
+Charlie -> 92.3
+Diana -> 84.7
+Ethan -> 88.9
+
+```
+
+要在这种迭代方式中获取值，可以使用原始字典配合键查找操作（key lookup operation），如上述代码所示。
+
+当你只需要遍历字典中的**值**时，可以使用 `.values()` 方法为 `for` 循环提供数据：
+
+```python
+>>> teams = {
+...     "Colorado": "Rockies",
+...     "Chicago": "White Sox",
+...     "Boston": "Red Sox",
+...     "Minnesota": "Twins",
+...     "Milwaukee": "Brewers",
+...     "Seattle": "Mariners",
+... }
+>>> for team in teams.values():
+...     print(team)
+...
+Rockies
+White Sox
+Red Sox
+Twins
+Brewers
+Mariners
+
+```
+
+`.values()` 方法允许你遍历目标字典中的各个值。在此示例中，你依次遍历了各个球队的名称。需要注意，当使用 `.values()` 方法时，你将无法直接访问对应的字典键。
+
+最后，**同时遍历 Python 字典的键和值**是一项非常普遍的需求。在这种情况下，最推荐且最具 Pythonic 风格的做法是在 `for` 循环中使用 `.items()` 方法：
+
+```python
+>>> for place, team in teams.items():
+...     print(place, "->", team)
+...
+Colorado -> Rockies
+Chicago -> White Sox
+Boston -> Red Sox
+Minnesota -> Twins
+Milwaukee -> Brewers
+Seattle -> Mariners
+
+```
+
+以这种方式遍历键和值时，通常会使用一个循环变量元组。第一个变量将接收键，第二个变量将接收关联的值。在这个例子中，`place` 和 `team` 两个变量使得代码清晰直观、可读性极高。
+
+至于遍历**集合（set）**，你只需要记住一点：集合是无序的数据类型。这意味着遍历时的顺序无法得到保证：
+
+```python
+>>> tools = {"Django", "Flask", "pandas", "NumPy"}
+>>> for tool in tools:
+...     print(tool)
+...
+NumPy
+Flask
+pandas
+Django
+
+```
+
+如你所见，循环遍历集合元素的顺序与它们最初插入的顺序并不一致。因此，在 Python 中遍历集合时，切勿依赖元素的顺序。
+
+### 使用高级 for 循环语法
+
+Python 的 `for` 循环具备一些高级特性，使其既灵活又强大。当你需要对循环进行精细调整以满足特定的执行流时，这些特性会非常实用。这些特性包括 `break` 语句、`continue` 语句以及 `else` 子句，你将在以下小节中了解它们。
+
+你还将了解到，`for` 循环支持相互嵌套。在需要遍历类似“列表的列表”这种嵌套数据结构的场景中，这个特性相当好用。
+
+#### break 语句
+
+`break` 语句会立即退出循环，并跳转到循环后的第一条语句。例如，假设你想写一个循环来判断某个数字是否存在于列表中。为了避免不必要的计算，循环一旦找到目标值就应当终止。你可以使用 `break` 语句实现这一点：
+
+```python
+>>> numbers = [1, 3, 5, 7, 9]
+>>> target = 5
+>>> for number in numbers:
+...     print(f"Processing {number}...")
+...     if number == target:
+...         print(f"Target found {target}!")
+...         break
+...
+Processing 1...
+Processing 3...
+Processing 5...
+Target found 5!
+
+```
+
+在这个示例中，一旦找到目标数字，`break` 语句就会跳出循环。剩余的数值 `7` 和 `9` 不会被处理。你可以将 `break` 语句视为在获得所需结果后使循环执行“短路”的一种方式。
+
+需要注意的是，在条件判断语句之外使用 `break` 语句通常毫无意义。如果你直接在循环体中放置 `break` 语句而不将其包裹在条件语句中，循环将在第一次迭代时便终止，甚至可能无法完整执行整个循环体。
+
+#### continue 语句
+
+`continue` 语句会终止当前迭代并直接进入下一次迭代。例如，如果你有一个数字列表，且只想处理其中的偶数，可以使用 `continue` 语句跳过奇数：
+
+```python
+>>> numbers = [1, 2, 3, 4, 5, 6]
+>>> for number in numbers:
+...     print(f"{number = }")
+...     if number % 2 != 0:
+...         continue
+...     print(f"{number} is even!")
+...
+number = 1
+number = 2
+2 is even!
+number = 3
+number = 4
+4 is even!
+number = 5
+number = 6
+6 is even!
+
+```
+
+在这个示例中，只有当数字为偶数时，才会执行处理数字的代码。否则，`continue` 语句会跳过这部分代码，直接进入下一次迭代。
+
+同样地，不包裹在条件语句中的 `continue` 语句也没有太大意义。如果这样做，该语句后面的代码将永远不可达，永远无法执行。
+
+#### else 子句
+
+在 Python 中，`for` 循环末尾可以跟一个 `else` 子句。只有当输入的可迭代对象完全耗尽而使循环正常终止时，`else` 子句才会执行。当你使用 `break` 语句在特定情况下提前终止循环时，该特性尤为实用。如果循环没有被 `break` 打断，你就可以在 `else` 子句中运行额外的代码。
+
+为了说明这一点，假设你想进一步改进判断数字是否在列表中的循环：如果数字不在列表中，你希望明确告知用户。你可以通过 `else` 子句来实现：
+
+```python
+>>> numbers = [1, 3, 5, 7, 9]
+>>> target = 42
+>>> for number in numbers:
+...     print(f"Processing {number}...")
+...     if number == target:
+...         print(f"Target found {target}!")
+...         break
+... else:
+...     print(f"Target not found {target}")
+...
+Processing 1...
+Processing 3...
+Processing 5...
+Processing 7...
+Processing 9...
+Target not found 42
+
+```
+
+如果循环通过 `break` 语句跳出，`else` 子句将不会执行。它仅在循环正常执行完毕时运行，从而允许你通知用户未找到目标数字。
+
+如果一个循环中没有 `break` 语句，那么为其编写 `else` 子句通常没有意义。在那类情况下，直接将 `else` 代码块的内容放在循环之后（不加缩进），效果完全相同，而且代码会更清晰。
+
+这三个关键字分别以不同方式改变循环流程。总的来看，它们能让你精细控制循环的运行方式：`break` 立即退出循环，`continue` 跳过当前迭代剩余部分并进入下一轮，而 `else` 子句仅在循环未被 `break` 打断、完全执行完毕时运行。接下来，你将探索循环嵌套。
+
+#### 嵌套 for 循环
+
+你也可以使用嵌套的 `for` 循环。在下面的示例中，你将使用嵌套循环创建一个乘法表，展示 10 以内所有整数组合的乘积。外层循环遍历 1 到 10 之间的数字，内层循环则计算并输出乘积：
+
+```python
+>>> for number in range(1, 11):
+...     for product in range(number, number * 11, number):
+...         print(f"{product:>4d}", end="")
+...     print()
+...
+   1   2   3   4   5   6   7   8   9  10
+   2   4   6   8  10  12  14  16  18  20
+   3   6   9  12  15  18  21  24  27  30
+   4   8  12  16  20  24  28  32  36  40
+   5  10  15  20  25  30  35  40  45  50
+   6  12  18  24  30  36  42  48  54  60
+   7  14  21  28  35  42  49  56  63  70
+   8  16  24  32  40  48  56  64  72  80
+   9  18  27  36  45  54  63  72  81  90
+  10  20  30  40  50  60  70  80  90 100
+
+```
+
+在这个示例中，你使用了两个嵌套循环，共同生成了一个二维乘法表。首先，遍历从 1 到 10（含）的数字，它们代表表格的各行，你可以在每行的开头看到这些数字。
+
+在内层循环中，通过从当前数字本身迭代到其 10 倍倍数，计算出当前数字的所有乘积。随后使用 `:>4d` 格式说明符对每个乘积进行格式化，以确保表格排列整齐。将 `end` 设置为空字符串，可以避免换行，直到当前行的所有乘积全部输出完毕。某行的所有乘积打印完成后，使用无参数的 `print()` 换行到下一行。
+
+---
+
+### 探索 Pythonic 风格的循环技巧
+
+当从其他编程语言转到 Python 时，人们常常习惯按照以前语言的方式来编写 `for` 循环。这种做法会让 Python 代码看起来格格不入且难以阅读。
+
+在以下小节中，你将探索一些被视为 Pythonic（符合 Python 风格）的循环技巧、最佳实践和提示。这些技巧可以让你的 Python 代码更清晰、更优雅且更高效。
+
+#### 带索引迭代：Pythonic 的方式
+
+有时，使用 Python `for` 循环遍历序列时需要用到元素的索引。到目前为止，你看到的示例都可以访问元素，但不知道其对应的索引。
+
+为了同时获取元素及其索引，你可能会写出类似下面的循环：
+
+```python
+>>> fruits = ["orange", "apple", "mango", "lemon"]
+>>> for index in range(len(fruits)):
+...     fruit = fruits[index]
+...     print(index, fruit)
+...
+0 orange
+1 apple
+2 mango
+3 lemon
+
+```
+
+这个循环确实能完成任务，但并没有达到 Python 代码应有的整洁与易读。幸运的是，有更好的解决方案——内置的 `enumerate()` 函数：
+
+```python
+>>> for index, fruit in enumerate(fruits):
+...     print(index, fruit)
+...
+0 orange
+1 apple
+2 mango
+3 lemon
+
+```
+
+`enumerate()` 函数接受一个可迭代对象作为参数，并生成形如 `(index, item)` 的元组。注意，这个循环读起来几乎就像日常英文句子一样通顺，这使得代码比前面使用 `range()` 的版本要 Pythonic 得多。
+
+> **注意：** 要了解有关使用 `enumerate()` 的更多信息，请参阅教程《Python enumerate()：简化需要计数器的循环》（*Python enumerate(): Simplify Loops That Need Counters*）。
+
+`enumerate()` 函数还接受一个名为 `start` 的可选参数，允许你调整初始计数值。当需要生成序号时，此功能非常有用。请看下面这个模拟命令行应用程序选项菜单的示例：
+
+```python
+>>> def display_menu(options):
+...     print("Main Menu:")
+...     for position, option in enumerate(options, start=1):
+...         print(f"{position}. {option}")
+...
+>>> display_menu(["Open", "Save", "Settings", "Quit"])
+Main Menu:
+1. Open
+2. Save
+3. Settings
+4. Quit
+
+```
+
+在这个示例中，没有使用 `enumerate()` 产生从 0 开始的索引，而是让计数从 1 开始。从最终用户的角度来看，菜单从 1 开始排号更加自然。
+
+#### 并行遍历多个可迭代对象
+
+在 Python 编程中，并行遍历两个或多个可迭代对象是另一种常见的任务。为此，你可以使用内置的 `zip()` 函数，它接受两个或更多可迭代对象，并生成将各可迭代对象中的元素组合在一起的元组。
+
+> **注意：** 要深入了解 `zip()`，请参阅教程《使用 Python zip() 函数进行并行迭代》（*Using the Python zip() Function for Parallel Iteration*）。
+
+请看下面这个简单的示例：
+
+```python
+>>> numbers = [1, 2, 3]
+>>> letters = ["a", "b", "c"]
+>>> for number, letter in zip(numbers, letters):
+...     print(number, "->", letter)
+...
+1 -> a
+2 -> b
+3 -> c
+
+```
+
+在这个例子中，你使用 `zip(numbers, letters)` 创建了一个迭代器，生成形如 `(number, letter)` 的元组。其中 `number` 的值来自 `numbers`，`letter` 的值来自 `letters`。
+
+#### 顺序遍历多个可迭代对象
+
+有时你可能需要在单个循环中按顺序依次遍历多个可迭代对象。在这种情况下，可以使用 Python `itertools` 模块中的 `chain()` 函数。
+
+> **注意：** 要了解有关 `itertools` 模块及其工具的更多信息，请参阅教程《通过实例学习 Python itertools》（*Python itertools By Example*）。
+
+例如，假设你有几个数字列表，并希望计算所有列表中每个数字的平方。你可以像下面这样使用 `chain()`：
+
+```python
+>>> from itertools import chain
+>>> first = [7, 6, 1]
+>>> second = [4, 1]
+>>> third = [8, 0, 6]
+>>> for value in chain(first, second, third):
+...     print(value**2)
+...
+49
+36
+1
+16
+1
+64
+0
+36
+
+```
+
+该循环依次遍历所有三个列表，并输出每个值的平方。你还可以使用 `chain()` 来处理“列表的列表”。假设你同样需要处理序列中的每个值并计算其平方：
+
+```python
+>>> matrix = [
+...     [9, 3, 8],
+...     [4, 5, 2],
+...     [6, 4, 3],
+... ]
+>>> for value in chain(*matrix):
+...     print(value**2)
+...
+81
+9
+64
+16
+25
+4
+36
+16
+9
+
+```
+
+在此示例中，你使用 `chain()` 遍历矩阵的各行。为了将各行传入 `chain()`，使用了解包操作符（`*`）。在循环内部，计算并打印每个值的平方。
+
+像该示例一样使用 `chain()`，本质上是将矩阵扁平化为一个单一的可迭代对象，有助于避免使用在某些场景下难以阅读和理解的嵌套循环。
+
+#### 按预定次数重复操作
+
+迭代的本质就是多次重复某段代码。正如你前面学到的，`for` 循环旨在对可迭代对象中的元素重复执行特定的一组操作。然而，你也可以使用这种循环来快速迭代指定次数。当需要重复一组语句但这些语句并不依赖可迭代对象的元素时，这种方法非常有用。
+
+以下是一个关于佩妮（Penny）和谢尔顿（Sheldon）的有趣示例：
+
+```python
+>>> for _ in range(3):
+...     print("Knock, knock, knock")
+...     print("Penny!")
+...
+Knock, knock, knock
+Penny!
+Knock, knock, knock
+Penny!
+Knock, knock, knock
+Penny!
+
+```
+
+该循环运行三次，并重复执行一系列不依赖任何可迭代对象元素的语句。注意，在此示例中循环变量是一个单独的下划线字符（`_`）。这种变量命名方式传达出：你不需要在循环内部使用该循环变量。它只是一个一次性变量（throwaway variable）。
+
+通过这种结合 `range()` 的循环结构，你可以完全掌控代码运行的次数。
+
+#### 遍历反转和排序后的可迭代对象
+
+在编程中，以倒序或排序后的顺序遍历可迭代对象的元素也是很普遍的需求。为了实现这一点，你可以分别将 `for` 循环与内置的 `reversed()` 或 `sorted()` 函数配合使用。
+
+> **注意：** 要了解有关 `reversed()` 和 `sorted()` 的更多信息，请查看以下教程：
+> * 《反转 Python 列表：超越 .reverse() 与 reversed()》（*Reverse Python Lists: Beyond .reverse() and reversed()*）
+> * 《在 Python 中反转字符串：reversed()、切片及更多》（*Reverse Strings in Python: reversed(), Slicing, and More*）
+> * 《如何在 Python 中使用 sorted() 与 .sort()》（*How to Use sorted() and .sort() in Python*）
+> * 《对 Python 字典排序：值、键及更多》（*Sorting a Python Dictionary: Values, Keys, and More*）
+> 
+> 
+
+例如，假设你正在开发一款文本编辑器，想要实现一个基本的“撤销（Undo）”功能。你可以通过 `reversed()` 函数和如下循环来实现：
+
+```python
+>>> actions = ["Type text", "Select text", "Cut text", "Paste text"]
+>>> for action in reversed(actions):
+...     print(f"Undo: {action}")
+...
+Undo: Paste text
+Undo: Cut text
+Undo: Select text
+Undo: Type text
+
+```
+
+在这个例子中，你有一个包含文本编辑器中假设用户操作的列表。这些操作按从早到晚的顺序存入列表。为了实现撤销操作，需要将操作顺序反转，这可以通过 `reversed()` 来完成。
+
+至于按排序后的顺序进行迭代，假设你有一个将学生姓名映射到其对应平均成绩的字典。你需要生成一份简要报告，并希望将数据按成绩从高到低排序。为此，你可以执行类似如下的操作：
+
+```python
+>>> students = {
+...     "Alice": 89.5,
+...     "Bob": 76.0,
+...     "Charlie": 92.3,
+...     "Diana": 84.7,
+...     "Ethan": 88.9,
+...     "Fiona": 95.6,
+...     "George": 73.4,
+...     "Hannah": 81.2,
+... }
+>>> sorted_students = sorted(
+...     students.items(), key=lambda item: item[1], reverse=True
+... )
+>>> for name, grade in sorted_students:
+...     print(f"{name}'s average grade: {grade:->{20-len(name)}.1f}")
+...
+Fiona's average grade: -----------95.6
+Charlie's average grade: ---------92.3
+Alice's average grade: -----------89.5
+Ethan's average grade: -----------88.9
+Diana's average grade: -----------84.7
+Hannah's average grade: ----------81.2
+Bob's average grade: -------------76.0
+George's average grade: ----------73.4
+
+```
+
+`sorted()` 函数返回一个排序后的值列表。在此示例中，你按字典的值降序进行排序。为此，使用了一个 lambda 函数，它接受一个双值元组作为参数并返回索引为 1 的第二个元素。你还将 `reverse` 参数设置为 `True`，以便成绩按降序排列。
+
+`for` 循环遍历排序后的数据，并使用带有自定义格式说明符的 f-string 生成一份格式美观的报告。
+
+---
+
+### 理解 for 循环中的常见陷阱
+
+在 Python 代码中使用 `for` 循环时，可能会遇到一些由于不当用法引发的问题。其中最常见的不良实践和错误假设包括：
+
+* 在迭代过程中修改循环集合或可迭代对象
+* 试图通过更改循环变量来影响底层集合
+* 忽略可能发生的异常
+
+在接下来的小节中，你将探索这些陷阱以及如何在 `for` 循环中避免它们。
+
+#### 修改正在循环的集合
+
+Python 拥有诸如列表和字典等可变集合，它们支持就地修改。你可能会想在遍历列表的同时对其进行修改。在这种情况下，需要区分**安全修改**与**不安全修改**。
+
+例如，假设你有一个名字列表，想将它们全部转换为大写。你可能会考虑执行类似下面的操作：
+
+```python
+>>> names = ["Alice", "Bob", "John", "Jane"]
+>>> for index, name in enumerate(names):
+...     names[index] = name.upper()
+...
+>>> names
+['ALICE', 'BOB', 'JOHN', 'JANE']
+
+```
+
+在这个例子中，你仅修改了列表中现有的元素，既没有增加也没有删除任何元素。这种操作是安全的。然而，在遍历诸如列表之类的可变可迭代对象时对其进行修改，并不总是安全的。
+
+在遍历列表的同时**添加或删除元素**，往往会导致问题。为了理解为何最好避免这种做法，假设你想从列表中删除所有偶数。你可能会写出如下代码：
+
+```python
+>>> numbers = [2, 4, 6, 8]
+>>> for number in numbers:
+...     if number % 2 == 0:
+...         numbers.remove(number)
+...
+>>> numbers
+[4, 8]
+
+```
+
+运行循环后，尽管你期望列表变为空，但依然残留着部分偶数。
+
+在第一次迭代中，`2` 被移除，列表向左移动，变为 `[4, 6, 8]`。随后循环跳转到下一个元素，跳过了 `4`，反而去处理 `6`。接着 `6` 被移除，列表再次移动，变为 `[4, 8]`。迭代在触及 `8` 之前就结束了。
+
+当像上例一样需要在迭代期间调整列表大小时，建议创建该列表的副本：
+
+```python
+>>> numbers = [2, 4, 6, 8]
+>>> for number in numbers[:]:
+...     if number % 2 == 0:
+...         numbers.remove(number)
+...
+>>> numbers
+[]
+
+```
+
+不带索引的切片操作符（`[:]`）会为迭代目的创建原始列表的副本。循环遍历副本，同时从原始列表中删除值。
+
+在某些情况下，仅创建输入列表的副本也是不够的。假设除了删除偶数之外，你还想计算奇数的平方。你可能会将前面的循环修改为如下代码：
+
+```python
+>>> numbers = [2, 1, 4, 6, 5, 8]
+>>> for index, number in enumerate(numbers[:]):
+...     if number % 2 == 0:
+...         numbers.remove(number)
+...     else:
+...         numbers[index] = number**2
+...
+Traceback (most recent call last):
+    ...
+ValueError: list.remove(x): x not in list
+
+```
+
+这一次，你使用 `enumerate()` 生成索引-元素对。随后想使用该索引更新给定元素的值。然而，代码报错并抛出 `ValueError` 异常。在这种情况下，仅创建输入列表的副本是不够的，你需要制作一个单独的列表来保存结果：
+
+```python
+>>> numbers = [2, 1, 4, 6, 5, 8]
+>>> processed_numbers = []
+>>> for number in numbers:
+...     if number % 2 != 0:
+...         processed_numbers.append(number**2)
+...
+>>> processed_numbers
+[1, 25]
+
+```
+
+在这个新的循环实现中，使用了一个新列表来存储结果。正因如此，你不再需要删除元素，而是使用 `.append()` 方法将平方值添加到新列表的末尾。
+
+Python 不允许在遍历字典的同时添加或删除键值项：
+
+```python
+>>> values = {"one": 1, "two": 2, "three": 3, "four": 4}
+>>> for value in values:
+...     values["five"] = 5  # 尝试添加元素
+...
+Traceback (most recent call last):
+    ...
+RuntimeError: dictionary changed size during iteration
+>>> for value in values:
+...     del values[value]  # 尝试删除元素
+...
+Traceback (most recent call last):
+    ...
+RuntimeError: dictionary changed size during iteration
+
+```
+
+如果尝试在迭代期间扩大或缩减字典，会引发 `RuntimeError` 异常。同样，你可以通过使用 `.copy()` 方法创建字典的副本，或者使用处理后的数据构建一个新字典来规避此问题。
+
+#### 更改循环变量
+
+在循环体内部更改循环变量，对原始数据没有任何影响：
+
+```python
+>>> names = ["Alice", "Bob", "John", "Jane"]
+>>> for name in names:
+...     name = name.upper()
+...     print(name)
+...
+ALICE
+BOB
+JOHN
+JANE
+>>> names
+['Alice', 'Bob', 'John', 'Jane']
+
+```
+
+在此示例中，对循环变量 `name` 进行了重新赋值。这种更改并不会影响 `names` 列表中的原始数据。循环变量只是对可迭代对象中当前元素的临时引用，对其重新赋值并不会改变循环的可迭代对象。
+
+#### 忽略可能发生的异常
+
+如果在循环体中发生异常且未作处理，循环将提前终止，跳过后续所有迭代。这可能会引发意外问题，尤其是在你依赖循环来处理数据、记录日志或在每次迭代中执行清理操作时。
+
+举个例子，假设你想在一个循环中处理一些文本文件：
+
+```python
+>>> files = ["file1.txt", "file2.txt", "file3.txt"]
+>>> for file in files:
+...     with open(file, "r") as f:
+...         print(f"Contents of {file}:")
+...         print(f.read())
+...
+Traceback (most recent call last):
+    ...
+FileNotFoundError: [Errno 2] No such file or directory: 'file1.txt'
+
+```
+
+在此示例中，当前工作目录中不存在任何这些文件。循环尝试处理第一个文件时就因 `FileNotFoundError` 异常而崩溃。由于该异常没有得到妥善处理，循环在第一次迭代时便终止，跳过了列表中的其余文件。
+
+为了避免这种情况，需要捕获并处理该异常：
+
+```python
+>>> files = ["file1.txt", "file2.txt", "file3.txt"]
+>>> for file in files:
+...     try:
+...         with open(file, "r") as f:
+...             print(f"Contents of {file}:")
+...             print(f.read())
+...     except FileNotFoundError:
+...         print(f"Error: {file} not found. Skipping.")
+...
+Error: file1.txt not found. Skipping.
+Error: file2.txt not found. Skipping.
+Error: file3.txt not found. Skipping.
+
+```
+
+在新的实现中，循环捕获了所有的 `FileNotFoundError` 异常并在屏幕上打印错误信息。循环能够完整运行，没有发生意外中断。
+
+---
+
+### for 循环与推导式的对比
+
+当使用 `for` 循环来转换数据并构建新集合时，通常可以用推导式（comprehension）来替代该循环。例如，考虑下面的循环：
+
+```python
+>>> cubes = []
+>>> for number in range(10):
+...     cubes.append(number**3)
+...
+>>> cubes
+[0, 1, 8, 27, 64, 125, 216, 343, 512, 729]
+
+```
+
+在此示例中，首先定义了一个名为 `cubes` 的空列表。随后使用循环遍历一个整数范围，并将计算出的立方值填充到列表中。
+
+> **注意：** 要了解有关 Python 推导式的更多信息，请参阅以下教程：
+> * 《何时在 Python 中使用列表推导式》（*When to Use a List Comprehension in Python*）
+> * 《Python 字典推导式：如何及何时使用》（*Python Dictionary Comprehensions: How and When to Use Them*）
+> * 《Python 集合推导式：如何及何时使用》（*Python Set Comprehensions: How and When to Use Them*）
+> 
+> 
+
+你可以用如下的列表推导式快速替换上述循环：
+
+```python
+>>> cubes = [number**3 for number in range(10)]
+>>> cubes
+[0, 1, 8, 27, 64, 125, 216, 343, 512, 729]
+
+```
+
+推导式遍历数字范围，并仅用一行代码就构建好了立方数列表。
+
+---
+
+### 使用 async for 循环进行异步迭代
+
+`async for` 语句允许你创建能够遍历异步可迭代对象的循环。这种循环的工作方式与常规 `for` 循环基本相同，但其遍历的集合必须是异步迭代器或异步可迭代对象。
+
+> **注意：** 要了解有关异步迭代的更多信息，请参阅教程《Python 中的异步迭代器与可迭代对象》（*Asynchronous Iterators and Iterables in Python*）。
+
+下面的示例展示了一个异步生成整数范围的 `AsyncRange` 类。你可以在 `async for` 循环中使用此可迭代对象：
+
+**文件名：** `async_range.py`
+
+```python
+import asyncio
+
+class AsyncRange:
+    def __init__(self, start, end):
+        self.data = range(start, end)
+
+    async def __aiter__(self):
+        for index in self.data:
+            await asyncio.sleep(0.5)
+            yield index
+
+async def main():
+    async for index in AsyncRange(0, 5):
+        print(index)
+
+asyncio.run(main())
+
+```
+
+在这段代码中，`main()` 函数内部的代码以异步方式遍历从 0 到 4 的整数索引。
+
+运行此脚本时，会得到如下输出：
+
+```shell
+$ python async_range.py
+0
+1
+2
+3
+4
+
+```
+
+在此输出中，每个数字都是在等待半秒后才打印出来的，这与异步迭代的行为相一致。
+
+
+
+
+
+
+## [while循环](https://realpython.com/python-while-loop/)
+### Python while 循环入门
+
+在编程中，循环是一种控制流语句，允许你重复执行一组给定的操作若干次。在实际应用中，你主要会遇到两种类型的循环：
+
+1. **for 循环**：大多用于已知循环次数的情况，这在处理包含特定数量数据项的数据集合时很常见。
+2. **while 循环**：通常用于未知循环次数的情况，当迭代次数取决于特定条件时非常有用。
+
+Python 同时具备这两种循环。在本教程中，你将学习 while 循环。在 Python 中，当你需要将一系列任务重复未知次数时，通常会使用 while 循环。
+
+Python 的 while 循环是包含头部和代码块的复合语句，该代码块会一直运行，直到给定条件变为假（False）。while 循环的基本语法如下所示：
+
+```python
+while condition:
+    <body>
+
+```
+
+在此语法中，`condition`（条件）是一个表达式，循环会对其真假值进行求值。如果条件为真，则运行循环体；否则，循环终止。请注意，循环体可以由一个或多个语句组成，且必须正确缩进。
+
+以下是该语法的详细分解：
+
+* `while` 是发起循环头部的关键字。
+* `condition` 是用于求真假值的表达式，它定义了退出条件。
+* `<body>` 包含每次迭代中要执行的一个或多个语句。
+
+这里有一个快速示例，展示了如何使用 while 循环遍历递减的数字序列：
+
+```python
+>>> number = 5
+>>> while number > 0:
+...     print(number)
+...     number -= 1
+... 
+5
+4
+3
+2
+1
+
+```
+
+在这个示例中，`number > 0` 是循环条件。如果该条件返回假值，循环便会终止。循环体包含一个用于在屏幕上显示数值的 `print()` 调用。接着，你对 `number` 的值进行递减。这种变化会在下一次迭代对条件求值时产生不同的结果。
+
+只要条件保持为真，循环就会继续运行。当条件变为假时，循环终止，程序执行流程将继续运行循环体之后的第一条语句。在这个示例中，当 `number` 达到小于或等于 0 的值时，循环便会终止。
+
+如果循环条件始终没有变为假，那么你就可能面临无限循环（死循环）。请看下面这个循环，并把手指放在 Ctrl+C 组合键附近以便随时终止其执行：
+
+```python
+>>> number = 5
+>>> while number != 0:
+...     print(number)
+...     number -= 1
+... 
+5
+4
+3
+2
+1
+
+>>> number = 5
+>>> while number != 0:
+...     print(number)
+...     number -= 2
+... 
+5
+3
+1
+-1
+-3
+-5
+-7
+-9
+-11
+Traceback (most recent call last):
+    ...
+KeyboardInterrupt
+
+```
+
+在这个示例中，循环条件是 `number != 0`。当你每次将 `number` 减 1 时，该条件可以正常工作。然而，如果你每次将它减 2，该条件可能永远不会变为假，从而导致潜在的无限循环。在这种情况下，通常可以通过按下 Ctrl+C 来终止循环，这在大多数操作系统上都会引发 `KeyboardInterrupt` 异常。
+
+请注意，while 循环在执行任何其他操作之前，会最先检查其条件。如果一开始条件就是假的，那么循环体将永远不会运行：
+
+```python
+>>> number = 0
+>>> while number > 0:
+...     print(number)
+...     number -= 1
+... 
+
+```
+
+在这个示例中，当循环发现 `number` 并不大于 0 时，它会立即终止执行而不进入循环体。因此，循环体从未被执行过。
+
+现在你已经了解了 while 循环的基本语法，接下来可以深入探讨 Python 中的一些实用示例了。在下一节中，你将看到如何将这些循环应用到实际场景中。
+
+### 使用进阶 while 循环语法
+
+Python 的 while 循环具备一些高级特性，使其既灵活又强大。当你需要微调循环以满足特定的执行流程时，这些特性会非常有帮助。
+
+到目前为止，你所看到的示例都是在每次迭代中运行整个循环体。Python 提供了两个关键字，允许你修改这种行为：
+
+* **break**：立即终止循环。程序执行流程随后会继续运行紧跟在循环体后的第一条语句。
+* **continue**：仅结束当前迭代。执行流程会跳回到循环头部，并对循环条件进行重新求值，以确定是否再次执行该循环。
+
+Python 的 while 循环还具有额外的语法结构。它们包含一个 `else` 子句，当循环由于条件变为假（原文为 true，此处实为条件不满足/变为 false）而自然终止时，该子句就会执行。在接下来的小节中，你将更详细地学习 `break` 和 `continue` 语句的工作原理，以及如何在 while 循环中有效地使用 `else` 子句。
+
+---
+
+#### break 语句：提前退出循环
+
+借助 `break` 语句，你可以终止 while 循环的执行，并使程序从紧跟在循环体后的第一条语句继续运行。
+
+下面是一个简短的脚本，演示了 `break` 语句的工作原理：
+
+**文件名：break.py**
+
+```python
+number = 6
+while number > 0:
+    number -= 1
+    if number == 2:
+        break
+    print(number)
+print("Loop ended")
+
+```
+
+当 `number` 变为 2 时，代码执行到 `break` 语句，循环随即彻底终止。程序执行流程跳转至脚本最后一行对 `print()` 的调用。
+
+从命令行运行 `break.py` 会产生以下输出：
+
+```text
+$ python break.py
+5
+4
+3
+Loop ended
+
+```
+
+循环最初正常打印数值。当 `number` 的值达到 2 时，`break` 执行，终止循环并将 `Loop ended` 打印到屏幕上。请注意，数字 2 和 1 完全没有被打印出来。
+
+需要强调的是，将 `break` 语句放在条件语句之外通常没有什么意义。假设你直接在循环体中放置一条 `break` 语句而没有将其包装在条件判断中，那么循环将在第一次迭代时便立即终止，甚至可能无法执行完整个循环体。
+
+---
+
+#### continue 语句：跳过单次迭代中的任务
+
+接下来是 `continue` 语句。借助该语句，当满足给定条件时，你可以跳过当前迭代中的某些任务。
+
+下面的脚本与上一小节中的脚本几乎完全相同，唯一的区别是用 `continue` 语句替换了 `break`：
+
+**文件名：continue.py**
+
+```python
+number = 6
+while number > 0:
+    number -= 1
+    if number == 2:
+        continue
+    print(number)
+print("Loop ended")
+
+```
+
+`continue.py` 的输出如下所示：
+
+```text
+$ python continue.py
+5
+4
+3
+1
+0
+Loop ended
+
+```
+
+这一次，当 `number` 为 2 时，`continue` 语句终止了本次迭代。这就是 2 没有被打印出来的原因。随后控制权返回到循环头部，在此重新对条件求值。循环继续执行，直到 `number` 达到 0，此时它像之前一样正常终止。
+
+在下面的交互微件中，`break.py` 已经逐步执行至结尾：`break` 直接跳过了 while 条件检查并进入最终的 `print()`，红叉 ✗ 标记了被跳过的 `print(number)` 调用。你可以切换到 `continue.py`，查看 `continue` 是如何跳回到 while 头部的，然后点击“单步执行 (Step)”观察剩余的迭代过程：
+
+简而言之，**break 会彻底跳过循环剩余的全部内容**，而 **continue 仅跳过当前迭代剩余的部分**。
+
+### else 子句：在循环自然终止时运行任务
+
+Python 允许在 while 循环末尾添加一个可选的 `else` 子句。语法如下所示：
+
+```python
+while condition:
+    <body>
+else:
+    <body>
+
+```
+
+`else` 子句下的代码只有在 while 循环**自然终止**（即没有遇到 `break` 语句）时才会运行。换句话说，只有当循环条件变为假（False）时，它才会执行。
+
+请注意，如果一个循环中不包含 `break` 语句，那么使用 `else` 子句就没有太大意义。在这种情况下，直接把 `else` 代码块的内容放在循环之后——不加缩进——效果完全相同，而且代码会更清晰。
+
+那么，while 循环中的 `else` 子句何时才有用？`else` 最常见的应用场景之一就是配合提前跳出循环的 `break` 语句。请看下面的示例：
+
+**文件名：connection.py**
+
+```python
+import random
+import time
+
+MAX_RETRIES = 5
+attempts = 0
+
+while attempts < MAX_RETRIES:
+    attempts += 1
+    print(f"Attempt {attempts}: Connecting to the server...")
+    # 模拟连接场景
+    time.sleep(0.3)
+    if random.choice([False, False, False, True]):
+        print("Connection successful!")
+        break
+    print("Connection failed. Retrying...")
+else:
+    print("All attempts failed. Unable to connect.")
+
+```
+
+该脚本模拟了连接外部服务器的过程。循环允许你尝试连接若干次，次数由常量 `MAX_RETRIES` 定义。如果连接成功，`break` 语句就会终止循环。
+
+> **注意：** 在上述示例中，你使用了 `random` 模块来模拟连接成功或失败。在本教程的其他几个示例中也会用到该模块。要了解关于随机数据的更多信息，请查阅教程《在 Python 中生成随机数据（指南）》（*Generating Random Data in Python (Guide)*）。
+
+当所有连接尝试都失败时，`else` 子句就会执行，提示你所有尝试均未成功。你可以多运行几次该脚本来观察不同结果。
+
+---
+
+### 在 Python 中编写高效的 while 循环
+
+在 Python 中编写 while 循环时，应确保它们既高效又易读，同时还要保证循环能够正确终止。
+
+通常，当你需要重复一系列操作，直到给定条件变为假或只要条件为真就一直执行时，会选择使用 while 循环。当你需要处理可迭代对象中的所有元素时，这种类型的循环并不是最佳选择；在这种情况下，你应该改用 `for` 循环。
+
+在接下来的小节中，你将学习如何高效地使用 while 循环、避免无限循环、实现类似 `break` 和 `continue` 的控制语句，以及利用 `else` 子句从容优雅地处理循环完成时的逻辑。
+
+---
+
+#### 使用 while 循环按条件运行任务
+
+while 循环的一个常见用途是在继续使用某项资源之前等待其变为可用。这在以下场景中非常普遍：
+
+* 等待文件创建或写入内容
+* 检查服务器是否在线
+* 轮询数据库直到某条记录准备就绪
+* 发送请求前确保 REST API 响应正常
+
+下面这个循环会持续检查指定文件是否已被创建：
+
+**文件名：check_file.py**
+
+```python
+import time
+from pathlib import Path
+
+filename = Path("hello.txt")
+
+print(f"Waiting for {filename.name} to be created...")
+
+while not filename.exists():
+    print("File not found. Retrying in 1 second...")
+    time.sleep(1)
+
+print(f"{filename} found! Proceeding with processing.")
+
+with open(filename, mode="r") as file:
+    print("File contents:")
+    print(file.read())
+
+```
+
+该脚本中的循环调用了 `Path` 对象的 `.exists()` 方法。如果目标文件存在，该方法返回 `True`。`not` 运算符对检查结果取反，如果文件不存在则返回 `True`。在此情况下，循环会等待 1 秒钟，然后进入下一次迭代并再次检查该文件。
+
+运行此脚本后，你将看到类似如下的输出：
+
+```text
+$ python check_file.py
+Waiting for hello.txt to be created...
+File not found. Retrying in 1 second...
+File not found. Retrying in 1 second...
+File not found. Retrying in 1 second...
+...
+
+```
+
+与此同时，你可以打开另一个终端窗口并创建 `hello.txt` 文件。当循环检测到新创建的文件后便会终止。随后，循环后面的代码将继续运行，并将文件内容打印到屏幕上。
+
+#### 在未知迭代次数时使用 while 循环
+
+当你需要处理包含未知数量数据项的数据流时，while 循环也非常有用。在这种场景下，你事先不知道所需的迭代次数，因此可以使用以 `True` 作为控制条件的 while 循环。这种技巧提供了一种符合 Python 风格（Pythonic）的方式，来编写执行未知迭代次数的循环。
+
+为了说明这一点，假设你需要读取一个持续提供数据的温度传感器。当温度大于或等于 28 摄氏度时，应停止监控。下面是完成此任务的循环：
+
+**文件名：temperature.py**
+
+```python
+import random
+import time
+
+def read_temperature():
+    return random.uniform(20.0, 30.0)
+
+while True:
+    temperature = read_temperature()
+    print(f"Temperature: {temperature:.2f}°C")
+
+    if temperature >= 28:
+        print("Required temperature reached! Stopping monitoring.")
+        break
+
+    time.sleep(1)
+
+```
+
+在这个循环中，你将 `True` 用作循环条件，这会生成一个持续运行的循环。随后，你读取温度传感器并打印当前温度值。如果温度大于或等于 28 度（原文笔误写作 25 度），则跳出循环；否则，等待一秒并再次读取传感器。
+
+---
+
+#### 在循环中从可迭代对象移除元素
+
+在遍历过程中修改集合是有风险的，尤其是在需要从目标集合中移除元素时。在某些情况下，使用 while 循环可以成为一个很好的解决方案。
+
+例如，假设你需要处理一个包含若干值的列表，并在每个值被处理后将其移除。在这种情况下，你可以使用如下所示的 while 循环：
+
+```python
+>>> colors = ["red", "blue", "yellow", "green"]
+>>> while colors:
+...     color = colors.pop(-1)
+...     print(f"Processing color: {color}")
+... 
+Processing color: green
+Processing color: yellow
+Processing color: blue
+Processing color: red
+
+```
+
+当在布尔上下文中对列表求值时，如果它包含元素，你将获得 `True`；如果为空，则获得 `False`。在此示例中，只要 `colors` 中包含元素，它的布尔值就始终为真。一旦使用 `.pop()` 方法将所有元素全部移除，`colors` 就会变为假（False），循环随之终止。
+
+---
+
+#### 使用 while 循环获取用户输入
+
+从命令行获取用户输入是 Python 中 while 循环的一个常见应用场景。请看下面这个使用内置 `input()` 函数获取输入的循环。该循环会一直运行，直到你输入单词 `"stop"`：
+
+**文件名：user_input.py**
+
+```python
+line = input("Type some text: ")
+while line != "stop":
+    print(line)
+    line = input("Type some text: ")
+
+```
+
+`input()` 函数提示用户输入文本，随后将结果赋值给 `line` 变量。循环条件检查 `line` 的内容是否不等于 `"stop"`，如果不等于，循环体就会执行。在循环体内，你再次调用了 `input()`。该循环会持续重复，直到用户键入单词 `stop` 为止。
+
+这个示例虽然可以正常工作，但其缺点是不必要地重复调用了 `input()`。你可以使用海象运算符（walrus operator，`:=`）来避免这种重复，如下面的代码片段所示：
+
+```python
+>>> while (line := input("Type some text: ")) != "stop":
+...     print(line)
+... 
+Type some text: Python
+Python
+Type some text: Walrus
+Walrus
+Type some text: stop
+
+```
+
+在这个更新后的循环中，你使用赋值表达式将用户输入赋值给 `line` 变量。与此同时，该表达式会返回用户的输入内容，以便将其与哨兵值（sentinel value）`"stop"` 进行比较。
+
+---
+
+#### 使用 while 循环遍历迭代器
+
+在处理迭代器（iterators）和可迭代对象（iterables）时，将 while 循环与内置的 `next()` 函数结合使用，可以是精细控制遍历过程的绝佳方式。
+
+为了让你了解其工作原理，下面使用 while 循环来改写一个 for 循环。请看以下代码：
+
+**文件名：for_loop.py**
+
+```python
+requests = ["first request", "second request", "third request"]
+
+print("\nWith a for loop")
+for request in requests:
+    print(f"Handling {request}")
+
+print("\nWith a while loop")
+it = iter(requests)
+while True:
+    try:
+        request = next(it)
+    except StopIteration:
+        break
+
+    print(f"Handling {request}")
+
+```
+
+这两个循环是等效的。运行该脚本时，每个循环都会依次处理这三个请求：
+
+```text
+$ python for_loop.py
+
+With a for-loop
+Handling first request
+Handling second request
+Handling third request
+
+With a while-loop
+Handling first request
+Handling second request
+Handling third request
+
+```
+
+Python 的 for 循环相当灵活且强大，如果需要遍历给定集合，通常应该优先选择 `for` 而不是 `while`。然而，像上面这样将 for 循环转换为 while 循环，可以在处理迭代器的方式上为你提供更高的灵活性。
+
+#### 模拟 Do-While 循环
+
+do-while 循环是一种控制流语句，无论循环条件为真还是为假，它都会至少执行一次其代码块。
+
+如果你有 C、C++、Java 或 JavaScript 等语言的背景，你可能会好奇 Python 的 do-while 循环在哪里。坏消息是 Python 并没有这种循环；好消息是，你可以使用带有 `break` 语句的 `while` 循环来模拟它。
+
+请看下面这个在循环中获取用户输入的示例：
+
+```python
+>>> while True:
+...     number = int(input("Enter a positive number: "))
+...     print(number)
+...     if not number > 0:
+...         break
+... 
+Enter a positive number: 1
+1
+Enter a positive number: 4
+4
+Enter a positive number: -1
+-1
+
+```
+
+同样，该循环使用内置的 `input()` 函数获取用户输入，随后使用 `int()` 将输入转换为整数。如果用户输入的数值小于或等于 0，`break` 语句就会运行，循环随即终止。
+
+请注意，要在 Python 中模拟 do-while 循环，终止循环的条件应放置在循环的末尾，其主体为一条 `break` 语句。同时需要强调的是，在这类循环中，循环体至少会执行一次。
+
+---
+
+#### 将 while 循环用于事件循环
+
+Python 中 while 循环的另一个常见且广泛的应用场景是创建**事件循环（event loops）**。事件循环是一种无限循环，用于等待被称为“事件”的特定操作。一旦事件发生，循环就会将其分发给相应的事件处理器。
+
+包含事件循环的几个经典领域包括：
+
+* 图形用户界面（GUI）框架
+* 游戏开发
+* 异步应用程序
+* 服务器进程
+
+例如，假设你想实现一个猜数字游戏，可以使用 while 循环来实现：
+
+**文件名：guess.py**
+
+```python
+from random import randint
+
+LOW, HIGH = 1, 10
+secret_number = randint(LOW, HIGH)
+clue = ""
+
+# 游戏主循环
+while True:
+    guess = input(f"Guess a number between {LOW} and {HIGH} {clue} ")
+    number = int(guess)
+    if number > secret_number:
+        clue = f"(less than {number})"
+    elif number < secret_number:
+        clue = f"(greater than {number})"
+    else:
+        break
+
+print(f"You guessed it! The secret number is {number}")
+
+```
+
+在这个示例中，游戏循环运行着游戏逻辑。首先，它通过 `input()` 获取用户的猜测，将其转换为整数，并检查它是否大于或小于秘密数字。当用户的猜测等于秘密数字时，`else` 子句执行。在这种情况下，循环中断（break），游戏显示获胜信息。
+
+---
+
+#### 探索无限 while 循环
+
+有时，你编写的 while 循环可能无法自然终止。具有这种行为的循环通常被称为**无限循环（infinite loop，即死循环）**，尽管这个称呼并不完全准确，因为最终你总得通过某种方式终止它。
+
+你编写无限循环可能是**有意的**，也可能是**无意的**：
+
+* **有意的无限循环**是强大的工具，常用于需要持续运行直至满足某个外部条件的程序中，例如游戏循环、服务器进程，以及 GUI 应用或异步代码等事件驱动型程序。
+* 相比之下，**无意的无限 while 循环**通常是某种逻辑错误的结果，该错误导致循环条件永远无法变为假。例如，当循环出现以下情况时就会发生：
+* 未能更新条件变量
+* 使用了存在逻辑缺陷的条件
+
+
+
+在这些情况下，循环会错误地持续运行，直到被外部强制终止。
+
+在接下来的小节中，你将学习这两种类型的无限循环，以及如何在代码中妥善处理它们。首先，将从无意的无限循环讲起。
+
+##### 无意的无限循环
+
+假设你编写了一个由于内部逻辑错误而永不结束的 while 循环。回顾本教程开头部分的例子，下面这个循环会持续不断地运行：
+
+```python
+>>> number = 5
+>>> while number != 0:
+...     print(number)
+...     number -= 2
+... 
+5
+3
+1
+-1
+-3
+-5
+-7
+-9
+-11
+Traceback (most recent call last):
+    ...
+KeyboardInterrupt
+
+```
+
+要终止这段代码，你必须按下 Ctrl+C 从键盘中断程序的执行。否则，由于其条件永远不会变为假，该循环将无限期运行下去。在实际编写代码时，你通常需要设置一个合理的循环条件，以防止这种非预期的无限执行。
+
+在大多数类似情况下，你可以通过修正条件本身或循环内部的逻辑来避免潜在的死循环，确保条件在循环执行的某一时刻能够变为假。
+
+在上面的示例中，你可以稍微修改一下条件来解决该问题：
+
+```python
+>>> number = 5
+>>> while number > 0:
+...     print(number)
+...     number -= 2
+... 
+5
+3
+1
+
+```
+
+这一次，循环不会低于 0。相反，当 `number` 的值小于或等于 0 时，循环便会终止。
+
+或者，你也可以在循环体内增加额外的条件分支，通过 `break` 语句来终止循环：
+
+```python
+>>> number = 5
+>>> while number != 0:
+...     if number <= 0:
+...         break
+...     print(number)
+...     number -= 2
+... 
+5
+3
+1
+
+```
+
+这个循环保留了最初的循环条件，但在循环体内加入了一个安全兜底（failsafe）条件，以防主条件失效时依然能够终止循环。
+
+确定如何修复无意的无限循环，很大程度上取决于你在循环条件与循环体中所使用的具体逻辑。因此，你应该仔细分析每种情况，以确定恰当的解决方案。
+
+---
+
+##### 有意的无限循环
+
+有意的无限 while 循环相当普遍且实用。然而，要正确编写它们，必须确保具备适当的退出条件、避免性能问题，并防止发生意外失控的无限执行。
+
+例如，你可能想编写一个启动后永久运行并持续接收服务请求的后台服务。在本文语境下，“永久”指的是直到你主动将其关闭为止。
+
+编写无限循环的典型方式是使用 `while True` 结构。为了确保循环能够妥善终止，你应该添加一个或多个包裹在适当条件中的 `break` 语句：
+
+```python
+while True:
+    if condition_1:
+        break
+    ...
+    if condition_2:
+        break
+    ...
+    if condition_n:
+        break
+
+```
+
+当你有多个理由需要结束循环时，这种语法非常管用。在代码的不同位置按需跳出，往往比试图在循环头部塞入所有的终止条件更加清晰易读。
+
+为了直观了解这一结构在实际中的应用，请看下面这个要求用户输入密码的无限循环：
+
+**文件名：password.py**
+
+```python
+MAX_ATTEMPTS = 3
+correct_password = "secret123"
+attempts = 0
+
+while True:
+    password = input("Password: ").strip()
+    attempts += 1
+
+    if password == correct_password:
+        print("Login successful! Welcome!")
+        break
+    if attempts >= MAX_ATTEMPTS:
+        print("Too many failed attempts.")
+        break
+    else:
+        print(f"Incorrect password. {MAX_ATTEMPTS - attempts} attempts left.")
+
+```
+
+该循环包含两个退出条件：第一个条件检查密码是否正确；第二个条件检查用户是否已达到输入正确密码的最大尝试次数。两个条件均包含一条 `break` 语句，以确保循环能够优雅地退出。
+
+
+## [break](https://realpython.com/python-break/)
+### 认识 break 语句
+
+在进入核心示例之前，先简单说明一下什么是 `break` 语句以及它的作用。它是 Python 中的一个关键字；当在循环中使用时，它会**立即退出当前循环**，并将控制权转移到循环正常结束后本该执行的代码上。
+
+通过一个简单的例子可以看出 `break` 语句的基础用法。以下代码演示了一个在特定范围内打印数字的循环，直到下一个数字大于 5（实际条件为 `number == 5`）：
+
+```python
+>>> for number in range(10):
+...     if number == 5:
+...         break
+...     print(number)
+... 
+0
+1
+2
+3
+4
+
+```
+
+这段简短的代码由一个遍历数字 0 到 9 的 `for` 循环组成。它会依次打印每个数字，但当下一次循环中的数字为 5 时，`break` 语句会提前终止循环。因此，这段代码只会打印数字 0 到 4，随后循环结束。
+
+由于 `break` 语句的作用是提前终止循环，将其用在与循环无关的任何语境中都是没有意义的。事实上，如果你尝试在循环外部使用 `break` 语句，Python 会直接抛出 `SyntaxError`（语法错误）。
+
+使用 `break` 语句的核心优势在于：你可以在适当的时候提前退出，从而**避免不必要的循环迭代**。下一节将看到它的具体应用。
+
+---
+
+### 跳出固定迭代次数的循环
+
+假设你是一名教师，正在评估学生的成绩。你想根据成绩统计每个学生不及格的科目数量。以下示例演示了如何使用 `for` 循环遍历学生的考试成绩来完成这项任务：
+
+```python
+>>> scores = [90, 30, 50, 70, 85, 35]
+>>> num_failed_scores = 0
+>>> pass_score = 60
+>>> for score in scores:
+...     if score < pass_score:
+...         num_failed_scores += 1
+... 
+>>> print(f"Number of failed tests: {num_failed_scores}")
+Number of failed tests: 3
+
+```
+
+首先定义单个学生的成绩列表。在循环运行前设置几个变量：`num_failed_scores` 设为 0，因为目前尚未发现任何不及格分数；`pass_score`（存储及格线阈值的变量）设为 60，低于该分数的均视为不及格。
+
+`for` 循环启动后，运行次数与列表中的成绩数量相同，依次遍历每个分数。如果分数低于及格线阈值，则将 `num_failed_scores` 变量递增 1。最后输出该学生不及格的考试门数。
+
+为了帮助成绩落后的学生，你决定引入辅导机制。一旦学生有两门考试不及格，你就需要向其建议参加课后辅导。在这种情况下，**无需遍历全部成绩**。只要学生挂科达到两门，就已获得了所需的信息，即可立即终止迭代。使用 `break` 语句调整后的代码如下所示：
+
+```python
+>>> scores = [90, 30, 50, 70, 85, 35]
+>>> num_failed_scores = 0
+>>> pass_score = 60
+>>> needs_tutoring = "No"
+>>> for score in scores:
+...     if score < pass_score:
+...         num_failed_scores += 1
+...     if num_failed_scores >= 2:
+...         needs_tutoring = "Yes"
+...         break
+... 
+>>> print(f"Does the student need tutoring? {needs_tutoring}")
+Does the student need tutoring? Yes
+
+```
+
+与之前一样，依然以单名学生的成绩列表开始。循环运行前新增了一个变量 `needs_tutoring`，初始值设为 `"No"`，因为此时还没有建议该学生接受辅导。
+
+循环依然会遍历各个成绩，并在发现不及格时递增 `num_failed_scores` 变量。接下来新增了一步：每检查完一个成绩，循环都会判断不及格次数是否已达到至少 2 次。若是，代码将 `needs_tutoring` 变量置为 `"Yes"`，并通过 `break` 语句提前退出循环。最后，代码打印信息显示该学生是否需要辅导。
+
+到目前为止，你看到的都是 `break` 语句与 `for` 循环的搭配。正如在下一节中所看到的，它同样可以与 `while` 循环配合使用。
+
+---
+
+### 使用 Python break 语句处理用户输入
+
+当需要获取用户输入时，通常会使用循环，但往往无法预知循环究竟需要迭代多少次。在这些场景中，`while` 循环是理想的选择，结合 `break` 语句可以在完成用户输入获取后结束循环。
+
+暂时离开学生考试成绩的例子，可以通过一个**猜数字游戏**来理解这一概念。在这个游戏中，玩家拥有有限的猜测次数来猜一个随机生成的数字。这里的游戏主循环是一个 `while` 循环，最多运行的次数等于设定的回合数，但也可以提前结束。
+
+在每轮开始时，提示用户输入一个数字或退出字符。如果玩家猜对了数字，就跳出游戏循环并向玩家道贺。如果玩家用尽了所有机会仍未猜中，游戏循环终止并输出正确答案。
+
+如果玩家输入了退出字符，循环则会通过 `break` 语句提前退出游戏：
+
+```python
+>>> import random
+>>> guesses_left = 4
+>>> random_number = random.randint(1, 10)
+>>> while True:
+...     if guesses_left <= 0:
+...         print(
+...             "You ran out of guesses! "
+...             f"The correct number was {random_number}"
+...         )
+...         break
+...     guess = input("Guess a number between 1 and 10, or enter q to quit: ")
+...     if guess == "q":
+...         print("Successfully exited game.")
+...         break
+...     elif not (guess.isnumeric()):
+...         print("Please enter a valid value.")
+...     elif int(guess) == random_number:
+...         print("Congratulations, you picked the correct number!")
+...         break
+...     else:
+...         print("Sorry, your guess was incorrect.")
+...         guesses_left -= 1
+...         print(f"You have {guesses_left} guesses left.")
+... 
+Guess a number between 1 and 10, or enter q to quit: 5
+Sorry, your guess was incorrect.
+You have 3 guesses left.
+Guess a number between 1 and 10, or enter q to quit: 3
+Sorry, your guess was incorrect.
+You have 2 guesses left.
+Guess a number between 1 and 10, or enter q to quit: 7
+Sorry, your guess was incorrect.
+You have 1 guesses left.
+Guess a number between 1 and 10, or enter q to quit: 2
+Sorry, your guess was incorrect.
+You have 0 guesses left.
+You ran out of guesses! The correct number was 8
+
+```
+
+代码开头导入了 `random` 模块以调用 Python 的随机数生成功能。接着设置游戏的核心变量：先创建一个变量记录玩家剩余的猜测次数，再通过 `randint()` 函数生成一个 1 到 10 之间（含两端）的随机整数并保存。
+
+接下来的代码段是游戏主循环。这里设置了一个以 `True` 为条件的 `while` 循环，因此**必须使用 break 语句来退出循环**——否则循环将无限期运行。
+
+在游戏循环内部，首先检查玩家是否还有剩余猜测次数。如果没有，打印通知告知玩家机会用尽并揭晓正确答案，接着使用 `break` 跳出游戏循环。
+
+如果玩家仍有剩余次数，便提示其输入 1 到 10 之间的数字或字母 `q` 以退出游戏，玩家的输入存入变量 `guess`。
+
+接下来使用一系列条件语句检查玩家的输入：
+
+* 如果输入字母 `q` 退出，打印提示信息告知游戏已结束，紧接着用 `break` 语句退出游戏循环。
+* 使用 `.isnumeric()` 方法判断输入的是否为数字。如果不是数字，再次提示输入有效值（该判断位于退出字符判断之后，因此此时的输入理应为纯数字）。
+* 如果猜对了数字，向屏幕打印祝贺信息，并用 `break` 结束游戏循环。
+* 如果猜错了，打印提示说明猜测有误，将剩余次数减 1 并打印剩余次数。此时当前轮次迭代结束，代码进入下一次迭代。
+
+这个示例还展示了 `break` 语句的另一个优势和常见用例：防止循环无限运行。合理使用 `break` 语句有助于确保程序不会陷入死循环。
+
+这种 `while` 循环与 `break` 的结合是获取用户输入的通用模式，尤其适用于无法预知用户何时完成交互的场景。
+
+例如电商网站上的客服聊天机器人：机器人可能会持续提示用户提问或补充信息，直到用户的问题全部解决。这个聊天程序可以使用 `while` 循环运行，直到用户明确表示不再需要帮助，此时循环通过 `break` 语句退出。
+
+---
+
+### 跳出嵌套循环
+
+你还可以使用 `break` 语句跳出嵌套循环。按照这种方式使用时，**break 语句只会终止包裹它的最内层循环**。回到学生成绩分析工具的场景，请看以下示例：
+
+在这个例子中，工具将检查多名学生的考试成绩，以统计有多少名学生至少出现过一门考试不及格。外层循环遍历不同学生的成绩列表，内层循环遍历每个学生列表中的单科成绩：
+
+```python
+>>> scores = [
+...     [90, 30, 80, 100],
+...     [100, 80, 95, 87],
+...     [75, 84, 77, 50],
+... ]
+>>> pass_score = 60
+>>> num_failed_students = 0
+>>> for student_scores in scores:
+...     for score in student_scores:
+...         if score < pass_score:
+...             num_failed_students += 1
+...             break
+... 
+>>> print(f"Number of students who failed a test: {num_failed_students}")
+Number of students who failed a test: 2
+
+```
+
+首先创建一个成绩列表，该列表实际包含了三个独立的子列表，分别代表三名学生的成绩。
+
+然后定义两个整型变量：及格线阈值设为 60；挂科学生初始计数设为 0。
+
+接着进入外层 `for` 循环，依次遍历三个学生的成绩列表。在外层循环内部建立嵌套的内层 `for` 循环，遍历当前学生的单科成绩。
+
+如果内层循环发现了不及格分数，将挂科学生数量加 1，然后跳出该内层循环——因为无需再检查该学生剩余的科目了。**注意，此时 break 语句仅退出内层循环**，外层循环会继续执行下一个学生的成绩列表。
+
+在代码末尾，将至少有一门不及格的学生总数打印到屏幕上。
+
+---
+
+### 使用 continue 关键字替代 break
+
+Python 还提供了另一个有助于减少不必要迭代的关键字：`continue`。当满足特定条件时，`continue` 关键字允许你**跳过循环的某次特定迭代**。如果某次迭代满足指定条件，循环会直接跳过该次迭代并进入下一次。
+
+例如，假设你想遍历一组数字并仅打印奇数，可以使用 `continue` 关键字编写如下代码：
+
+```python
+>>> for index in range(6):
+...     if index % 2 == 0:
+...         continue
+...     print(index)
+... 
+1
+3
+5
+
+```
+
+这段代码会打印出数字 1、3 和 5。代码创建了一个 `for` 循环来遍历数字 0 到 5（原文描述 1 through 6 为口误，实际 `range(6)` 产生 0 至 5）。在循环内部，使用取模运算符 `%` 检查各个数字：如果除以 2 的余数为 0，说明该数字是偶数，代码执行 `continue` 分支。`continue` 会终止本次迭代，其后面的代码不再执行。
+
+然而，如果除以 2 的余数不为 0（对奇数而言余数实际为 1），代码就不会执行 `continue` 语句，而是继续向下打印出该数字。
+
+`break` 和 `continue` 的相似之处在于它们都会结束当前的单次迭代。不同之处在于：**break 会彻底退出最内层循环并终止后续所有迭代，而 continue 仅跳过当前迭代的剩余代码并立即开始下一次迭代**。这两个关键字都是在需要时提前退出循环迭代的有力工具。
+
+---
+
+### 将 break 与 else 子句结合使用
+
+Python 的 `for` 和 `while` 循环都支持 `else` 子句。这是一个在许多其他编程语言中并不具备的独特特性。**只有当循环内部没有触发 break 语句时，else 子句才会执行。**
+
+`else` 子句最主要的应用场景，是避免专门定义用于记录“是否因 break 提前结束循环”的标志变量。例如，可以使用带有 `else` 子句的 `for` 循环改写先前的辅导示例：
+
+```python
+>>> scores = [90, 30, 50, 70, 85, 35]
+>>> num_failed_scores = 0
+>>> pass_score = 60
+>>> for score in scores:
+...     if score < pass_score:
+...         num_failed_scores += 1
+...     if num_failed_scores >= 2:
+...         print("The student needs tutoring")
+...         break
+... else:
+...     print("The student doesn't need tutoring")
+... 
+The student needs tutoring
+
+```
+
+请注意，`else` 的缩进与 `for` 对齐。当学生需要辅导时，触发 `break` 语句，此时 `else` 子句会被直接忽略；如果循环自然结束且从未触发 `break`，则会执行 `else` 下方的代码。
+
+在修改后的示例中，利用 Python 的控制流特性，便不再需要之前使用的 `needs_tutoring` 标志变量。
+
+> **注意：** 可以在以下教程中了解有关循环中使用 `else` 的更多内容：
+> * 《Python for 循环：Pythonic 之道》（*Python for Loops: The Pythonic Way*）
+> * 《Python while 循环：按条件重复任务》（*Python while Loops: Repeating Tasks Conditionally*）
+> 
+> 
+> `for` 和 `while` 循环均支持 `else` 子句，只要循环在未触发 `break` 的情况下正常终止，该子句就会被执行。
+
+你还可以结合使用 `break` 和 `else` 来彻底跳出多层嵌套的 `for` 循环。回顾前面多名学生的例子，假设你只关心**是否有任何一名学生至少有一门考试不及格**，可以使用如下代码：
+
+```python
+>>> scores = [
+...     [90, 30, 80, 100],
+...     [100, 80, 95, 87],
+...     [75, 84, 77, 50],
+... ]
+>>> pass_score = 60
+>>> for student_scores in scores:
+...     for score in student_scores:
+...         if score < pass_score:
+...             print("At least one student failed a test")
+...             break
+...     else:
+...         continue
+...     break
+... 
+At least one student failed a test
+
+```
+
+这里使用了 `else ... continue ... break` 结构来跳出两层 `for` 循环：
+
+1. 如果内层循环触发了 `break`，就会绕过内层的 `else: continue`，直接执行外层缩进下的第二个 `break`，从而一并将外层循环终止。
+2. 如果内层循环未触发 `break`，内层的 `else` 分支就会执行 `continue`，确保外层的 `break` 不会被执行，外层循环继续处理下一位学生。
+
+这种结构写法稍显曲折复杂，在实际开发中往往有更具可读性的替代方案。例如在此例中，可以通过打平嵌套列表（Flattening the nested lists）并使用单层循环来处理所有成绩。
+
+
+
+## [嵌套循环](https://realpython.com/nested-loops-python/)
+### 认识 break 语句
+
+在进入核心示例之前，先简单说明一下什么是 `break` 语句以及它的作用。它是 Python 中的一个关键字；当在循环中使用时，它会**立即退出当前循环**，并将控制权转移到循环正常结束后本该执行的代码上。
+
+通过一个简单的例子可以看出 `break` 语句的基础用法。以下代码演示了一个在特定范围内打印数字的循环，直到下一个数字大于 5（实际条件为 `number == 5`）：
+
+```python
+>>> for number in range(10):
+...     if number == 5:
+...         break
+...     print(number)
+... 
+0
+1
+2
+3
+4
+
+```
+
+这段简短的代码由一个遍历数字 0 到 9 的 `for` 循环组成。它会依次打印每个数字，但当下一次循环中的数字为 5 时，`break` 语句会提前终止循环。因此，这段代码只会打印数字 0 到 4，随后循环结束。
+
+由于 `break` 语句的作用是提前终止循环，将其用在与循环无关的任何语境中都是没有意义的。事实上，如果你尝试在循环外部使用 `break` 语句，Python 会直接抛出 `SyntaxError`（语法错误）。
+
+使用 `break` 语句的核心优势在于：你可以在适当的时候提前退出，从而**避免不必要的循环迭代**。下一节将看到它的具体应用。
+
+---
+
+### 跳出固定迭代次数的循环
+
+假设你是一名教师，正在评估学生的成绩。你想根据成绩统计每个学生不及格的科目数量。以下示例演示了如何使用 `for` 循环遍历学生的考试成绩来完成这项任务：
+
+```python
+>>> scores = [90, 30, 50, 70, 85, 35]
+>>> num_failed_scores = 0
+>>> pass_score = 60
+>>> for score in scores:
+...     if score < pass_score:
+...         num_failed_scores += 1
+... 
+>>> print(f"Number of failed tests: {num_failed_scores}")
+Number of failed tests: 3
+
+```
+
+首先定义单个学生的成绩列表。在循环运行前设置几个变量：`num_failed_scores` 设为 0，因为目前尚未发现任何不及格分数；`pass_score`（存储及格线阈值的变量）设为 60，低于该分数的均视为不及格。
+
+`for` 循环启动后，运行次数与列表中的成绩数量相同，依次遍历每个分数。如果分数低于及格线阈值，则将 `num_failed_scores` 变量递增 1。最后输出该学生不及格的考试门数。
+
+为了帮助成绩落后的学生，你决定引入辅导机制。一旦学生有两门考试不及格，你就需要向其建议参加课后辅导。在这种情况下，**无需遍历全部成绩**。只要学生挂科达到两门，就已获得了所需的信息，即可立即终止迭代。使用 `break` 语句调整后的代码如下所示：
+
+```python
+>>> scores = [90, 30, 50, 70, 85, 35]
+>>> num_failed_scores = 0
+>>> pass_score = 60
+>>> needs_tutoring = "No"
+>>> for score in scores:
+...     if score < pass_score:
+...         num_failed_scores += 1
+...     if num_failed_scores >= 2:
+...         needs_tutoring = "Yes"
+...         break
+... 
+>>> print(f"Does the student need tutoring? {needs_tutoring}")
+Does the student need tutoring? Yes
+
+```
+
+与之前一样，依然以单名学生的成绩列表开始。循环运行前新增了一个变量 `needs_tutoring`，初始值设为 `"No"`，因为此时还没有建议该学生接受辅导。
+
+循环依然会遍历各个成绩，并在发现不及格时递增 `num_failed_scores` 变量。接下来新增了一步：每检查完一个成绩，循环都会判断不及格次数是否已达到至少 2 次。若是，代码将 `needs_tutoring` 变量置为 `"Yes"`，并通过 `break` 语句提前退出循环。最后，代码打印信息显示该学生是否需要辅导。
+
+到目前为止，你看到的都是 `break` 语句与 `for` 循环的搭配。正如在下一节中所看到的，它同样可以与 `while` 循环配合使用。
+
+---
+
+### 使用 Python break 语句处理用户输入
+
+当需要获取用户输入时，通常会使用循环，但往往无法预知循环究竟需要迭代多少次。在这些场景中，`while` 循环是理想的选择，结合 `break` 语句可以在完成用户输入获取后结束循环。
+
+暂时离开学生考试成绩的例子，可以通过一个**猜数字游戏**来理解这一概念。在这个游戏中，玩家拥有有限的猜测次数来猜一个随机生成的数字。这里的游戏主循环是一个 `while` 循环，最多运行的次数等于设定的回合数，但也可以提前结束。
+
+在每轮开始时，提示用户输入一个数字或退出字符。如果玩家猜对了数字，就跳出游戏循环并向玩家道贺。如果玩家用尽了所有机会仍未猜中，游戏循环终止并输出正确答案。
+
+如果玩家输入了退出字符，循环则会通过 `break` 语句提前退出游戏：
+
+```python
+>>> import random
+>>> guesses_left = 4
+>>> random_number = random.randint(1, 10)
+>>> while True:
+...     if guesses_left <= 0:
+...         print(
+...             "You ran out of guesses! "
+...             f"The correct number was {random_number}"
+...         )
+...         break
+...     guess = input("Guess a number between 1 and 10, or enter q to quit: ")
+...     if guess == "q":
+...         print("Successfully exited game.")
+...         break
+...     elif not (guess.isnumeric()):
+...         print("Please enter a valid value.")
+...     elif int(guess) == random_number:
+...         print("Congratulations, you picked the correct number!")
+...         break
+...     else:
+...         print("Sorry, your guess was incorrect.")
+...         guesses_left -= 1
+...         print(f"You have {guesses_left} guesses left.")
+... 
+Guess a number between 1 and 10, or enter q to quit: 5
+Sorry, your guess was incorrect.
+You have 3 guesses left.
+Guess a number between 1 and 10, or enter q to quit: 3
+Sorry, your guess was incorrect.
+You have 2 guesses left.
+Guess a number between 1 and 10, or enter q to quit: 7
+Sorry, your guess was incorrect.
+You have 1 guesses left.
+Guess a number between 1 and 10, or enter q to quit: 2
+Sorry, your guess was incorrect.
+You have 0 guesses left.
+You ran out of guesses! The correct number was 8
+
+```
+
+代码开头导入了 `random` 模块以调用 Python 的随机数生成功能。接着设置游戏的核心变量：先创建一个变量记录玩家剩余的猜测次数，再通过 `randint()` 函数生成一个 1 到 10 之间（含两端）的随机整数并保存。
+
+接下来的代码段是游戏主循环。这里设置了一个以 `True` 为条件的 `while` 循环，因此**必须使用 break 语句来退出循环**——否则循环将无限期运行。
+
+在游戏循环内部，首先检查玩家是否还有剩余猜测次数。如果没有，打印通知告知玩家机会用尽并揭晓正确答案，接着使用 `break` 跳出游戏循环。
+
+如果玩家仍有剩余次数，便提示其输入 1 到 10 之间的数字或字母 `q` 以退出游戏，玩家的输入存入变量 `guess`。
+
+接下来使用一系列条件语句检查玩家的输入：
+
+* 如果输入字母 `q` 退出，打印提示信息告知游戏已结束，紧接着用 `break` 语句退出游戏循环。
+* 使用 `.isnumeric()` 方法判断输入的是否为数字。如果不是数字，再次提示输入有效值（该判断位于退出字符判断之后，因此此时的输入理应为纯数字）。
+* 如果猜对了数字，向屏幕打印祝贺信息，并用 `break` 结束游戏循环。
+* 如果猜错了，打印提示说明猜测有误，将剩余次数减 1 并打印剩余次数。此时当前轮次迭代结束，代码进入下一次迭代。
+
+这个示例还展示了 `break` 语句的另一个优势和常见用例：防止循环无限运行。合理使用 `break` 语句有助于确保程序不会陷入死循环。
+
+这种 `while` 循环与 `break` 的结合是获取用户输入的通用模式，尤其适用于无法预知用户何时完成交互的场景。
+
+例如电商网站上的客服聊天机器人：机器人可能会持续提示用户提问或补充信息，直到用户的问题全部解决。这个聊天程序可以使用 `while` 循环运行，直到用户明确表示不再需要帮助，此时循环通过 `break` 语句退出。
+
+---
+
+### 跳出嵌套循环
+
+你还可以使用 `break` 语句跳出嵌套循环。按照这种方式使用时，**break 语句只会终止包裹它的最内层循环**。回到学生成绩分析工具的场景，请看以下示例：
+
+在这个例子中，工具将检查多名学生的考试成绩，以统计有多少名学生至少出现过一门考试不及格。外层循环遍历不同学生的成绩列表，内层循环遍历每个学生列表中的单科成绩：
+
+```python
+>>> scores = [
+...     [90, 30, 80, 100],
+...     [100, 80, 95, 87],
+...     [75, 84, 77, 50],
+... ]
+>>> pass_score = 60
+>>> num_failed_students = 0
+>>> for student_scores in scores:
+...     for score in student_scores:
+...         if score < pass_score:
+...             num_failed_students += 1
+...             break
+... 
+>>> print(f"Number of students who failed a test: {num_failed_students}")
+Number of students who failed a test: 2
+
+```
+
+首先创建一个成绩列表，该列表实际包含了三个独立的子列表，分别代表三名学生的成绩。
+
+然后定义两个整型变量：及格线阈值设为 60；挂科学生初始计数设为 0。
+
+接着进入外层 `for` 循环，依次遍历三个学生的成绩列表。在外层循环内部建立嵌套的内层 `for` 循环，遍历当前学生的单科成绩。
+
+如果内层循环发现了不及格分数，将挂科学生数量加 1，然后跳出该内层循环——因为无需再检查该学生剩余的科目了。**注意，此时 break 语句仅退出内层循环**，外层循环会继续执行下一个学生的成绩列表。
+
+在代码末尾，将至少有一门不及格的学生总数打印到屏幕上。
+
+---
+
+### 使用 continue 关键字替代 break
+
+Python 还提供了另一个有助于减少不必要迭代的关键字：`continue`。当满足特定条件时，`continue` 关键字允许你**跳过循环的某次特定迭代**。如果某次迭代满足指定条件，循环会直接跳过该次迭代并进入下一次。
+
+例如，假设你想遍历一组数字并仅打印奇数，可以使用 `continue` 关键字编写如下代码：
+
+```python
+>>> for index in range(6):
+...     if index % 2 == 0:
+...         continue
+...     print(index)
+... 
+1
+3
+5
+
+```
+
+这段代码会打印出数字 1、3 和 5。代码创建了一个 `for` 循环来遍历数字 0 到 5（原文描述 1 through 6 为口误，实际 `range(6)` 产生 0 至 5）。在循环内部，使用取模运算符 `%` 检查各个数字：如果除以 2 的余数为 0，说明该数字是偶数，代码执行 `continue` 分支。`continue` 会终止本次迭代，其后面的代码不再执行。
+
+然而，如果除以 2 的余数不为 0（对奇数而言余数实际为 1），代码就不会执行 `continue` 语句，而是继续向下打印出该数字。
+
+`break` 和 `continue` 的相似之处在于它们都会结束当前的单次迭代。不同之处在于：**break 会彻底退出最内层循环并终止后续所有迭代，而 continue 仅跳过当前迭代的剩余代码并立即开始下一次迭代**。这两个关键字都是在需要时提前退出循环迭代的有力工具。
+
+---
+
+### 将 break 与 else 子句结合使用
+
+Python 的 `for` 和 `while` 循环都支持 `else` 子句。这是一个在许多其他编程语言中并不具备的独特特性。**只有当循环内部没有触发 break 语句时，else 子句才会执行。**
+
+`else` 子句最主要的应用场景，是避免专门定义用于记录“是否因 break 提前结束循环”的标志变量。例如，可以使用带有 `else` 子句的 `for` 循环改写先前的辅导示例：
+
+```python
+>>> scores = [90, 30, 50, 70, 85, 35]
+>>> num_failed_scores = 0
+>>> pass_score = 60
+>>> for score in scores:
+...     if score < pass_score:
+...         num_failed_scores += 1
+...     if num_failed_scores >= 2:
+...         print("The student needs tutoring")
+...         break
+... else:
+...     print("The student doesn't need tutoring")
+... 
+The student needs tutoring
+
+```
+
+请注意，`else` 的缩进与 `for` 对齐。当学生需要辅导时，触发 `break` 语句，此时 `else` 子句会被直接忽略；如果循环自然结束且从未触发 `break`，则会执行 `else` 下方的代码。
+
+在修改后的示例中，利用 Python 的控制流特性，便不再需要之前使用的 `needs_tutoring` 标志变量。
+
+> **注意：** 可以在以下教程中了解有关循环中使用 `else` 的更多内容：
+> * 《Python for 循环：Pythonic 之道》（*Python for Loops: The Pythonic Way*）
+> * 《Python while 循环：按条件重复任务》（*Python while Loops: Repeating Tasks Conditionally*）
+> 
+> 
+> `for` 和 `while` 循环均支持 `else` 子句，只要循环在未触发 `break` 的情况下正常终止，该子句就会被执行。
+
+你还可以结合使用 `break` 和 `else` 来彻底跳出多层嵌套的 `for` 循环。回顾前面多名学生的例子，假设你只关心**是否有任何一名学生至少有一门考试不及格**，可以使用如下代码：
+
+```python
+>>> scores = [
+...     [90, 30, 80, 100],
+...     [100, 80, 95, 87],
+...     [75, 84, 77, 50],
+... ]
+>>> pass_score = 60
+>>> for student_scores in scores:
+...     for score in student_scores:
+...         if score < pass_score:
+...             print("At least one student failed a test")
+...             break
+...     else:
+...         continue
+...     break
+... 
+At least one student failed a test
+
+```
+
+这里使用了 `else ... continue ... break` 结构来跳出两层 `for` 循环：
+
+1. 如果内层循环触发了 `break`，就会绕过内层的 `else: continue`，直接执行外层缩进下的第二个 `break`，从而一并将外层循环终止。
+2. 如果内层循环未触发 `break`，内层的 `else` 分支就会执行 `continue`，确保外层的 `break` 不会被执行，外层循环继续处理下一位学生。
+
+这种结构写法稍显曲折复杂，在实际开发中往往有更具可读性的替代方案。例如在此例中，可以通过打平嵌套列表（Flattening the nested lists）并使用单层循环来处理所有成绩。
+
+
+## [模拟do-while循环](https://realpython.com/python-do-while/)
+如果你是从 C、C++、Java 或 JavaScript 等语言转到 Python 的，可能会想念这些语言中的 `do-while` 循环结构。`do-while` 循环是一种常见的控制流语句，无论循环条件为真（True）还是假（False），它都会**至少执行一次**其代码块。这是因为循环条件是在每次迭代的末尾才进行评估的，所以第一次迭代总会运行。
+
+这种循环最常见的使用场景之一是接收并处理用户输入。以如下 C 语言示例为例：
+
+```c
+#include <stdio.h>
+
+int main() {
+    int number;
+    do {
+        printf("Enter a positive number: ");
+        scanf("%d", &number);
+        printf("%d\n", number);
+    } while (number > 0);
+    return 0;
+}
+
+```
+
+这个小程序运行了一个 `do … while` 循环，提示用户输入一个正数。随后将输入存入 `number` 并打印到屏幕上。只要用户没有输入非正数，循环就会一直重复执行这些操作。
+
+如果编译并运行该程序，你会得到如下输出行为：
+
+```text
+Enter a positive number: 11
+11
+Enter a positive number: 44
+44
+Enter a positive number: -1
+-1
+
+```
+
+循环条件 `number > 0` 是在循环末尾进行判断的，这保证了循环体至少会执行一次。这一特性将 `do-while` 循环与普通的 `while` 循环区分开来——普通 `while` 循环是在开头评估条件的。在 `while` 循环中，无法保证循环体一定会执行；如果初始条件就为假，循环体一次都不会运行。
+
+> **注意：** 在本教程中，控制 `while` 或 `do-while` 循环的条件被称为“循环条件”（loop condition）。请勿将该概念与“循环体”（loop body）混淆，后者指的是在 C 等语言中被花括号包裹、在 Python 中通过缩进组织的代码块。
+
+存在 `do-while` 循环结构的原因之一在于**效率**。例如，如果循环条件涉及耗时较重的计算，且循环需要执行 $n$ 次（$n \ge 1$），那么在 `do-while` 循环中该条件只会被计算 $n$ 次；而在普通的 `while` 循环中，该耗时条件会被计算 $n + 1$ 次。
+
+Python 本身并没有提供 `do-while` 循环结构。为什么？显然，核心开发者们始终没有为这种循环找到一种足够优雅的语法。这也正是 Guido van Rossum 当初否决 PEP 315（试图为 Python 引入 `do-while` 循环的提案）的原因。不过，部分核心开发者仍希望拥有 `do-while` 循环，并试图重新唤起关于该话题的讨论。
+
+在此期间，我们可以探讨 Python 中的替代方案。简而言之，如何在 Python 中模拟 `do-while` 循环？在本教程中，你将学习如何使用 `while` 构建出具有 `do-while` 行为特性的循环。
+
+> **免费下载：** 获取《Python 技巧：精髓指南》（Python Tricks: The Book）样章，通过简单易懂的示例掌握 Python 最佳实践，即学即用，写出更优雅、更 Pythonic 的代码。
+
+---
+
+### 简而言之：使用 while 循环与 break 语句
+
+在 Python 中模拟 `do-while` 循环最常用的技术，是使用一个配合 `if` 条件判断的**无限 `while` 循环**；当特定条件满足时，执行 `break` 语句跳出循环：
+
+```python
+while True:
+    # 执行一些处理...
+    # 更新退出条件...
+    if condition:
+        break
+
+```
+
+该循环使用 `True` 作为形式条件，从而变成了一个无限循环。在条件判断语句之前，循环会先执行所有必需的处理逻辑并更新退出条件。如果该条件判断为真，`break` 语句便会终止循环，程序继续向下执行正常流程。
+
+> **注意：** 使用无限循环配合 `break` 语句可以模拟 `do-while` 循环。尽管这是 Python 社区普遍推荐的做法，但它并非绝对安全。
+> 例如，如果在 `break` 语句之前引入了 `continue` 语句，循环可能会错过退出条件的判断，进而陷入不可控的死循环。
+
+以下是用 Python 改写的开篇 C 语言程序：
+
+```python
+>>> while True:
+...     number = int(input("Enter a positive number: "))
+...     print(number)
+...     if not number > 0:
+...         break
+... 
+Enter a positive number: 11
+11
+Enter a positive number: 44
+44
+Enter a positive number: -1
+-1
+
+```
+
+该循环通过内置的 `input()` 函数获取用户输入，然后使用 `int()` 将其转换为整数。如果用户输入小于或等于 0 的数字，`break` 语句便会执行，循环终止。
+
+当你需要确保循环至少执行一次时，就可以采用上述 `while` + `break` 的方式。在下一节中，你将编写一个猜数字游戏，利用这种循环在命令行中接收并处理用户输入。
+
+---
+
+### Do-While 循环在实践中如何工作？
+
+`do-while` 循环最常见的用例是接收并处理用户输入。举个实际例子，假设有一个用 JavaScript 实现的猜数字游戏，代码使用 `do … while` 循环来处理用户输入：
+
+```javascript
+// guess.js
+const LOW = 1;
+const HIGH = 10;
+let secretNumber = Math.floor(Math.random() * HIGH) + LOW;
+let clue = '';
+let number = null;
+
+do {
+  let guess = prompt(`Guess a number between ${LOW} and ${HIGH} ${clue}`);
+  number = parseInt(guess);
+  if (number > secretNumber) {
+    clue = `(less than ${number})`;
+  } else if (number < secretNumber) {
+    clue = `(greater than ${number})`;
+  }
+} while (number != secretNumber);
+
+alert(`You guessed it! The secret number is ${number}`);
+
+```
+
+这段脚本执行了以下几项操作：
+
+* 第 3、4 行定义了两个常量，用于确定神秘数字的取值范围。
+* 第 6 至 8 行定义了用于存储神秘数字、提示信息以及用于保存用户输入的 `number` 初始变量。
+* 第 10 行启动一个 `do … while` 循环，用于处理用户输入并判断用户是否猜中了数字。
+* 第 11 行定义局部变量 `guess`，用于保存命令行输入的值。
+* 第 12 行使用 `parseInt()` 将输入值转换为整数。
+* 第 13 行定义条件分支：检查输入的数字是否大于神秘数字，如果是，则设置相应的提示信息 `clue`。
+* 第 15 行检查输入的数字是否小于神秘数字，并据此设置 `clue`。
+* 第 18 行定义循环条件：检查输入的数字是否不等于神秘数字。在本例中，循环将持续运行直到用户猜中为止。
+* 第 20 行最终弹出提示框，告知用户猜测成功。
+
+现在假设你想将上面的逻辑改写为 Python 代码。对应的 Python 猜数字游戏如下所示：
+
+```python
+# guess.py
+from random import randint
+
+LOW, HIGH = 1, 10
+secret_number = randint(LOW, HIGH)
+clue = ""
+
+while True:
+    guess = input(f"Guess a number between {LOW} and {HIGH} {clue} ")
+    number = int(guess)
+    if number > secret_number:
+        clue = f"(less than {number})"
+    elif number < secret_number:
+        clue = f"(greater than {number})"
+    else:
+        break
+
+print(f"You guessed it! The secret number is {number}")
+
+```
+
+这段 Python 代码与 JavaScript 版本的执行效果一致。主要区别在于，由于 Python 没有 `do … while` 循环，这里使用了普通的 `while` 循环。在该实现中，当用户猜中数字时，执行 `else` 分支中的 `break` 跳出循环，最后一行代码打印猜中信息。
+
+使用无限循环配合 `break` 语句，是在 Python 中模拟 `do-while` 循环应用最广泛的做法。
+
+---
+
+### Do-While 与 While 循环有什么区别？
+
+简而言之，两者的核心区别在于：**`do-while` 循环的循环体至少执行一次**（因为循环条件在末尾检查）；而**常规 `while` 循环的循环体仅在条件评估为真时才执行**（条件在循环开头检查）。
+
+下表总结了两种循环的关键区别：
+
+| 特性 / 维度 | while 循环 | do-while 循环 |
+| --- | --- | --- |
+| **控制类型** | 入口控制型循环（Entry-controlled） | 出口控制型循环（Exit-controlled） |
+| **执行时机** | 仅在循环条件为真时运行 | 一直运行直到循环条件变为假 |
+| **检查顺序** | 先检查条件，再执行循环体 | 先执行循环体，再检查条件 |
+| **初始为假时的执行次数** | 执行 0 次 | 至少执行 1 次（无论初值真假） |
+| **条件判断次数（执行 $n$ 次迭代）** | 判断 $n + 1$ 次 | 判断 $n$ 次 |
+
+`while` 循环是一种通用且灵活的控制流结构，允许你在某个条件保持为真的前提下重复执行语句。相比之下，`do-while` 循环的场景更为专一，主要用于“必须先执行至少一次代码块，后续判断条件才有意义”的场合。
+
+---
+
+### 在 Python 中模拟 Do-While 循环的其他替代方案
+
+至此，你已经掌握了 Python 中最主流的模拟方式。不过，Python 语法十分灵活，除了无限循环搭配 `break` 之外，也可以使用其他模式。
+
+本节将介绍另外两种替代技巧：
+
+1. **在循环开始前执行首次操作**
+2. **在循环开始前将条件变量初始化为真（True）**
+
+#### 技巧一：在循环前先执行第一次操作
+
+正如前文所述，`do-while` 循环最显著的特点是循环体总会执行至少一次。若要用普通 `while` 循环复现该行为，可以将循环体中的代码在循环启动前先执行一次，然后在循环内部重复该逻辑。
+
+这种做法听起来会有代码冗余，但借助**函数**封装即可轻松避免重复：
+
+```python
+condition = do_something()
+while condition:
+    condition = do_something()
+
+```
+
+首次调用 `do_something()` 确保了核心逻辑至少执行一次；循环内部的调用则仅在 `condition` 为真时执行。需要注意的是，每次迭代都必须更新该条件变量，该模式才能正常运转。
+
+用这种技巧改写的猜数字游戏代码如下：
+
+```python
+# guess.py
+from random import randint
+
+LOW, HIGH = 1, 10
+secret_number = randint(LOW, HIGH)
+clue = ""
+
+def process_move(clue):
+    user_input = input(f"Guess a number between {LOW} and {HIGH} {clue} ")
+    number = int(user_input)
+    if number > secret_number:
+        clue = f"(less than {number})"
+    elif number < secret_number:
+        clue = f"(greater than {number})"
+    return number, clue
+
+# 首次迭代：在循环前执行一次
+number, clue = process_move(clue)
+
+while number != secret_number:
+    number, clue = process_move(clue)
+
+print(f"You guessed it! The secret number is {number}")
+
+```
+
+在这个新版本中，所有的循环操作都被打包进了 `process_move()` 函数中。该函数返回当前的数字（供循环条件检查）和提示信息。通过在循环前先调用一次 `process_move()`，完美模拟了 `do-while` 循环“至少执行一次循环体”的核心特性。
+
+#### 技巧二：使用初始为 True 的循环条件
+
+另一种模拟方式是在进入循环前，直接将循环条件设为 `True`，以此确保循环体至少执行一次：
+
+```python
+do = True
+while do:
+    do_something()
+    if condition:
+        do = False
+
+```
+
+这种结构与上一节的思路类似，核心差异在于循环条件是一个布尔变量，并在循环体内部被更新。
+
+这种模式也类似于“无限循环 + `break`”，但它更加**显式且更具可读性**，因为你可以使用具有自解释意义的变量名，而不用直接写死 `True` 或使用生硬的 `break`。
+
+> **提示：** 有时以反向命名布尔变量会更加自然（例如设为 `True` 时代表退出）。这种情况下，循环可以写成 `while not done:`，并在内部将 `done` 设为 `True`。
+
+利用该技巧改写的猜数字游戏如下：
+
+```python
+# guess.py
+from random import randint
+
+LOW, HIGH = 1, 10
+secret_number = randint(LOW, HIGH)
+clue = ""
+number_guessed = False
+
+while not number_guessed:
+    user_input = input(f"Guess a number between {LOW} and {HIGH} {clue} ")
+    number = int(user_input)
+    if number > secret_number:
+        clue = f"(less than {number})"
+    elif number < secret_number:
+        clue = f"(greater than {number})"
+    else:
+        number_guessed = True
+
+print(f"You guessed it! The secret number is {number}")
+
+```
+
+在此示例中，首先定义了布尔变量 `number_guessed` 来控制循环流程。在循环体内部照常处理用户输入；一旦用户猜中数字，便将 `number_guessed` 置为 `True`，程序随之跳出循环并完成后续打印。
+
+
+
+## [continue](https://realpython.com/python-continue/)
+
+### Python 中的 continue 关键字
+
+循环是一种控制流语句，用于重复执行某项操作一定次数。在常规循环中，循环体从头到尾按顺序运行，其迭代次数由循环类型决定：
+
+* **for 循环**：运行固定的次数，通常用于处理数据集合。
+* **while 循环**：只要特定条件为 `True` 就持续运行；当条件为 `False` 时，循环结束。
+
+在这两种循环中，有时你可能希望提前终止当前循环体的执行，并直接进入下一次迭代。实现这一目的的工具就是 `continue` 关键字。
+
+在任意循环中，`continue` 会立刻终止当前正在执行的代码，并跳转回循环开头，直接跳到下一次迭代。
+
+---
+
+Python 的 `continue` 关键字作为控制循环执行流的语句，允许你跳过当前迭代中尚未执行的代码，并立即开始下一次迭代。它仅在 `for` 和 `while` 循环中使用，帮助你控制执行流、绕过特定条件，并以结构化、可预测的方式继续处理后续数据。
+
+读完本教程后，你将理解：
+
+* 执行 `continue` **不会**影响循环的 `else` 子句。
+* 不当使用 `continue` 可能会跳过必要的逻辑（例如变量更新），导致意外死循环。
+* 不能在循环内部嵌套的函数或类中直接对外部循环使用 `continue`。
+* 在字节码层面上，`continue` 执行的底层指令与正常运行到循环末尾完全一致。
+
+---
+
+### 理解其在 for 和 while 循环中的行为
+
+在 `for` 循环中，`continue` 会驱动迭代器推进到下一个待处理的元素。如果序列中已无其他元素，循环正常结束。
+
+假设有这样一个计算列表中所有数字之和的 `for` 循环：
+
+```python
+total = 0
+for number in range(-10, 10):
+    total += number
+print(total)
+
+```
+
+如果只想累加正数、忽略所有负数，可以使用 `continue`：
+
+```python
+total = 0
+for number in range(-10, 10):
+    if number < 0:
+        continue
+    total += number
+print(total)
+
+```
+
+当 `number < 0` 成立时，Python 执行 `continue`，跳过了后面的 `total += number`，直接进入下一轮迭代。
+
+在 `while` 循环中，`continue` 会将控制权交还给位于循环顶部的条件表达式。如果条件为 `True`，循环体再次执行；如果条件为 `False`，循环结束。
+
+看下面这个利用海象运算符（`:=`）获取用户输入、转换为整数并累加的例子，输入 `0` 时停止：
+
+```python
+# sum_whole_numbers.py
+print("Enter one whole number per input.")
+print("Type 0 to stop and display their sum:")
+total = 0
+while (user_int := int(input("+ "))) != 0:
+    total += user_int
+print(f"{total=}")
+
+```
+
+如果同样只想累加正数，可加入 `continue`：
+
+```python
+# sum_whole_numbers.py
+print("Enter one whole number per input.")
+print("Type 0 to stop and display their sum:")
+total = 0
+while (user_int := int(input("+ "))) != 0:
+    if user_int < 0:
+        continue
+    total += user_int
+print(f"{total=}")
+
+```
+
+运行输出如下：
+
+```text
+$ python sum_whole_numbers.py
+Enter one whole number per input.
+Type 0 to stop and display their sum:
++ 1
++ 2
++ -100
++ 0
+total=3
+
+```
+
+无论在 `for` 还是 `while` 循环中，`continue` 都会立刻结束当前这轮迭代的代码执行，转向下一轮。如果已经没有后续迭代（`for` 迭代器耗尽，或 `while` 条件判定为 `False`），循环就会结束。
+
+---
+
+### 与 else 子句的交互
+
+当 `else` 子句配合 `for` 或 `while` 循环使用时，它会在**循环正常完成所有迭代之后**执行。即便最后一次迭代触发了 `continue`，也完全不会影响 `else` 子句的触发。
+
+看这个打印所有偶数平方并在最后打印 "Done" 的例子：
+
+```python
+for number in range(1, 10):
+    if number % 2 == 1:
+        continue
+    print(number ** 2)
+else:
+    print("Done")
+
+```
+
+输出结果：
+
+```text
+4
+16
+36
+64
+Done
+
+```
+
+循环的最后一次迭代是 `number = 9`。虽然它命中了 `if` 条件并执行了 `continue`，跳过了打印步骤，但由于循环并没有被中途异常中断（如通过 `break`），因此控制流依然顺利进入了 `else` 子句。
+
+在 `while` 循环中也是一样的逻辑：
+
+```python
+number = 0
+while number < 9:
+    number += 1
+    if number % 2 == 1:
+        continue
+    print(number ** 2)
+else:
+    print("Done")
+
+```
+
+输出同样是：
+
+```text
+4
+16
+36
+64
+Done
+
+```
+
+> **注意：** `continue` 不会阻止循环的 `else` 子句运行，但 `break` 语句**会**阻止 `else` 的执行！
+
+---
+
+### 实战示例
+
+#### 1. 解决 Advent of Code 挑战
+
+在处理输入行时，使用 `continue` 跳过无关命令可以让代码结构保持平铺与工整。以下是 2022 年 Advent of Code 第 7 天谜题的一个简化版处理函数：
+
+```python
+# aoc_2022_d7.py
+def parse(lines):
+    for line in lines:
+        line_parts = line.split()
+        if line_parts[1] == "ls":
+            continue  # ls 仅仅是列出内容，不需要在此解析自身参数，直接跳过
+        elif line_parts[1] == "cd":
+            change_directory(line_parts)
+        else:
+            process_file(line_parts)
+
+with open("input.txt") as input_file:
+    input_file_lines = [
+        input_file_line.strip()
+        for input_file_line in input_file.readlines()
+    ]
+parse(input_file_lines)
+
+```
+
+使用 `continue` 避免了多层嵌套判断，使代码能够清晰地逐行匹配并过滤无须额外处理的输入。
+
+#### 2. 在 Dijkstra 算法中跳过已访问节点
+
+Dijkstra 算法用于在图结构中寻找单源最短路径。在循环中跳过已经访问过的节点是经典的性能优化手段：
+
+```python
+# 只要仍有待检查的节点
+while len(node_list) > 0:
+    # 取出当前距离最小的节点
+    current_node = remove_minimum_node(node_list)
+
+    # 跳过已经处理过的节点，防止冗余计算
+    if current_node.visited:
+        continue
+
+    # 标记为已访问
+    current_node.visited = True
+
+    # 遍历相邻节点并更新最短距离...
+
+```
+
+若没有 `continue`，算法将会对已经求得最优解的节点重复计算相邻路径，产生无效开销甚至逻辑混乱。
+
+---
+
+### 常见陷阱
+
+#### 1. 混淆 continue 与 break
+
+`break` 会彻底终止整个循环，不再进行后续迭代，并且会**直接跳过 `else` 子句**；而 `continue` 仅结束当前这轮迭代，后续迭代和 `else` 依然会正常执行。
+
+#### 2. 跳过必要的递增/更新代码（引发死循环）
+
+在 `while` 循环中，如果状态更新语句写在 `continue` 之后，极易导致死循环：
+
+```python
+number = 1
+while number <= 10:
+    if number % 2 == 1:
+        continue  # 致命错误：跳过了下方的自增操作
+
+    print(number ** 2)
+    number += 1
+
+```
+
+当 `number = 1` 时，循环命中 `continue`，跳过了 `number += 1`，导致 `number` 永远等于 1，形成无限死循环。
+
+#### 3. 嵌套循环的作用域限制
+
+当多层循环嵌套时，`continue` **仅对包含它的最内层循环生效**，无法直接控制外层循环：
+
+```python
+for outer_number in range(1, 11):
+    for inner_number in range(1, 11):
+        if inner_number % 2 == 1:
+            continue
+
+        if outer_number % 2 == 1:
+            continue  # 这里的 continue 依然作用于内层循环（inner_number）
+
+        print(outer_number * inner_number)
+
+```
+
+第 8 行即使判断的是 `outer_number`，跳过的依然只是当前 `inner_number` 的这一轮迭代，外层循环完全不受影响。
+
+#### 4. 滥用导致可读性下降
+
+过度或不必要地使用 `continue` 会使控制流分支变得琐碎。例如：
+
+```python
+# 使用 continue
+total = 0
+for number in range(-10, 10):
+    if number < 0:
+        continue
+    total += number
+
+# 方式一：直接反转条件，更直观
+total = 0
+for number in range(-10, 10):
+    if number > 0:
+        total += number
+
+# 方式二：更 Pythonic 的生成器写法
+total = sum(number for number in range(-10, 10) if number > 0)
+
+```
+
+在大部分简单分支场景中，直接重构条件往往比依赖 `continue` 更容易阅读与维护。
+
+---
+
+### 底层原理
+
+#### 1. 官方文档规范与语法限制
+
+官方文档指出：
+
+> *`continue` 只能在语法上嵌套在 `for` 或 `while` 循环中，但**不能嵌套在这些循环内部的函数或类定义中**。它会使程序直接进入最近的外层循环的下一个周期。*
+
+在循环内部定义的函数中使用 `continue` 会直接抛出 `SyntaxError`：
+
+```python
+>>> for number in range(10):
+...     def check_even(number):
+...         if number % 2 == 0:
+...             continue  # SyntaxError: 'continue' not properly in loop
+...         else:
+...             return number
+...     print(check_even(number))
+
+```
+
+这是因为函数拥有独立的作用域和执行上下文。在编译时，函数体内的代码无法跨上下文绑定到外部的循环控制流上。
+
+此外，官方文档特别指出了与 `try...finally` 的交互规律：
+
+> *当 `continue` 将控制权转移出带有 `finally` 子句的 `try` 语句时，该 `finally` 子句会在真正开始下一次循环周期之前执行。*
+
+```python
+# continue_finally.py
+for number in range(2):
+    try:
+        print(f"Iteration {number}: start of try block")
+        if number == 1:
+            print(f"  Executing `continue` in iteration {number}...")
+            continue
+        print(f"  Normal flow in iteration {number}...")
+    except Exception as e:
+        print(f"Iteration {number}: Exception: {e}")
+    finally:
+        print(f"Iteration {number}: finally block")
+    print(f"Iteration {number}: rest of loop body\n")
+
+```
+
+输出显示：当 `number == 1` 执行 `continue` 时，虽然提前跳出了 `try`，但 `finally` 块依然被完整执行，只有循环体末尾的逻辑被跳过了。`finally` 的安全清理机制不会被 `continue` 打破。
+
+---
+
+#### 2. 检查反编译后的字节码
+
+通过反编译 CPython 生成的字节码，可以看清 `continue` 的本质。对比以下两个版本的函数反编译（基于 Python 3.13 架构）：
+
+##### 未使用 continue 的版本：
+
+```python
+def add_numbers():
+    total = 0
+    for number in range(-10, 10):
+        total += number
+    return total
+
+```
+
+反编译核心字节码（部分）：
+
+```text
+行号   操作码 (Opcode)          偏移量 (Offset)    参数说明
+3     RESUME                  0
+4     LOAD_CONST              2                  0
+      STORE_FAST              4                  total
+6     LOAD_GLOBAL             6                  range
+      LOAD_CONST              16                 -10
+      LOAD_CONST              18                 10
+      CALL                    20                 2
+      GET_ITER                28
+      FOR_ITER                30                 Offset 48
+      STORE_FAST              34                 number
+9     LOAD_FAST_LOAD_FAST     36                 ('total', 'number')
+      BINARY_OP               38                 +=
+      STORE_FAST              42                 total
+      JUMP_BACKWARD           44                 Offset 30 (回到循环头部)
+10    END_FOR                 48
+      POP_TOP                 50
+11    LOAD_FAST               52                 total
+      RETURN_VALUE            54
+
+```
+
+##### 加入 continue 后的版本：
+
+```python
+def add_numbers():
+    total = 0
+    for number in range(-10, 10):
+        if number < 0:
+            continue
+        total += number
+    return total
+
+```
+
+反编译核心字节码：
+
+```text
+行号   操作码 (Opcode)          偏移量 (Offset)    参数说明
+...
+7     LOAD_FAST               36                 number
+      LOAD_CONST              38                 0
+      COMPARE_OP              40                 <
+      POP_JUMP_IF_FALSE       44                 Offset 52
+8     JUMP_BACKWARD           48                 Offset 30 (continue 产生的回跳)
+9     LOAD_FAST_LOAD_FAST     52                 ('total', 'number')
+      BINARY_OP               54                 +=
+      STORE_FAST              58                 total
+      JUMP_BACKWARD           60                 Offset 30 (循环体末尾的自然回跳)
+10    END_FOR                 64
+...
+
+```
+
+观察发现：
+
+* 偏移量 **48**（对应 `continue`）调用了 `JUMP_BACKWARD` 指令，跳转目标是 **Offset 30**（即 `FOR_ITER` 循环起点）。
+* 偏移量 **60**（循环体正常结束的位置）同样调用了 `JUMP_BACKWARD`，目标同样是 **Offset 30**。
+
+这揭示了一个底层事实：**在 CPython 字节码层面，`continue` 的实质与“代码自然执行到循环体末尾”完全相同**，二者发射的都是指向循环开头的回跳指令（`JUMP_BACKWARD`）。这也解释了为什么 `continue` 既不会打断 `try...finally`，也不会影响循环的 `else` 子句。
+
+

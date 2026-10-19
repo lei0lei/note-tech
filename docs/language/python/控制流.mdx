@@ -2,3 +2,2151 @@
 title: 控制流
 sidebar_position: 4
 ---
+
+## [控制流](https://realpython.com/python-control-flow/)
+### 认识 Python 中的控制流
+
+包括 Python 在内的大多数编程语言，都是从源文件的顶部到底部逐行顺序执行代码的。这种运行代码的方式完全符合逻辑，就像按顺序执行一系列步骤一样。然而，如果你在解决一个问题时，存在两条或多条行动路径，且这些路径取决于某个给定条件的评估结果，那该怎么办呢？
+
+例如，假设你正在搭建一个网上商城，需要实现一个判断客户是否符合包邮条件的功能。你规定：如果订单金额大于 $150.00，客户即可享受包邮。在这种情况下，你有两条行动路径：
+
+1. 如果订单金额小于 $150.00，则客户不能享受包邮。
+2. 如果订单金额大于或等于 $150.00，则客户可以享受包邮。
+
+现在，试想一下如何仅用顺序语句来实现这一点。这不是一件容易的事，对吧？你需要某种机制来检查订单并决定采取哪种行动方案。这正是条件语句（conditional statement）的作用：
+
+```python
+>>> order_total = 215.00
+>>> if order_total >= 150:
+...     print("You got free shipping!")
+... else:
+...     print("The shipping fee is $5.00")
+...
+You got free shipping!
+
+```
+
+请注意代码并不是按顺序执行的。相反，执行路径取决于条件判断的结果。像上面示例中那样允许你改变正常执行流程的语句和语法结构，被称为**控制流结构**（control flow structures）。
+
+> **说明：** 在编程中，程序根据特定条件在多个执行路径之间做出选择的能力被称为**分支**（branching）。
+
+在编程中，**控制流**（control flow）一词指的是程序中各个语句被执行或求值的顺序。如你所知，正常的执行流程是线性的顺序执行。不过，你可以通过使用控制流语句来改变它，这些语句包括条件语句、循环语句以及其他几种语句。
+
+这里有另一个例子。这一次，你需要将一个任务重复执行多次。你可以通过根据需要复制同一行代码多次来实现：
+
+**文件名：greeting.py**
+
+```python
+print("Hello!")
+print("Hello!")
+print("Hello!")
+
+```
+
+这段代码可以运行。然而，多次重复相同的代码容易出错，并会带来可维护性问题。此外，如果你事先不知道重复的次数该怎么办？在这种情况下，循环（loop）可以解决你的问题：
+
+```python
+>>> for _ in range(3):
+...     print("Hello!")
+...
+Hello!
+Hello!
+Hello!
+
+```
+
+在这个例子中，你使用了一个 `for` 循环让代码运行了三次。这段代码更加优雅、灵活，且减少了重复。
+
+像这样的控制流语句允许你做出决策、重复任务以及处理异常，从而让你的代码更具动态性与威力。简而言之，它们允许你自定义程序的控制流。在本教程接下来的部分中，你将深入探讨 Python 中最常用的控制流语句。
+
+### 使用条件语句
+
+在上一节中，你已经初步了解了条件语句。条件语句是一种语法结构，它允许你仅在特定条件为真时执行某些代码块，而在条件为假时跳过它们。它使你的程序能够应对不同的情况，而不仅仅是按顺序运行。
+
+> **说明：** 要更深入地了解条件语句，请参阅《Python 中的条件语句》教程。
+
+条件语句是你让代码做出决策的方式。它们允许你根据条件的求值结果是真（`True`）还是假（`False`）来控制执行流程。在接下来的章节中，你将学习条件语句以及如何在代码中使用它们。
+
+---
+
+#### 使用 if 做出决策
+
+在 Python 中编写条件语句时，需要使用 `if` 关键字。其基本语法如下所示：
+
+```python
+if condition:
+    <block>
+
+```
+
+当执行流程到达 `if` 语句头部时，会对条件（`condition`）进行求值。如果条件为真，则紧随其后的代码块将会运行；否则，执行流程将直接跳转到下一个未缩进的语句。
+
+为了说明这在实际中是如何运作的，假设你正在编写一个用于控制智能汽车车速的应用程序。你有一个读取速度计的函数，并且你想编写一个在超速时发出警告的函数。代码如下：
+
+**文件名：speed.py**
+
+```python
+import random
+
+def check_speed_limit(limit=80):
+    speed = read_speedometer()
+    if speed > limit:
+        print("You are over the speed limit! Slow down.")
+
+def read_speedometer():
+    speed = random.randint(30, 130)
+    print(f"Speedometer reading: {speed} km/h")
+    return speed
+
+check_speed_limit()
+
+```
+
+在 `check_speed_limit()` 函数内部，你首先获取了当前车速读数。接着，你使用一条 `if` 语句来比较当前车速与该路段的限速值。如果车速超过限速，`if` 代码块就会运行，你将收到一条警告信息。如果车速低于限速，则什么都不会发生。
+
+---
+
+#### 嵌套条件语句与使用布尔运算符
+
+有时，你需要检查多个条件。你可以通过嵌套多个条件语句来实现。例如，假设你需要检查一个数字是否位于 0 到 10 的区间内。你可以使用如下嵌套条件语句：
+
+```python
+>>> number = 7
+>>> if number > 0:
+...     if number < 10:
+...         print("The number is between 0 and 10!")
+...
+The number is between 0 and 10!
+
+```
+
+首先，你检查该数字是否大于 0，然后检查它是否小于 10。运行代码时，两个条件都为真，因为输入的数字是 7。这段代码可以正常工作。然而，使用布尔运算符（Boolean operators）组合条件往往能提供更简洁的解决方案。
+
+例如，你可以使用 `and` 运算符将这些条件合二为一，以达到相同的效果：
+
+```python
+>>> if number > 0 and number < 10:
+...     print("The number is between 0 and 10!")
+...
+The number is between 0 and 10!
+
+```
+
+这段代码的效果完全相同，但层级更扁平、代码更整洁。它契合了 Python 之禅（Zen of Python）中的原则：“扁平胜于嵌套（Flat is better than nested）”。
+
+> **说明：** 上例中的条件是为了演示如何使用布尔运算符。对于这个特定示例，更符合 Python 习惯（Pythonic）且推荐的写法如下：
+> ```python
+> >>> if 0 < number < 10:
+> ...     print("The number is between 0 and 10!")
+> ...
+> The number is between 0 and 10!
+> 
+> ```
+> 
+> 
+> 在这个版本中，条件采用了所谓的**运算符链式比较**（operator chaining），它提供了一种优雅的方式来检查一个值是否在给定区间内。
+
+涉及 `and`、`or` 和 `not` 的逻辑表达式行为如下表所示：
+
+| 运算符 | 语法 | 结果 |
+| --- | --- | --- |
+| **and** | `condition_0 and condition_1` | 两个条件都为 `True` 时返回真值（truthy）；否则返回假值（falsy） |
+| **or** | `condition_0 or condition_1` | 至少有一个条件为 `True` 时返回真值；两者都为 `False` 时返回假值 |
+| **not** | `not condition_0` | 条件为 `False` 时返回真值；条件为 `True` 时返回假值 |
+
+该表总结了使用逻辑运算符与布尔操作数构建的条件的真值情况。请注意，你可以链式串联多个运算符来创建更复杂的表达式，也可以根据需要组合不同的运算符。
+
+思考以下模拟登录过程的示例：
+
+```python
+>>> username = "jane"
+>>> password_correct = True
+>>> two_factor_enabled = True
+>>> two_factor_passed = True
+>>> if password_correct and (not two_factor_enabled or two_factor_passed):
+...     print("Login successful.")
+...
+Login successful.
+
+```
+
+在这个示例中，你将条件与 `and`、`not` 和 `or` 组合在一起。注意，你可以使用圆括号对条件进行分组，从而提高整个表达式的可读性。
+
+> **说明：** 要深入了解 Python 的逻辑运算符，请参考以下资源：
+> * 《在 Python 中使用 “and” 布尔运算符》
+> * 《在 Python 中使用 “or” 布尔运算符》
+> * 《在 Python 中使用 “not” 布尔运算符》
+> 
+> 
+
+如你所见，布尔运算符允许你为 `if` 语句编写简明扼要的条件，从而完善代码中的决策流程。
+
+最后要注意的是，当你遇到涉及多个布尔运算符、极其复杂的条件时，如果你想让代码更具可读性，使用嵌套条件语句也许反而是更好的选择。
+
+#### 使用 elif 链接多个条件
+
+通常情况下，根据某个具体的值或表达式匹配多个预期值，并根据匹配的结果采取不同的行动，是非常有用的。Python 的 `elif` 子句提供了一种整洁的方式来处理此类情况。
+
+使用 `elif` 子句的通用语法如下所示：
+
+```python
+if condition_0:
+    <block_0>
+elif condition_1:
+    <block_1>
+...
+elif condition_n:
+    <block_n>
+
+```
+
+你可以根据需要编写任意数量的 `elif` 子句。通常，每个子句中的条件都会针对某个特定表达式的不同结果进行检查。换言之，这些条件在语义上往往是相似的。
+
+例如，假设你想决定在一周中的某一天执行什么任务。你可以使用一系列检查当前星期的 `elif` 子句，如下例所示：
+
+```python
+>>> day = "Wednesday"
+>>> if day == "Monday":
+...     print("Work on cool Python content!")
+... elif day == "Tuesday":
+...     print("Team meeting at 9 AM.")
+... elif day == "Wednesday":
+...     print("Hang out with the community.")
+... elif day == "Thursday":
+...     print("Work on cool Python content!")
+... elif day == "Friday":
+...     print("Wrap up and reviews.")
+... elif day == "Saturday":
+...     print("Enjoy with your family!")
+... elif day == "Sunday":
+...     print("Rest and recharge.")
+...
+Hang out with the community.
+
+```
+
+在这个示例中，`if` 头部包含一个检查是否为周一的主条件。接着，你使用了多个 `elif` 子句来检查其余的日子。根据当前日期的不同，每个分支会运行不同的任务。
+
+`elif` 子句链与多个独立的 `if` 语句之间的区别常常令人困惑。`elif` 子句链适用于处理固定数量且**互斥**的条件，例如上例中检查当前星期几的情况。
+
+相比之下，一系列纯粹的 `if` 语句则允许在重叠或不相交的条件同时为真的情况下，运行多个代码块。思考以下示例：
+
+```python
+temperature = 75
+humidity = 60
+
+if temperature > 70:
+    print("It's warm outside.")
+
+if humidity > 50:
+    print("It's humid outside.")
+
+```
+
+在这个例子中，两个条件都为真，因此两个代码块都会运行。如果你将第二个条件写在 `elif` 子句中，那么关联的代码将永远不会运行，因为在 `if ... elif` 结构中，只有第一个条件为真的分支才会执行。
+
+---
+
+#### 使用 else 运行默认代码块
+
+在使用条件语句时，另一种常见的情况是拥有一个默认代码块。换言之，当所有被测试的条件都不为真时，该代码块就会运行。你可以使用 `else` 子句来实现这种默认的应对方案。
+
+在这种情况下，语法如下：
+
+```python
+if condition:
+    <block>
+else:
+    <default_block>
+
+```
+
+在这种结构中，如果主条件为假，则会运行 `else` 代码块。你也可以在此语法中插入 `elif` 子句。但是，`else` 子句必须始终位于最后，以确保所有条件都先被检查。将其放在 `elif` 子句之前会导致语法错误（SyntaxError）。
+
+来看一个简单的例子，假设你想编写一个检查数字是否为偶数的条件语句：
+
+```python
+>>> number = 7
+>>> if number % 2 == 0:
+...     print("The number is even.")
+... else:
+...     print("The number is odd.")
+...
+The number is odd.
+
+```
+
+在这个示例中，条件使用取模运算符（`%`）来检查当前数字是否为偶数。如果该条件为假，执行流程就会顺延到 `else` 代码块。这种逻辑符合一个数字要么是偶数要么是奇数的事实。因此在这个例子中，“是奇数”就是默认的应对方案。   
+
+### 条件表达式
+
+Python 中有一种被称为**条件表达式**（conditional expressions）的语法结构。该结构灵感来源于 C 等编程语言中的三元运算符（ternary operator）：
+
+```c
+condition ? value_if_true : value_if_false
+
+```
+
+这种结构在条件为真时求值为 `value_if_true`，否则求值为 `value_if_false`。对应的 Python 语法如下：
+
+```python
+value_if_true if condition else value_if_false
+
+```
+
+如果条件为真，它将返回 `value_if_true`；否则返回 `value_if_false`。思考以下示例：
+
+```python
+>>> def calculate_shipping(order_total):
+...     return 0 if order_total >= 150 else order_total * 0.05
+...
+>>> print(f"Shipping cost: ${calculate_shipping(200)}")
+Shipping cost: $0
+>>> print(f"Shipping cost: ${calculate_shipping(100)}")
+Shipping cost: $5.0
+
+```
+
+在 `calculate_shipping()` 函数中，你使用了一个条件表达式来检查订单总额是否大于或等于 150。如果是，运费为 0；否则，将收取 5% 的运费。
+
+---
+
+### 使用 for 和 while 循环重复执行代码
+
+在编程中，重复执行一段代码多次通常非常有用。这正是循环结构登场的地方。循环是你在大多数编程语言中都会遇到的常见控制流结构。Python 提供了两种循环：
+
+1. **`for` 循环**：多用于迭代已知次数，这在处理具有特定数量数据项的数据集合时很常见。
+2. **`while` 循环**：常用于迭代未知次数，这在迭代次数取决于特定条件时非常有用。
+
+在接下来的章节中，你将探索 `for` 循环与 `while` 循环、它们的工作原理以及如何高效使用它们。你还将学习 `break` 和 `continue` 等允许你微调循环行为的语句。最后，你将了解推导式（comprehensions），它允许你以简洁的方式进行数据处理。
+
+---
+
+### 使用 for 循环遍历可迭代对象
+
+当你需要遍历集合中的数据项时，通常会选用 `for` 循环，它是专门为此任务设计的。Python 的 `for` 循环工作方式与其它编程语言中的 `foreach` 循环非常相似。基本语法如下：
+
+```python
+for item in iterable:
+    <block>
+
+```
+
+你使用 `for` 关键字开启循环。接着是循环变量 `item`，它保存着目标数据集合中的当前值。`iterable` 变量可以保存任何支持迭代的 Python 对象，例如列表、元组、字符串、字典和集合。
+
+在每次迭代中，循环都会从目标可迭代对象中提取一个新元素，以便你按需对其进行处理。一旦循环完成对所有数据的遍历，执行流程就会跳转到循环之后的下一条语句。
+
+> **说明：** 要了解有关 `for` 循环的更多信息，请参阅《Python 中的 for 循环：Python 风格之道》教程。
+
+下面是 Python 中 `for` 循环的一个简单示例：
+
+```python
+>>> colors = ["red", "green", "blue", "yellow"]
+>>> for color in colors:
+...     print(color)
+...
+red
+green
+blue
+yellow
+
+```
+
+在这个示例中，你使用了一个 `for` 循环来遍历颜色名称列表。循环体由对 `print()` 的调用组成，用于在屏幕上显示每个颜色名称。注意这个循环的可读性非常高，读起来几乎就像普通的英语一样。
+
+在实践中，你可能会遇到很多可迭代对象的名称为复数名词的情况，正如本例中的 `colors`。在这些情况下，推荐的做法是使用单数形式来命名循环变量——在本例中即为 `color`。
+
+> **说明：** Python 还提供了异步 `for` 循环（`async for`），其基本语法如下：
+> ```python
+> async for item in async_iterable:
+>     <block>
+> 
+> ```
+> 
+> 
+> 当你需要在异步代码中遍历异步可迭代对象时，这些循环非常有用。要了解更多信息，请参阅《Python 中的异步迭代器与可迭代对象》教程。
+
+Python 的 `for` 循环允许你以一种整洁且极具可读性的方式遍历数据集合。在迭代过程中，你可以对数据项执行各种操作，这在编程中经常是必不可少的需求。
+
+下面是一个遍历数字可迭代对象、计算并打印每个数字平方的循环示例：
+
+```python
+>>> numbers = [2, 3, 4, 5, 6]
+>>> for number in numbers:
+...     print(number**2)
+...
+4
+9
+16
+25
+36
+
+```
+
+在每次迭代中，该循环获取当前数字，计算其平方值，并将结果显示在屏幕上。在这里，你对可迭代对象中的每个值都执行了一次计算。
+
+### 用于条件迭代的 while 循环
+
+与专为遍历数据可迭代对象设计的 `for` 循环不同，`while` 循环适用于需要一直迭代直到给定条件变为假（或者只要条件为真就一直迭代）的场景。对于潜在的无限循环（例如 GUI 应用程序或异步代码中的事件循环），这类循环同样非常有用。
+
+> **说明：** 要更深入了解 `while` 循环，请参阅《Python while 循环：按条件重复任务》教程。
+
+Python `while` 循环的基本语法如下所示：
+
+```python
+while condition:
+    <block>
+
+```
+
+你以 `while` 关键字开启循环，其后跟随一个条件。在每次迭代之前（包括第一次迭代），都会检查该条件。如果条件为真，则执行循环体代码块。当代码块执行完毕后，会再次检查该条件。此循环往复，直到条件求值结果为假，此时程序退出循环并继续执行下一条语句。
+
+> **说明：** 与 C 等其他编程语言不同，Python 没有 `do-while` 循环结构。不过，你可以通过一些技巧来模拟这种循环。要了解相关内容，请参阅《如何在 Python 中模拟 Do-While 循环？》教程。
+
+下面是 `while` 循环的一个简单示例：
+
+```python
+>>> user_input = ""
+>>> while user_input != "exit":
+...     user_input = input("Type something: ")
+...     print(f"You typed: {user_input}")
+...
+Type something: Hello
+You typed: Hello
+Type something: Pythonista!
+You typed: Pythonista!
+Type something: exit
+You typed: exit
+
+```
+
+在这个示例中，循环反复接收用户输入并将其打印到屏幕上。它会持续重复执行其代码块，直到你输入 `exit`，这使得循环条件变为假。
+
+`while` 循环的另一个常见用例是需要等待未知次数的输入或事件。这在游戏和 GUI 应用程序中非常普遍，界面会持续等待、捕获并处理用户事件，比如鼠标点击、按键等。
+
+例如，下面是一个使用 `while` 循环实现猜数字游戏的简短应用：
+
+**文件名：number_guesser.py**
+
+```python
+from random import randint
+
+LOW, HIGH = 1, 10
+secret_number = randint(LOW, HIGH)
+clue = ""
+
+# 游戏循环
+while True:
+    guess = input(f"Guess a number between {LOW} and {HIGH} {clue} ")
+    number = int(guess)
+    if number > secret_number:
+        clue = f"(less than {number})"
+    elif number < secret_number:
+        clue = f"(greater than {number})"
+    else:
+        break
+
+print(f"You guessed it! The secret number is {number}")
+
+```
+
+在这个示例中，你将循环条件设置为 `True`，这使循环能够无限运行。在这种情况下，你需要循环持续运行，直到用户猜中秘密数字。循环的代码块捕获用户的猜测并进行处理，以判断其是否匹配。
+
+> **说明：** 条件恒为真的循环表示一个无限循环。要在 Python 中有意创建此类循环，通常使用 `while True:` 头部。
+
+在每次迭代中，循环都会为用户提供关于秘密数字的线索。这是一款理想的游戏——你总是会赢，除非你按下 Ctrl+C 组合键触发 `KeyboardInterrupt` 异常来终止代码执行。
+
+---
+
+### break 和 continue 语句
+
+Python 中的 `for` 循环和 `while` 循环都可以使用 `break` 和 `continue` 语句，你通常会将它们包裹在条件语句中。这些语句的作用如下：
+
+* `break` 终止循环执行，并使程序直接跳转到紧随循环体之后的第一条语句。
+* `continue` 跳过当前迭代中剩余的代码，立即跳回循环头部。
+
+以下是在 `for` 循环中引入 `break` 和 `continue` 的常用语法：
+
+```python
+# break 的通用语法
+for item in iterable:
+    [block]
+    if break_condition:
+        [block]
+        break
+    [block]
+
+# continue 的通用语法
+for item in iterable:
+    [block]
+    if continue_condition:
+        [block]
+        continue
+    <block>
+
+```
+
+对于 `break`，该语句前后的代码块是可选的。不过在大多数情况下，你至少会包含其中一个，以便循环在跳出之前执行某些操作。语法中的方括号表示这些代码块是可选的。
+
+`break` 语句会直接跳出循环，因此该语句之后的任何代码都不会运行，循环将提前终止。
+
+相比之下，如果 `continue` 语句后面没有任何代码块，那么使用它就没有太大意义。归根结底，该语句的目的就是为了跳过某些代码。因此，该语句之前的代码块是可选的，而之后的代码块在逻辑上则是必需的。这就是为什么语法中使用了尖括号，以此表明该代码块在实践中是必要的，即便 Python 在语法上并未做硬性强制。
+
+如果这些代码与 `break` 或 `continue` 处于同一缩进级别，你就不应该将代码放在它们之后。原因在于，放在同一缩进层级的 `break` 或 `continue` 之后的代码将永远无法执行。稍后你就会看到，那将成为“死代码”（dead code）。
+
+以下是使用 `break` 和 `continue` 的 `while` 循环语法：
+
+```python
+# break 的通用语法
+while loop_condition:
+    [block]
+    if break_condition:
+        [block]
+        break
+    [block]
+
+# continue 的通用语法
+while loop_condition:
+    [block]
+    if continue_condition:
+        [block]
+        continue
+    <block>
+
+```
+
+在这种情况下，这些语句的作用方式与在 `for` 循环中完全相同。需要注意的是，通常你不会在不包裹条件语句的情况下，直接把 `break` 或 `continue` 语句写入循环体中。
+
+例如，如果你直接在循环体中加入 `break` 语句，循环运行到该语句时便会立即终止：
+
+```python
+>>> for i in range(5):
+...     print("Before break")
+...     break
+...     print("After break")
+...
+Before break
+
+```
+
+在这个示例中，`break` 前面的代码执行了一次。`break` 后面的代码则从未执行。它是不可达代码（unreachable code）或死代码（dead code），你的代码检查工具（linter）很可能会将其标记为一个问题。
+
+因此，你将得到一个始终只运行一次的循环。类似地，如果你直接在循环体中放置一条 `continue` 语句，该语句之后的代码将永远不会运行：
+
+```python
+>>> for i in range(5):
+...     print("Before continue")
+...     continue
+...     print("After continue")
+...
+Before continue
+Before continue
+Before continue
+Before continue
+Before continue
+
+```
+
+在这个示例中，`continue` 语句后面的代码同样是不可达的死代码。不过，循环依然如你预期的那样迭代了相应的次数。
+
+最后，你不能在循环外部使用 `break` 或 `continue` 语句：
+
+```python
+>>> break  
+...
+SyntaxError: 'break' outside loop
+>>> continue  
+...
+SyntaxError: 'continue' not properly in loop
+
+```
+
+在这些示例中，你尝试在循环外部使用该语句。在两种情况下，你都会收到带有相应错误提示信息的 `SyntaxError`（语法错误）异常。
+
+### 循环中的 else 子句
+
+Python 的 `for` 和 `while` 循环具有类似于条件语句中的 `else` 子句。对于来自其他编程语言的人来说，这可能会让人感到意外。Python 可能是唯一在循环中引入 `else` 子句的主流编程语言。
+
+添加 `else` 的语法非常简单直接，就像在条件语句中一样：
+
+```python
+for item in iterable:
+    <block>
+else:
+    <block>
+
+while condition:
+    <block>
+else:
+    <block>
+
+```
+
+要在某个循环中添加 `else` 子句，你只需在循环体末尾添加 `else` 关键字，后跟一个冒号和一个缩进的代码块。注意，`else` 关键字必须与循环头部的缩进级别保持一致。
+
+那么，`else` 子句在循环中是如何工作的呢？循环中 `else` 下的代码块**只有在循环正常结束、未遇到 `break` 语句时才会运行**。在 `for` 循环中，它会在目标数据遍历完毕时执行；在 `while` 循环中，它会在条件变为假时运行。
+
+在实践中，如果一个循环中没有 `break` 语句，为其添加 `else` 子句就没有太大意义。如果是这种情况，直接把代码紧随循环之后放置，并保持与循环头部相同的缩进层级，就能得到完全相同的结果。
+
+循环中 `else` 子句的常见用例包括：
+
+* **搜索某物：** 允许你处理循环中未找到目标项的情况。
+* **进行数据校验：** 让你确认所有数据项均已通过校验。
+* **优雅地处理空数据集合：** 允许你在输入的可迭代对象为空时提供后备处理方案。
+
+下面是一个在数字列表中搜索某个值的 `for` 循环简单示例：
+
+```python
+>>> numbers = [1, 3, 5, 9]
+>>> target = 7
+>>> for number in numbers:
+...     if number == target:
+...         print("Found!")
+...         break
+... else:
+...     print("Not found.")
+...
+Not found.
+
+>>> target = 3
+>>> for number in numbers:
+...     if number == target:
+...         print("Found!")
+...         break
+... else:
+...     print("Not found.")
+...
+Found!
+
+```
+
+在第一个循环中，目标值为 7。由于该值不在列表中，循环自然结束，`else` 子句下的代码得以运行，提示你未找到该值。在第二个循环中，目标值为 3，它存在于列表中。在这种情况下，`break` 语句终止了循环，`else` 子句不会运行。
+
+---
+
+### 嵌套循环
+
+有时，你可能需要将一个循环嵌套在另一个循环内部。当需要使用 `for` 循环处理“列表中包含列表”（嵌套列表）时，嵌套循环会很有帮助。例如，假设你有一个数字矩阵，并希望创建另一个包含平方值的矩阵。你可以使用如下所示的嵌套 `for` 循环来实现：
+
+```python
+>>> matrix = [
+...     [9, 3, 8, 3],
+...     [4, 5, 2, 8],
+...     [6, 4, 3, 1],
+...     [1, 0, 4, 5],
+... ]
+>>> squares = []
+>>> for row in matrix:
+...     squares_row = []
+...     for number in row:
+...         squares_row.append(number**2)
+...     squares.append(squares_row)
+...
+>>> squares
+[
+    [81, 9, 64, 9],
+    [16, 25, 4, 64],
+    [36, 16, 9, 1],
+    [1, 0, 16, 25]
+]
+
+```
+
+在这个示例中，外层循环遍历矩阵的每一行。然后，内层嵌套循环计算当前行中各数字的平方，并将它们添加到一个新列表中。最后，你将这个新列表添加到包含平方值的矩阵中。
+
+使用嵌套循环有时是一个不错的解决方案。但是，超过两层的嵌套可能会使你的代码难以阅读和理解。
+
+> **说明：** 要了解有关使用嵌套循环的更多信息，请参阅《Python 中的嵌套循环》教程。
+
+除了嵌套循环的可读性问题之外，你还需要了解，嵌套循环会增加代码的时间复杂度，从而可能影响性能。虽然它们本身并不一定低效，但当每个循环都涉及大量迭代时，你可能会遇到性能瓶颈。
+
+---
+
+### 推导式
+
+推导式是在 Python 中创建列表、字典和集合的一种简洁方式。它们就像紧凑的 `for` 循环，根据你所使用的推导式类型，构建并返回一个新的列表、字典或集合。
+
+推导式的通用用例是从现有的数据集合创建经过转换的新数据集合。为此，推导式允许你对每个数据项应用特定的操作。
+
+以下是 Python 中不同类型推导式的语法：
+
+```python
+# 列表推导式
+[expression for item in iterable [if condition]]
+
+# 集合推导式
+{expression for item in iterable [if condition]}
+
+# 字典推导式
+{key_expression: value_expression for item in iterable [if condition]}
+
+```
+
+这三种推导式结构在语法上非常相似。第一部分由一个表达式组成（在字典推导式中是两个），用于转换原始数据以获取新项。接着是一个模拟常规 `for` 循环头部的结构，这是执行迭代的部分。
+
+最后是一个可选的条件判断，仅在需要通过检查某些条件来过滤数据时使用。注意，这部分与 `if` 语句的头部非常相似。
+
+> **说明：** 要深入了解 Python 中的推导式，请参阅以下教程：
+> * 《何时在 Python 中使用列表推导式》
+> * 《Python 集合推导式：如何以及何时使用它们》
+> * 《Python 字典推导式：如何以及何时使用它们》
+> 
+> 
+
+为了探讨推导式是如何运作的，假设你有一个未经校验就存储的电子邮件地址列表，如下所示：
+
+```python
+>>> emails = [
+...     " alice@example.org ",
+...     "BOB@example.com",
+...     "charlie@EXAMPLE.com",
+...     "David@example.net",
+...     " bob@example.com",
+...     "JohnDoe@example.com",
+...     "DAVID@Example.net"
+... ]
+
+```
+
+你想要清洗这个列表，并考虑使用列表推导式通过字符串处理方法对每个地址应用某些转换。例如，你可以去除前导和尾随空格，并将所有字母转换为小写：
+
+```python
+>>> clean_emails = [email.strip().lower() for email in emails]
+>>> clean_emails
+[
+    'alice@example.org',
+    'bob@example.com',
+    'charlie@example.com',
+    'david@example.net',
+    'bob@example.com',
+    'johndoe@example.com',
+    'david@example.net'
+]
+
+```
+
+在这个示例中，你使用列表推导式通过 `.strip()` 和 `.lower()` 方法转换了原始数据。现在的电子邮件列表看起来好多了。然而，你仍然面临一个问题：列表中存在重复的地址，而你希望它们是唯一的。
+
+在这种情况下，你可以使用集合推导式替代列表推导式，如下所示：
+
+```python
+>>> unique_emails = {email.strip().lower() for email in emails}
+>>> unique_emails
+{
+    'bob@example.com',
+    'david@example.net',
+    'alice@example.org',
+    'charlie@example.com',
+    'johndoe@example.com'
+}
+
+```
+
+现在你拥有了一个完全清洗干净的电子邮件地址集合。在这个示例中，你利用了集合中元素唯一性的特点。请记住，集合是无序的，因此输出中电子邮件地址的排列顺序可能会有所不同。
+
+> **说明：** 要了解有关集合的更多信息，请参阅《Python 中的集合》教程。
+
+尽管推导式是返回集合的表达式，而不是传统的控制流结构，但它们会像 `for` 循环一样遍历输入数据。在某些情况下，使用推导式替代 `for` 循环能让你写出更加简洁、更符合 Python 习惯（Pythonic）的代码。
+
+### 通过递归重复执行代码
+
+递归是另一种可用于控制 Python 代码执行流的机制。递归是一种编程技术，其中函数通过调用自身来解决同一问题的更小规模实例。在某种意义上，递归类似于迭代，因为它允许你重复执行特定的代码块。
+
+> **说明：** 要更深入了解递归，请参阅以下教程：
+> * 《Python 中的递归：入门篇》
+> * 《在 Python 中培养递归思维》
+> 
+> 
+
+编写递归函数时，你需要一个用于打破递归的**基线条件**（base case），以及一个用于发起递归调用的**递归条件**（recursive case）。例如，思考以下使用递归生成倒计时的函数：
+
+```python
+>>> def countdown(n):
+...     print(n)
+...     if n == 0:
+...         return  # 基线条件
+...     else:
+...         countdown(n - 1)  # 递归条件
+...
+>>> countdown(5)
+5
+4
+3
+2
+1
+0
+
+```
+
+在这个函数中，当 `n` 为 0 时触发基线条件，此时函数返回并终止递归。接下来是递归条件，函数在此处调用自身。传入的实参是 `n - 1`，因此每次递归都会向基线条件进一步靠拢。
+
+请注意，你可以使用循环实现完全相同的结果：
+
+```python
+>>> def countdown(n):
+...     while n >= 0:
+...         print(n)
+...         n -= 1
+...
+>>> countdown(5)
+5
+4
+3
+2
+1
+0
+
+```
+
+递归在遍历文件系统和 JSON 树等嵌套结构时非常实用。然而，它也可能会导致效率低下，因为递归调用在内存开销和执行时间上代价较为高昂。
+
+Python 默认设有 1000 次递归调用的深度限制。如果超出该限制，程序将抛出 `RecursionError` 异常。例如，如果你想生成一个从 2000 开始的倒计时，这就会成为一个问题。
+
+> **说明：** 如果有需要，你可以修改递归限制，方法如下：
+> ```python
+> >>> import sys
+> >>> sys.getrecursionlimit()  # 检查当前限制
+> 1000
+> >>> sys.setrecursionlimit(3000)  # 更新限制
+> >>> sys.getrecursionlimit()
+> 3000
+> 
+> ```
+> 
+> 
+> 在这个示例中，你使用 `getrecursionlimit()` 函数检查当前的递归限制。随后，使用 `setrecursionlimit()` 函数将限制调整为 3000 次递归。
+
+最后，递归函数可能会比较难以调试，因为追踪调用链并不总是那么直观。调用栈中会同时存在多个处于活动状态的函数调用，这可能会让执行流变得难以跟进。
+
+---
+
+### 探索与控制流相关的其他结构
+
+尽管条件语句、循环和递归是 Python 中的核心控制流结构，但你还会发现其他能够影响程序执行流的语言特性。在这一部分中，你将探索以下几个对代码何时以及如何运行产生重大影响的语句：
+
+* `return`
+* `yield`
+* `raise`
+* `with`
+
+这些语句均能协助你控制程序的执行流程，使你能够写出更清晰、更安全、更易维护且更符合 Python 风格的代码。
+
+---
+
+### return 语句
+
+`return` 语句会立即退出函数，并可选择返回一个值。一个函数可以包含多个 `return` 语句，但取决于具体的执行流，在给定的某次函数调用中只有一个会被执行。`return` 语句不仅允许函数返回可选的值，还允许在需要时提前终止函数，从而实现对函数执行流的控制。
+
+> **说明：** 要了解更多关于 `return` 的内容，请参阅《Python return 语句：用法与最佳实践》。
+
+当一个函数包含多条返回路径且执行流进入其中某一条时，其余路径均不会执行。例如，假设你正在准备 Python 编程面试，正在实现一个解决 FizzBuzz 挑战的函数：对于能被 3 整除的数字返回 `"fizz"`，能被 5 整除的返回 `"buzz"`，同时能被 3 和 5 整除的返回 `"fizz buzz"`：
+
+```python
+>>> def fizzbuzz(number):
+...     if number % 15 == 0:
+...         return "fizz buzz"
+...     elif number % 3 == 0:
+...         return "fizz"
+...     elif number % 5 == 0:
+...         return "buzz"
+...     else:
+...         return number
+...
+>>> for number in range(5):
+...     fizzbuzz(number)
+...
+'fizz buzz'
+1
+2
+'fizz'
+4
+
+```
+
+该函数包含多条返回路径，每条路径均取决于一个条件。例如，当数字只能被 3 整除时，第二个条件为真，函数返回 `"fizz"`。由于函数执行已经终止，后续的代码均不会运行。
+
+### yield 语句
+
+`yield` 语句允许你定义能够返回迭代器的生成器函数（generator functions）。该迭代器会按需产出（yield）元素。换言之，你可以在代码执行的不同时刻从该迭代器中提取元素。之所以能够做到这一点，是因为 `yield` 语句会暂停元素的生成，直到你请求新元素为止。
+
+生成器提供了一种对内存友好的方式来遍历大型数据集，因为它们不会将所有数据一次性加载到内存中，而仅加载当前所请求的数据项。
+
+> **说明：** 要了解有关 `yield` 的更多信息，请参阅《如何在 Python 中使用生成器和 yield》教程。
+
+`yield` 语句同样提供了一种控制代码执行流的机制。例如，假设你想编写一个接收数字列表并返回迭代器的函数，该迭代器产出一条显示该数字及其奇偶性的消息。
+
+以下是一种可能的实现方案：
+
+```python
+>>> def odd_even(numbers):
+...     for number in numbers:
+...         if number % 2 == 0:
+...             yield f"{number} is even"
+...         else:
+...             yield f"{number} is odd"
+...
+>>> numbers = [2, 2, 3, 11, 4, 5, 7, 4]
+>>> generator = odd_even(numbers)
+>>> next(generator)
+'2 is even'
+>>> next(generator)
+'2 is even'
+>>> next(generator)
+'3 is odd'
+>>> for result in generator:
+...     print(result)
+...
+11 is odd
+4 is even
+5 is odd
+7 is odd
+4 is even
+
+```
+
+`odd_even()` 函数可以走两条可能的执行路径之一。如果数字是偶数，它将运行 `if` 代码块，产出相应的消息。如果数字是奇数，它将运行 `else` 代码块。无论哪种情况，`yield` 语句都会产生一个值，并暂停函数的执行，直到你请求另一个值为止。
+
+你可以调用该函数来获取一个生成器对象。使用内置的 `next()` 函数，你可以从生成器中获取元素。在每次调用后，生成器的执行都会被暂停，直到你请求下一个元素。需要注意的是，`yield` 语句仅暂停了元素的生成——它并不会暂停代码的全局执行。
+
+在 `for` 循环中使用生成器会导致循环逐一请求元素，直到数据耗尽且生成器枯竭。
+
+---
+
+### raise 语句
+
+`raise` 语句通过抛出异常来中断代码段的执行。它允许你显式地发出信号，表明代码中发生了错误或异常情况。这也是一种可用于控制代码执行流的技术。
+
+> **说明：** 要了解有关 `raise` 的更多信息，请参阅《Python 的 raise：在代码中有效地引发异常》教程。
+
+作为使用 `raise` 控制执行流的示例，假设你想编写一个判断给定数字是否为质数的函数。以下是一种可能的实现方案：
+
+```python
+>>> from math import sqrt
+>>> def is_prime(number):
+...     if not isinstance(number, int):
+...         raise TypeError(
+...             f"integer number expected, got {type(number).__name__}"
+...         )
+...     if number < 2:
+...         raise ValueError(f"integer above 1 expected, got {number}")
+...     for candidate in range(2, int(sqrt(number)) + 1):
+...         if number % candidate == 0:
+...             return False
+...     return True
+...
+>>> is_prime(2)
+True
+>>> is_prime(1)
+Traceback (most recent call last):
+    ...
+ValueError: integer above 1 expected, got 1
+>>> is_prime(10)
+False
+
+```
+
+在该函数中，你首先检查输入的数字是否不是 `int` 的实例，如果是这种情况，则抛出 `TypeError` 异常。接着，检查输入的数字是否小于 2，如果条件为 `True`，则抛出 `ValueError`。这两条 `if` 语句检查的情况都会在执行循环所实现的核心功能期间引发错误。在两种情况下，`raise` 语句都会立即跳出函数。
+
+---
+
+### with 语句
+
+Python 的 `with` 语句允许你在代码中使用上下文管理器（context manager）。上下文管理器是一个能够创建上下文的对象，允许你控制前置准备（setup）和清理释放（teardown）任务，例如关闭打开的文件、释放网络连接等。
+
+当你进入上下文时，准备任务会自动运行。同样地，当你退出上下文时，清理任务也会自动运行。因此，你不仅是在按顺序运行上下文内部的代码，同时还在运行程序中其他部分所定义的代码。
+
+> **说明：** 要了解有关 `with` 的更多信息，请参阅《上下文管理器与 Python 的 with 语句》教程。
+
+可以说，`with` 最常见的用例是配合内置的 `open()` 函数用于处理文件。以下代码创建了一个文件并在其中写入了一些文本：
+
+```python
+>>> with open("example.txt", mode="w", encoding="utf-8") as file:
+...     file.write("Hello, World!")
+...
+13
+
+```
+
+`open()` 函数返回一个上下文管理器。其准备逻辑包括打开文件并将生成的文件对象赋值给 `as` 关键字后面的变量。在上下文内部（即缩进的代码部分），你向文件中写入了一些文本。
+
+处理完文件后，上下文管理器会运行清理逻辑，包括关闭文件并释放相应的资源。输出中出现的数字 13 是 `file.write()` 的返回值，表示成功写入文件的字符数。
+
+简而言之，程序的执行流程会跳转到文件对象的代码中（该代码定义在 Python 标准库的某个位置）。随后，流程返回你的代码并执行缩进代码块。最后，执行流再次跳转到文件对象的代码，以正确关闭物理文件。
+
+### 使用 try … except 代码块控制流程
+
+在现实世界的编程中，事情难免会出错。文件可能不存在、用户输入可能无效、网络连接可能会意外断开等等。如果你不能妥善优雅地处理这些情况，你的代码就可能崩溃或表现出不可预测的行为。
+
+Python 的 `try … except` 语句为你提供了一种结构化的方式，用于在错误和异常发生时对其进行处理。你可以捕获特定的异常，采取补救措施，或者输出有帮助的提示信息以便优雅地应对失败。然而，这些仅仅是 `try … except` 代码块的核心功能。在 Python 中，你还会经常将此语句用作**控制流结构**。
+
+> **说明：** 相比基于条件判断的 LBYL（Look Before You Leap，三思而后行）编码风格，Python 代码往往更青睐基于异常处理的 EAFP（Easier to Ask Forgiveness than Permission，求原谅比求许可容易）编码风格。对于习惯其他语言的开发者来说，这种做法可能听起来有些怪异，但正如你所知，Python 确实与众不同。
+
+通常来说，异常应当用于处理真正出乎意料的情况。对于其他所有情况，清晰明确的控制流才是更好的选择，因为滥用异常来进行流程控制可能会降低代码的可读性与易懂性。
+
+本节将向你展示如何通过以整洁、易读的方式预先防范并管理错误，从而编写出更加健壮且可靠的程序。
+
+---
+
+### 使用 try … except 代码块处理错误
+
+`try` 语句是 Python 用来捕获代码中可能发生的异常并优雅处理的机制。该语句的基本语法如下所示：
+
+```python
+try:
+    <main_block>
+except exception_0[ as error_0]:
+    <response_block_0>
+except exception_1[ as error_1]:
+    <response_block_1>
+...
+except exception_n[ as error_n]:
+    <response_block_n>
+
+```
+
+`try` 关键字开启该语句，并直接进入缩进的代码块。在这个代码块中，你要放入在特定条件下可能引发异常的易出错代码。理想情况下，这个代码块应该保持简短，仅包含可能引发你正试图处理的问题的代码。
+
+> **说明：** 你应当让 `try` 关键字下的代码块保持简短且专一。如果你包含了与正在处理的问题没有直接关联的代码，那些代码可能会引发完全不同的异常，从而导致你的处理策略失效。
+
+如果在执行易出错代码的过程中发生了指定类型的异常，`except` 关键字就会将其捕获。你可以根据需要编写任意数量的 `except` 子句，当你的代码可能引发多种不同异常且你需要对每种异常做出不同响应时，这非常有用。
+
+在想要操作文件并确保其存在时，使用 `try` 语句来控制程序的执行流就是一个很好的例子。你可以使用条件语句来检查文件是否存在。但在某些情况下，你的代码依然可能会失败，因为在“检查文件”与“实际操作文件”之间存在一个时间差（time gap）。
+
+在这种情况下，你可以使用 `try` 语句来代替条件语句：
+
+```python
+from pathlib import Path
+
+file_path = Path("/path/to/file.txt")
+
+try:
+    with file_path.open() as file:
+        print(file.read())
+except OSError as e:
+    print("file not found")
+
+```
+
+在这个示例中，你将文件处理包裹在 `try … except` 中。这段代码直接跳入文件操作任务，消除了检查与操作之间的时间差。如果文件不存在，代码将抛出 `OSError` 异常，你在 `except` 代码块中捕获并处理该异常，向屏幕打印一条错误消息。
+
+如果相关代码可能引发多种异常，并且你想针对每种异常提供具体的解决方案，你可以编写多个 `except` 代码块。在这种情况下，你需要知道声明异常的顺序非常重要，因为 Python 会在第一个匹配的 `except` 子句处停止检查，即使后面还有其他匹配的异常也是如此。
+
+相反，如果代码可能引发多种不同的异常，而你想以相同的方式统一响应它们，则可以使用以下语法：
+
+```python
+try:
+    <main_block>
+except (exception_0, exception_1, ..., exception_n)[ as error]:
+    <response_block>
+
+```
+
+在这种情况下，你在 `except` 后面使用一个包含多个异常的元组。如果在代码运行期间发生了其中任何一个异常，你就可以在 `except` 块中执行一套统一的解决方案。
+
+> **说明：** 尽管 Python 当前要求将多种异常类型包裹在圆括号内，但从 Python 3.14 开始，圆括号已变为可选。
+
+举例说明，假设你正在从购物车系统中读取商品价格，其中一些价格可能是错误的：
+
+```python
+>>> cart = [
+...     {"item": "Book", "price": "15"},
+...     {"item": "Pen", "price": "free"},
+...     {"item": "Notebook", "price": None},
+... ]
+
+```
+
+在这些数据中，钢笔（Pen）和笔记本（Notebook）的价格不是有效的数字。如果你尝试使用这些值进行计算，就会遇到错误，导致代码崩溃。在进行进一步处理之前，你需要处理这种情况以确保价格是有效的整数。
+
+在这种场景下，你可以使用内置的 `int()` 函数将数据转换为整数。该函数可能会引发两种异常：
+
+1. `ValueError`：当实参无法解析为整数时引发，如上面的 `"free"` 字符串。
+2. `TypeError`：当实参的类型不支持转换时引发，如上面的 `None` 对象。
+
+因此，你需要在代码中同时捕获这两种异常。不过，在这两种情况下你的响应方式都是相同的——只在屏幕上显示一条错误信息。实现代码如下：
+
+```python
+>>> for product in cart:
+...     try:
+...         price = int(product["price"])
+...     except (ValueError, TypeError) as e:
+...         print(f"Error: '{product['item']}': {e}")
+...
+Error: 'Pen': invalid literal for int() with base 10: 'free'
+Error: 'Notebook': int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
+
+```
+
+当代码处理钢笔的价格时，由于 `int()` 无法将 `"free"` 字符串转换为数字，因此抛出 `ValueError`。同样地，当代码处理笔记本的价格时，由于 `None` 不是受支持的类型，因此抛出 `TypeError`。在这两种情况下，你都采取了相同的应对策略：在屏幕上打印出错误信息。
+
+### 使用 else 子句运行成功后的代码
+
+`try` 语句的语法中包含了可选的 `else` 和 `finally` 子句。只有在 `try` 代码块中没有抛出任何异常时，`else` 子句才会运行。
+
+如果需要使用 `else` 子句，必须遵循以下语法：
+
+```python
+try:
+    <main_block>
+except exception[ as error]:
+    <response_block>
+...
+else:
+    <block>
+
+```
+
+在实践中，当你需要将错误处理逻辑与操作成功后的后续逻辑区分开时，`else` 子句非常有用。下面是一个处理用户输入、确保输入是有效数字并根据结果显示对应信息的简单示例：
+
+**文件名：user_input.py**
+
+```python
+user_input = input("Enter an integer number: ")
+try:
+    number = int(user_input)
+except ValueError as e:
+    print(f"Error: {e}")
+else:
+    print(f"Success: you entered {number}")
+
+```
+
+在这个示例中，你使用 `input()` 函数在命令行获取用户输入。接着，在 `try` 代码块中尝试将输入转换为整数。如果该转换抛出 `ValueError`，程序会显示一条错误消息；如果转换成功，则会打印相应的提示信息通知用户。
+
+以下是该代码的运行效果：
+
+```bash
+$ python user_input.py
+Enter an integer number: 42
+Success: you entered 42
+$ python user_input.py
+Enter an integer number: one
+Error: invalid literal for int() with base 10: 'one'
+
+```
+
+如你所见，`else` 子句为你提供了一种在代码成功后执行后续操作的方法。如果代码发生错误，这些操作将不会运行。
+
+---
+
+### 使用 finally 子句执行清理工作
+
+有时，你可能需要在异常处理代码之后执行某些清理操作。如果遇到这种情况，可以使用 `try` 语句的 `finally` 子句。
+
+`finally` 的语法如下所示：
+
+```python
+# 不带异常处理
+try:
+    <main_block>
+finally:
+    <block>
+
+# 带有异常处理
+try:
+    <main_block>
+except exception[ as error]:
+    <response_block>
+...
+finally:
+    <block>
+
+```
+
+该子句允许你执行清理操作，因为它是无条件运行的。换句话说，无论是否抛出异常，它都会执行。
+
+当将 `finally` 与异常处理结合使用时，它必须始终位于最后。在任何情况下，`finally` 子句都不能出现多次。
+
+> **说明：** 在大多数情况下，通常会使用 `with` 语句和上下文管理器来自动执行清理操作，而不是在 `try … except` 块中使用 `finally` 子句。不过在某些场景下，你可能没有这种选择，此时 `finally` 就是理想的解决方案。
+
+下面是一个展示如何使用 `finally` 的示例。假设你想要构建一个向 API 发送 HTTP 请求并需要密钥才能访问的应用。你的应用应该从用户那里获取 API 密钥，并将其存储在环境变量中。一旦应用使用完毕，你需要将该密钥从环境变量中移除。
+
+以下是这个假想应用的一个简易实现：
+
+**文件名：call_api.py**
+
+```python
+import os
+import random
+
+def main():
+    user_key = input("Please enter your API key: ")
+    os.environ["API_KEY"] = user_key
+    print(f"Temporary API key set: {os.environ['API_KEY']}")
+
+    try:
+        run_api_call(os.environ["API_KEY"])
+    except Exception as e:
+        print(f"Error: {e}")
+    else:
+        print("API call completed successfully.")
+    finally:
+        del os.environ["API_KEY"]
+        print("API key cleaned up!")
+
+def run_api_call(api_key):
+    # 模拟 API 调用
+    if random.choice([True, False]):
+        print(f"Running API call with key: {api_key}")
+    else:
+        raise Exception("API call failed.")
+
+if __name__ == "__main__":
+    main()
+
+```
+
+在 `main()` 函数内部，你使用 `input()` 函数询问用户的 API 密钥。接着，通过 `os.environ` 映射将该密钥存储到名为 `API_KEY` 的环境变量中。
+
+在 `try` 代码块中，你使用 `run_api_call()` 执行 API 调用。如果该调用引发了异常，程序会在屏幕上打印一条错误信息。否则，会通过 `else` 子句显示成功消息。
+
+`finally` 子句则是你从环境中移除 API 密钥的地方，以确保在应用使用完毕后该密钥不会继续留存。该子句始终会运行，因此你可以确信在应用程序终止时密钥一定会被清理干净。
+
+## 使用 match … case 进行模式匹配
+
+Python 的 `match … case` 结构用于模式匹配（pattern matching），它允许程序根据数据与模式匹配的比较结果采取不同的操作。首个匹配成功的模式将决定代码的执行路径。
+
+> **说明：** 要更深入了解 `match … case` 语句，请参阅《Python 中的结构化模式匹配》教程。
+
+在以下场景中，你可以考虑使用 `match … case`：
+
+* 替换由 `if` 和 `elif` 构成的冗长条件判断链
+* 将数据与不同值进行匹配，包括元组或字典等复合结构
+* 构建命令分发器、解析器，或处理诸如 JSON、API 响应及抽象语法树（AST）等结构化数据
+
+Python 中 `match … case` 语句的通用语法如下所示：
+
+```python
+match subject:
+    case pattern_0:
+        <block_0>
+    case pattern_1:
+        <block_1>
+    ...
+    case pattern_n:
+        <block_n>
+    case _:
+        <default block>
+
+```
+
+该语法的具体分解如下：
+
+* **`match subject:`** 该行开启模式匹配块。Python 会对目标对象 `subject` 求值一次，并尝试将其与每个 `case` 中的模式进行匹配。
+* **`case pattern:`** 每个 `case` 将一个模式与 `subject` 进行比较。如果匹配成功，Python 就会执行该缩进代码块并跳过其余分支。
+* **`case _:`** 该 `case` 提供了一个通配符模式（wildcard pattern）。如果没有更早的模式匹配成功，它将匹配任何内容。
+
+在实践中，模式几乎可以匹配任何 Python 对象。例如，假设你需要编写一个能够读取不同文件格式（如 JSON 和 CSV）的函数，每种文件格式都需要不同的处理逻辑。
+
+以下是如何使用 `match … case` 语句优雅应对该场景的示例：
+
+**文件名：file_reader.py**
+
+```python
+import csv
+import json
+from pathlib import Path
+
+def read_file(file_path):
+    path = Path(file_path)
+    if not path.exists():
+        print(f"File not found: {file_path}")
+        return None
+
+    with path.open(mode="r", encoding="utf-8") as file:
+        match path.suffix.lower():
+            case ".json":
+                data = json.load(file)
+                print("Loaded JSON data.")
+                return data
+            case ".csv":
+                reader = csv.DictReader(file)
+                data = list(reader)
+                print("Loaded CSV data.")
+                return data
+            case _:
+                print(f"Unsupported file type: {path.suffix}")
+                return None
+
+```
+
+在这个示例中，`read_file()` 函数接收一个文件路径作为参数。它将路径转换为 `pathlib.Path` 对象并检查文件是否存在。如果文件不存在，你将收到一条错误提示。
+
+如果文件确实存在，你便使用 `with` 语句和 `Path` 类的 `.open()` 方法将其以只读模式打开。`match` 语句通过 `.suffix` 属性获取文件扩展名。随后，一个 `case` 将扩展名与 `".json"` 字符串进行匹配，另一个 `case` 则将其与 `".csv"` 进行匹配。
+
+如果文件扩展名匹配 `".json"`，你使用 `json` 模块读取文件内容；类似地，如果匹配 `".csv"`，则使用 `csv` 模块读取。在这两种情况下，函数都会返回读取到的数据。
+
+最后，你提供了一个 `case _` 子句来捕获不受支持的文件格式。当你使用一个存在但格式不支持的文件调用该函数时，将会得到一条错误提示信息。
+
+要运行该脚本进行测试，可以执行以下代码：
+
+```python
+>>> from file_reader import read_file
+>>> for file_path in ["test.json", "test.csv", "test.toml", "test.txt"]:
+...     result = read_file(file_path)
+...     print(result)
+...     print()
+...
+Loaded JSON data.
+[
+    {'name': 'John', 'job': 'Software Engineer', 'country': 'USA'},
+    {'name': 'Jane', 'job': 'Data Scientist', 'country': 'Canada'}
+]
+
+Loaded CSV data.
+[
+    {'name': 'John Doe', 'job': 'Software Engineer', 'country': 'USA'},
+    {'name': 'Jane Doe', 'job': 'Data Scientist', 'country': 'Canada'}
+]
+
+File not found: test.toml
+None
+
+Unsupported file type: .txt
+None
+
+```
+
+请注意，只有当上述文件存在于你的工作目录中时，代码才能按预期运行。若要使用示例数据进行测试，请点击下方的“显示/隐藏”开关，并将内容复制到当前工作目录下的对应文件中。
+
+
+### 常见陷阱与最佳实践
+
+在最后的这一节中，你将学习刚开始接触 Python 控制流结构时容易犯的一些常见错误。这些错误包括无意识的无限循环、恒真或恒假的条件、捕获范围过宽的异常处理以及深层嵌套的代码。这些问题可能会导致程序缺陷（bug）、性能低下以及代码难以阅读。
+
+在接下来的内容中，你将探讨这些问题，并学习如何运用 Python 最佳实践重构代码以修复它们。你将通过查看存在问题或缺陷的代码示例，了解如何对其进行改进。
+
+---
+
+#### 无意识的无限循环
+
+无限循环在有意为之的情况下非常有用。例如，在 GUI（图形用户界面）应用程序中处理用户事件，以及编写异步代码时，无限循环都是标准做法。
+
+但有时，一段代码会陷入无意识的无限循环。这通常发生在 `while` 循环中，由于循环的退出条件永远无法变为假（`False`）。思考下面这个受此问题困扰的循环示例：
+
+🚫 **存在问题的示例：**
+
+```python
+count = 0
+while count < 5:
+    print("Counting...")
+
+```
+
+这个循环可能会永远运行下去，因为变量 `count` 在循环体内部从未被更新过。现在，来看看下面修改后的版本：
+
+✅ **修复后的示例：**
+
+```python
+count = 0
+while count < 5:
+    print("Counting...")
+    count += 1
+
+```
+
+当你遇到类似本例中这种出乎意料的循环行为时，请检查循环条件并确保其状态得到了正确的更新。此外，还要检查该条件在代码执行过程中的某个时刻是否确实能够变为 `False`。
+
+---
+
+#### 恒真或恒假的条件
+
+有时，由于逻辑错误，你可能会遇到 `if` 语句的条件恒为真或恒为假的情况。这通常是因为条件表达式本身存在细微的失误。思考下面这个条件恒为真的简易示例：
+
+🚫 **存在问题的示例：**
+
+```python
+>>> def user_accepted_terms():
+...     return False  # 模拟用户未接受条款
+...
+>>> if user_accepted_terms:
+...     print("Access granted.")
+... else:
+...     print("Access denied.")
+...
+Access granted.
+
+```
+
+在这个示例中，作为条件的函数根本没有被调用。因此，条件实际上是一个函数对象，而在 Python 中函数对象总是被判定为真（truthy）。要修复这个问题，你需要检查条件并加上调用的圆括号。
+
+✅ **修复后的示例：**
+
+```python
+>>> def user_accepted_terms():
+...     return False
+...
+>>> if user_accepted_terms():
+...     print("Access granted.")
+... else:
+...     print("Access denied.")
+...
+Access denied.
+
+```
+
+在这个示例中，你通过调用该函数修复了条件。当你面临类似情况时，问问自己该条件是否真能求值为 `True` 或 `False`，并重新仔细验证你的假设。
+
+---
+
+#### 错误的条件顺序
+
+有时，`elif` 子句可能会导致一个问题：由于条件的评估顺序错误，导致某些分支永远无法执行。
+
+例如，回想一下 FizzBuzz 挑战：能被 3 整除的数字返回 `"fizz"`，能被 5 整除的返回 `"buzz"`，同时能被 3 和 5 整除的返回 `"fizz buzz"`。现在，假设你按照获取题目要求的顺序来编写代码，如下所示：
+
+🚫 **存在问题的示例：**
+
+```python
+>>> def fizzbuzz(number):
+...     if number % 3 == 0:
+...         return "fizz"
+...     elif number % 5 == 0:
+...         return "buzz"
+...     elif number % 15 == 0:
+...         return "fizz buzz"
+...     else:
+...         return number
+...
+>>> fizzbuzz(3)
+'fizz'
+>>> fizzbuzz(5)
+'buzz'
+>>> fizzbuzz(15)
+'fizz'
+
+```
+
+在这个实现中，你使用了 `if … elif … else` 结构。首先检查数字是否能被 3 整除，然后是 5，最后是 3 和 5（即 15），完全照搬了题目描述的顺序。然而，这个顺序并不奏效，因为对于 15，你本应得到 `"fizz buzz"`，却得到了 `"fizz"`。
+
+如何解决这个问题呢？你可以调整条件的先后顺序，如下面修改后的示例所示：
+
+✅ **修复后的示例：**
+
+```python
+>>> def fizzbuzz(number):
+...     if number % 15 == 0:
+...         return "fizz buzz"
+...     elif number % 3 == 0:
+...         return "fizz"
+...     elif number % 5 == 0:
+...         return "buzz"
+...     else:
+...         return number
+...
+>>> fizzbuzz(3)
+'fizz'
+>>> fizzbuzz(5)
+'buzz'
+>>> fizzbuzz(15)
+'fizz buzz'
+
+```
+
+在这个新版本中，你把检查数字能否同时被 3 和 5 整除的条件移到了条件链的最顶端。现在，函数运行完全符合预期，对于 15 返回了 `"fizz buzz"`。
+
+---
+
+#### 捕获范围过宽的异常
+
+使用不带具体类型的裸 `except`（bare except）或捕获像 `Exception` 这样过于宽泛的异常，会掩盖潜在的 bug、吞掉有价值的回溯追踪（traceback）信息，并让代码变得极难调试。下面是一个展示该问题在实践中如何影响代码的示例：
+
+🚫 **存在问题的示例：**
+
+```python
+>>> try:
+...     number = int("abc")
+... except Exception:
+...     print("Conversion error.")
+...
+Conversion error.
+
+```
+
+这段代码虽然可以运行，但它隐藏了具体出错的原因，使你无法更深入地了解可能影响代码的真实问题。例如，假设你以 `None` 作为实参来调用 `int()`：
+
+```python
+>>> try:
+...     number = int(None)
+... except Exception as e:
+...     print("Conversion error.")
+...
+Conversion error.
+
+```
+
+在这种情况下，你得到了相同的错误提示。然而这一次发生的根本不是转换错误，而是一个完全不同的错误，因为没有任何方法可以将 `None` 转换为整数。
+
+更深入的代码分析会揭示，你可能会遇到 `ValueError` 或 `TypeError` 异常。它们各自应当生成不同的错误提示。看看下面的示例，了解使用更具体的异常如何帮助你编写更健壮的代码：
+
+✅ **修复后的示例：**
+
+```python
+>>> try:
+...     number = int("abc")
+... except ValueError:
+...     print("Error: value can't be converted to int.")
+...
+Error: value can't be converted to int.
+
+```
+
+这一次，你使用了一个更具体且有针对性的异常。现在，如果你再次传入 `None` 调用 `int()` 会发生什么？结果如下：
+
+```python
+>>> try:
+...     number = int(None)
+... except ValueError:
+...     print("Error: value can't be converted to int.")
+...
+Traceback (most recent call last):
+    ...
+TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
+
+```
+
+在这种情况下，程序抛出了 `TypeError` 异常，而不是给出之前那条信息量不足的错误消息。现在你明白了代码可能会引发不同的异常。有了这个认知后，你就可以进一步修复代码：
+
+```python
+>>> try:
+...     number = int(None)
+... except ValueError:
+...     print("Error: value can't be converted to int.")
+... except TypeError:
+...     print("Error: data type doesn't support int conversion")
+...
+Error: data type doesn't support int conversion
+
+```
+
+在这个最终版本中，你为每种异常类型都提供了特定的错误消息。通常来说，**只捕获你能妥善处理的异常**，让其他异常自然浮出水面。这种做法将极大地帮助你调试代码并使其更加健壮。
+
+---
+
+#### 难以阅读的深层嵌套结构
+
+深层嵌套的结构会使代码难以阅读、理解、维护和调试。思考下面这个模拟用户认证流程的示例：
+
+🚫 **存在问题的示例：**
+
+```python
+def access_account(user):
+    if user:
+        if user.is_authenticated:
+            if user.has_permission("rw"):
+                print("Full access granted")
+            else:
+                print("Permission denied")
+        else:
+            print("Please log in")
+    else:
+        print("No user provided")
+
+```
+
+这个函数虽然逻辑正确，但其三层嵌套使得执行流程难以跟踪，模糊了代码的意图。采用更扁平的版本会更好：
+
+✅ **修复后的示例：**
+
+```python
+def access_account(user):
+    if not user:
+        print("No user provided")
+        return
+    if not user.is_authenticated:
+        print("Please log in")
+        return
+    if not user.has_permission("rw"):
+        print("Permission denied")
+        return
+
+    print("Full access granted")
+
+```
+
+这个版本使用了**卫语句**（guard clauses）和**提前返回**（early return）来提高可读性，使代码的意图更加直观清晰、易于理解。
+
+在实践中，除非绝对必要，否则应当尽量避免超过两层的嵌套。该建议不仅适用于条件语句，更尤其适用于循环——因为嵌套循环还会直接降低代码的执行效率。
+
+## [条件语句](https://realpython.com/python-conditional-statements/)
+
+### if 语句入门
+
+我们将从最基础的 `if` 语句形式讲起。在最简单的形式中，它看起来像这样：
+
+```python
+if <expr>:
+    <statement>
+
+```
+
+在上面展示的结构中：
+
+* `<expr>` 是一个在布尔上下文中求值的表达式，正如《Python 中的运算符与表达式》教程中逻辑运算符部分所讨论的那样。
+* `<statement>` 是一个有效的 Python 语句，它必须被缩进。（你很快就会知道原因。）
+
+如果 `<expr>` 为真（求值结果为“真值/truthy”），那么 `<statement>` 就会被执行。如果 `<expr>` 为假，那么 `<statement>` 会被跳过而不执行。
+
+需要注意的是，`<expr>` 后面的冒号（`:`）是必不可少的。有些编程语言要求用圆括号把 `<expr>` 包裹起来，但 Python 并不需要。
+
+以下是此类 `if` 语句的若干示例：
+
+```python
+>>> x = 0
+>>> y = 5
+
+>>> if x < y:                            # 真值 (Truthy)
+...     print('yes')
+...
+yes
+
+>>> if y < x:                            # 假值 (Falsy)
+...     print('yes')
+...
+
+>>> if x:                                # 假值 (Falsy)
+...     print('yes')
+...
+
+>>> if y:                                # 真值 (Truthy)
+...     print('yes')
+...
+yes
+
+>>> if x or y:                           # 真值 (Truthy)
+...     print('yes')
+...
+yes
+
+>>> if x and y:                          # 假值 (Falsy)
+...     print('yes')
+...
+
+>>> if 'aul' in 'grault':                # 真值 (Truthy)
+...     print('yes')
+...
+yes
+
+>>> if 'quux' in ['foo', 'bar', 'baz']:  # 假值 (Falsy)
+...     print('yes')
+...
+
+```
+
+> **说明：** 如果你在 REPL 交互式会话中运行这些示例，你会发现当输完 `print('yes')` 语句并按下 Enter 键后，并没有任何反应。
+> 因为这是一个多行语句，你需要再按一次 Enter 键，告诉解释器你已经输入完毕。在从脚本文件中执行的代码中，这个额外的换行是没有必要的。
+
+
+### 组合语句：缩进与代码块
+
+到目前为止，一切都很顺利。
+
+但假设你想评估一个条件，并在该条件为真时执行不止一件事：
+
+如果天气晴朗，我将：
+
+* 修剪草坪
+* 给花园除草
+* 带狗去散步
+
+（如果天气不好，那我一件也不会做。）
+
+在前面展示的所有示例中，每个 `if <expr>:` 后面都只跟了一条 `<statement>`。我们需要某种方式来表达：“如果 `<expr>` 为真，就执行以下所有事情。”
+
+大多数编程语言通常采用的方法是定义一种语法机制，将多个语句组合成一个**复合语句**（compound statement）或**代码块**（block）。代码块在语法上被视为一个单一实体。当它是 `if` 语句的目标分支且 `<expr>` 为真时，该代码块中的所有语句都会被执行；如果 `<expr>` 为假，则其中的语句一条也不会执行。
+
+几乎所有的编程语言都具备定义代码块的能力，但它们的实现方式并不尽相同。让我们看看 Python 是如何做到的。
+
+---
+
+### Python：一切尽在缩进中
+
+Python 遵循一种被称为**越位规则**（off-side rule）的约定，该术语由英国计算机科学家彼得·J·兰丁（Peter J. Landin）提出（借用了英式足球中的越位规则概念）。遵循越位规则的语言通过**缩进**来定义代码块。Python 正是为数不多的越位规则语言之一。
+
+回想前面关于 Python 程序结构的教程，缩进在 Python 程序中具有特殊的意义。现在你知道原因了：**缩进用于定义复合语句或代码块**。在 Python 程序中，具有相同缩进级别的连续语句被视为属于同一个代码块。
+
+因此，Python 中的复合 `if` 语句看起来像这样：
+
+```python
+if <expr>:
+    <statement>
+    <statement>
+    ...
+    <statement>
+<following_statement>
+
+```
+
+在这里，所有处于相同缩进层级的语句（第 2 行到第 5 行）都被视为属于同一个代码块。如果 `<expr>` 为真，则执行整个代码块；如果 `<expr>` 为假，则跳过整个代码块。无论哪种情况，之后都会继续执行 `<following_statement>`（第 6 行）。请注意，没有任何专门的标记来表示代码块的结束；相反，代码块的结束是通过缩进少于该代码块自身的行来标示的。
+
+> **说明：** 在 Python 官方文档中，由缩进定义的一组语句通常被称为**套件**（suite）。本教程系列将混用“代码块（block）”和“套件（suite）”这两个术语。
+
+思考这个名为 `foo.py` 的脚本文件：
+
+```python
+if 'foo' in ['bar', 'baz', 'qux']:
+    print('Expression was true')
+    print('Executing statement in suite')
+    print('...')
+    print('Done.')
+print('After conditional')
+
+```
+
+运行 `foo.py` 会产生以下输出：
+
+```console
+C:\> python foo.py
+After conditional
+
+```
+
+第 2 到 5 行的四个 `print()` 语句缩进级别彼此相同。它们构成了当条件为真时将被执行的代码块。但由于条件为假，该代码块中的所有语句都被跳过。当复合 `if` 语句执行结束时（无论第 2 到 5 行代码块中的语句是否执行），执行流程都会跳转到第一个具有更少缩进级别的语句：即第 6 行的 `print()` 语句。
+
+代码块可以嵌套到任意深度。每次增加缩进都会定义一个新的代码块，每次减少缩进（反缩进/outdent）都会结束前面的代码块。由此形成的结构直观、一致且清晰明了。
+
+这里有一个更复杂的脚本文件 `blocks.py`：
+
+```python
+# 该行是否执行？                             是     否
+#                                           ---    --
+if 'foo' in ['foo', 'bar', 'baz']:        #  x
+    print('Outer condition is true')      #  x
+
+    if 10 > 20:                           #  x
+        print('Inner condition 1')        #        x
+
+    print('Between inner conditions')     #  x
+
+    if 10 < 20:                           #  x
+        print('Inner condition 2')        #  x
+
+    print('End of outer condition')       #  x
+print('After outer condition')            #  x
+
+```
+
+运行此脚本生成的输出如下所示：
+
+```console
+C:\> python blocks.py
+Outer condition is true
+Between inner conditions
+Inner condition 2
+End of outer condition
+After outer condition
+
+```
+
+> **说明：** 如果你一直在好奇为什么在 REPL 交互式会话中输入多行语句时必须按一次额外的回车键换行，越位规则就是原因所在。否则，解释器无法获知代码块的最后一条语句何时输入完毕。
+
+### else 和 elif 子句
+
+现在你已经知道如何使用 `if` 语句有条件地执行单条语句或包含多条语句的代码块。接下来，是时候了解你还能做些什么了。
+
+有时，你想对一个条件进行评估：若为真，则走一条路径；若不为真，则指定另一条备选路径。这可以通过 `else` 子句来实现：
+
+```python
+if <expr>:
+    <statement(s)>
+else:
+    <statement(s)>
+
+```
+
+如果 `<expr>` 为真，则执行第一个套件（suite），跳过第二个；如果 `<expr>` 为假，则跳过第一个套件，执行第二个。无论哪种情况，执行流程随后都会在第二个套件之后恢复继续。如前所述，这两个套件都通过缩进来定义。
+
+在下面这个示例中，`x` 小于 50，因此执行第一个套件（第 4 至 5 行），跳过第二个套件（第 7 至 8 行）：
+
+```python
+>>> x = 20
+>>> if x < 50:
+...     print('(first suite)')
+...     print('x is small')
+... else:
+...     print('(second suite)')
+...     print('x is large')
+...
+(first suite)
+x is small
+
+```
+
+而在另一个示例中，`x` 大于 50，因此跳过第一个套件，执行第二个套件：
+
+```python
+>>> x = 120
+
+>>> if x < 50:
+...     print('(first suite)')
+...     print('x is small')
+... else:
+...     print('(second suite)')
+...     print('x is large')
+...
+(second suite)
+x is large
+
+```
+
+Python 还提供了基于多个分支备选项进行执行分支的语法。为此，你可以使用一个或多个 `elif`（`else if` 的缩写）子句。Python 会依次对每个 `<expr>` 进行求值，并执行第一个结果为真的对应套件。如果所有表达式都不为真，并且指定了 `else` 子句，那么将执行该 `else` 对应的套件：
+
+```python
+if <expr>:
+    <statement(s)>
+elif <expr>:
+    <statement(s)>
+elif <expr>:
+    <statement(s)>
+    ...
+else:
+    <statement(s)>
+
+```
+
+你可以指定任意数量的 `elif` 子句。`else` 子句是可选的；如果存在，它只能有一个，且必须放在最后：
+
+```python
+>>> name = 'Joe'
+>>> if name == 'Fred':
+...     print('Hello Fred')
+... elif name == 'Xander':
+...     print('Hello Xander')
+... elif name == 'Joe':
+...     print('Hello Joe')
+... elif name == 'Arnold':
+...     print('Hello Arnold')
+... else:
+...     print("I don't know who you are!")
+...
+Hello Joe
+
+```
+
+这些指定的代码块中，最多只有一个会被执行。如果没有包含 `else` 子句且所有条件都为假，那么任何代码块都不会被执行。
+
+> **说明：** 使用冗长的 `if/elif/else` 序列有时可能显得不够优雅，尤其是在执行的操作只是像 `print()` 这样的简单语句时。在许多情况下，可能会有更符合 Python 习惯（Pythonic）的方式来达成相同的目的。
+
+这里提供了一个利用 `dict.get()` 方法替代上述示例的可能方案：
+
+```python
+>>> names = {
+...     'Fred': 'Hello Fred',
+...     'Xander': 'Hello Xander',
+...     'Joe': 'Hello Joe',
+...     'Arnold': 'Hello Arnold'
+... }
+
+>>> print(names.get('Joe', "I don't know who you are!"))
+Hello Joe
+>>> print(names.get('Rick', "I don't know who you are!"))
+I don't know who you are!
+
+```
+
+回想有关 Python 字典的教程，`dict.get()` 方法会在字典中搜索指定的键：如果找到就返回对应的值，如果未找到则返回给定的默认值。
+
+带有 `elif` 子句的 `if` 语句采用**短路求值**（short-circuit evaluation），类似于你在 `and` 和 `or` 运算符中看到的效果。一旦发现某个表达式为真并执行了其代码块，就不会再对后续的其余表达式进行测试。如下所示：
+
+```python
+>>> var  # 未定义
+Traceback (most recent call last):
+  File "<pyshell#58>", line 1, in <module>
+    var
+NameError: name 'var' is not defined
+
+>>> if 'a' in 'bar':
+...     print('foo')
+... elif 1/0:
+...     print("This won't happen")
+... elif var:
+...     print("This won't either")
+...
+foo
+
+```
+
+第二个表达式包含除以零的操作，第三个引用了未定义的变量 `var`。它们中的任何一个都会引发错误，但由于指定的第一个条件为真，后续两个表达式都不会被求值。
+
+下方的控件逐步演示了前面的姓名示例，并在 Python 执行到每个条件时对其进行标记。首先从 `name` 设置为 `'Joe'` 开始，此时第三个条件为真，对 `'Arnold'` 的检查从未被求值。你可以依次选择 `'Fred'` 和 `'Rick'`，观察 Python 在最终决定分支之前测试了多少个条件：
+
+---
+
+### 单行 if 语句
+
+按照惯例，通常会将 `if <expr>` 写在第一行，并将 `<statement>` 缩进写在下一行，如下所示：
+
+```python
+if <expr>:
+    <statement>
+
+```
+
+但将整个 `if` 语句写在同一行也是被允许的。下面的写法在功能上与上例完全等价：
+
+```python
+if <expr>: <statement>
+
+```
+
+甚至可以在同一行写多条 `<statement>`，它们之间用分号分隔：
+
+```python
+if <expr>: <statement_1>; <statement_2>; ...; <statement_n>
+
+```
+
+但这究竟意味着什么？有两种可能的解读：
+
+1. 如果 `<expr>` 为真，执行 `<statement_1>`。
+2. 然后，无论 `<expr>` 是真是假，都无条件执行 `<statement_2>` ... `<statement_n>`。
+3. 如果 `<expr>` 为真，执行所有 `<statement_1>` ... `<statement_n>`。否则，一条也不执行。
+
+Python 采用了**后一种**解读。分隔 `<statement>` 的分号具有比 `<expr>` 后面的冒号更高的优先级——用计算机术语来说，分号的结合力比冒号更紧密。因此，这些 `<statement>` 被视为一个套件：要么全部执行，要么全不执行：
+
+```python
+>>> if 'f' in 'foo': print('1'); print('2'); print('3')
+...
+1
+2
+3
+>>> if 'z' in 'foo': print('1'); print('2'); print('3')
+...
+
+```
+
+在 `elif` 或 `else` 子句中，也可以在同一行指定多条语句：
+
+```python
+>>> x = 2
+>>> if x == 1: print('foo'); print('bar'); print('baz')
+... elif x == 2: print('qux'); print('quux')
+... else: print('corge'); print('grault')
+...
+qux
+quux
+
+>>> x = 3
+>>> if x == 1: print('foo'); print('bar'); print('baz')
+... elif x == 2: print('qux'); print('quux')
+... else: print('corge'); print('grault')
+...
+corge
+grault
+
+```
+
+虽然这一切都能正常运行且解释器允许这样做，但这通常是不被提倡的，因为它会导致可读性变差，尤其对于复杂的 `if` 语句而言更是如此。PEP 8 明确建议不要这样写。
+
+通常这在某种程度上属于个人审美偏好。与上面的示例相比，大多数人会觉得以下写法在视觉上更美观，乍看之下也更容易理解：
+
+```python
+>>> x = 3
+>>> if x == 1:
+...     print('foo')
+...     print('bar')
+...     print('baz')
+... elif x == 2:
+...     print('qux')
+...     print('quux')
+... else:
+...     print('corge')
+...     print('grault')
+...
+corge
+grault
+
+```
+
+不过，如果 `if` 语句足够简单，将其全部写在同一行也并非不可接受。像下面这样的写法通常不会引起太大的反感：
+
+```python
+debugging = True  # 设置为 True 以开启调试模式。
+
+    .
+    .
+    .
+if debugging: print('About to call function foo()')
+foo()
+
+```
+
+---
+
+### 条件表达式（Python 的三元运算符）
+
+Python 还支持一种额外的决策机制，称为**条件表达式**（conditional expression）。（在 Python 官方文档的各处，它也被称为条件运算符或三元运算符。）条件表达式最初在 PEP 308 中被提议加入语言规范，并于 2005 年由 Guido 批准引入。
+
+在最简单的形式中，条件表达式的语法如下：
+
+```python
+<expr1> if <conditional_expr> else <expr2>
+
+```
+
+这与上面列出的 `if` 语句形式不同，因为它不是用于控制程序执行流程的控制结构，而更像是一个用于定义表达式的运算符。在上述语法中，首先对 `<conditional_expr>` 进行求值。如果为真，整个表达式求值为 `<expr1>`；如果为假，整个表达式求值为 `<expr2>`。
+
+注意其不符合直觉的顺序：**中间的表达式最先被求值**，然后根据求值结果返回两端表达式之一。下面这些示例希望能帮助你更清楚地理解：
+
+```python
+>>> raining = False
+>>> print("Let's go to the", 'beach' if not raining else 'library')
+Let's go to the beach
+
+>>> raining = True
+>>> print("Let's go to the", 'beach' if not raining else 'library')
+Let's go to the library
+
+>>> age = 12
+>>> s = 'minor' if age < 21 else 'adult'
+>>> s
+'minor'
+
+>>> 'yes' if ('qux' in ['foo', 'bar', 'baz']) else 'no'
+'no'
+
+```
+
+> **说明：** Python 的条件表达式类似于许多其他语言（例如 C、Perl 和 Java）中使用的 `<conditional_expr> ? <expr1> : <expr2>` 语法。事实上，在这些语言中 `?:` 运算符通常被称为三元运算符（ternary operator），这可能也就是 Python 的条件表达式有时被称为“Python 三元运算符”的原因。
+> 你可以在 PEP 308 中看到，Python 曾考虑过使用 `<conditional_expr> ? <expr1> : <expr2>` 语法，但最终被否决，转而采用了如上所示的语法。
+
+条件表达式的一个常见用途是用于条件变量赋值。例如，假设你想找出两个数中较大的一个。当然，你可以直接使用内置函数 `max()` 来完成这个任务（甚至做得更多）。但假设你想从头自己实现它。
+
+你可以使用带有 `else` 子句的标准 `if` 语句：
+
+```python
+>>> if a > b:
+...     m = a
+... else:
+...     m = b
+...
+
+```
+
+但使用条件表达式更简短，而且可以说可读性也更好：
+
+```python
+>>> m = a if a > b else b
+
+```
+
+记住，条件表达式在语法上的行为就像一个普通表达式，它可以作为更长表达式的一部分。条件表达式的优先级低于几乎所有其他运算符，因此需要使用圆括号将其单独分组括起来。
+
+在以下示例中，`+` 运算符的结合力比条件表达式更强，因此先计算 `1 + x` 和 `y + 2`，然后再计算条件表达式。在第二个写法中，括号是多余的，不会改变结果：
+
+```python
+>>> x = y = 40
+>>> z = 1 + x if x > y else y + 2
+>>> z
+42
+
+>>> z = (1 + x) if x > y else (y + 2)
+>>> z
+42
+
+```
+
+如果你希望优先计算条件表达式，则需要用分组括号将其包围起来。在接下来的示例中，`(x if x > y else y)` 会最先被求值。计算结果为 `y`（即 40），因此 `z` 被赋值为 `1 + 40 + 2 = 43`：
+
+```python
+>>> x = y = 40
+>>> z = 1 + (x if x > y else y) + 2
+>>> z
+43
+
+```
+
+如果你在更复杂的表达式中使用条件表达式，即使没有严格的语法必要，使用分组圆括号来进行澄清通常也是一个好习惯。
+
+条件表达式与复合逻辑表达式一样，也采用短路求值。如果某些部分不需要被求值，它们就不会被执行。
+
+在表达式 `<expr1> if <conditional_expr> else <expr2>` 中：
+
+* 如果 `<conditional_expr>` 为真，则返回 `<expr1>`，而 `<expr2>` 不会被求值。
+* 如果 `<conditional_expr>` 为假，则返回 `<expr2>`，而 `<expr1>` 不会被求值。
+
+与之前一样，你可以使用会引发错误的表达式来验证这一点：
+
+```python
+>>> 'foo' if True else 1/0
+'foo'
+>>> 1/0 if False else 'bar'
+'bar'
+
+```
+
+在这两种情况下，`1/0` 部分均未被求值，因此不会引发任何异常。
+
+条件表达式还可以链接在一起，作为 `if/elif/else` 结构的另一种替代形式，如下所示：
+
+```python
+>>> s = ('foo' if (x == 1) else
+...      'bar' if (x == 2) else
+...      'baz' if (x == 3) else
+...      'qux' if (x == 4) else
+...      'quux'
+... )
+>>> s
+'baz'
+
+```
+
+这种写法相比对应的 `if/elif/else` 语句是否有明显优势尚不明确，但它在语法上是完全合法的 Python 代码。
+
+---
+
+### Python 的 pass 语句
+
+有时，你可能想编写所谓的“代码存根”（code stub）：即一个占位符，用来预留你尚未实现、未来会填充具体代码块的位置。
+
+在那些使用明确标记定界符来定义代码块的语言中（例如 Perl 和 C 中的花括号 `{}`），可以使用空的定界符来定义代码存根。例如，以下是合法的 Perl 或 C 代码：
+
+```c
+/* 这不是 Python */
+if (x)
+{
+}
+
+```
+
+在这里，空的花括号定义了一个空代码块。Perl 或 C 将对表达式 `x` 进行求值，即使结果为真，也会静默地什么都不做。
+
+由于 Python 使用缩进而不是定界符，因此无法直接指定一个空的代码块。如果你用 `if <expr>:` 引入了一条 `if` 语句，其后必须跟上某些内容——无论是在同一行，还是在下一行缩进书写。
+
+思考这个脚本 `foo.py`：
+
+```python
+if True:
+print('foo')
+
+```
+
+如果尝试运行 `foo.py`，你将得到以下错误：
+
+```console
+C:\> python foo.py
+  File "foo.py", line 3
+    print('foo')
+        ^
+IndentationError: expected an indented block
+
+```
+
+Python 的 `pass` 语句解决了这个问题。它完全不会改变程序的行为。在语法上需要语句存在、但你实际上不想执行任何操作的任何情况下，它都被用作占位符以确保解释器能够正常通过：
+
+```python
+if True:
+    pass
+print('foo')
+
+```
+
+现在 `foo.py` 可以无误运行：
+
+```console
+C:\> python foo.py
+foo
+
+```
+
+
