@@ -2,3 +2,412 @@
 title: 接口
 sidebar_position: 8
 ---
+
+Python 的接口实现方式
+
+在面向对象编程中，接口充当了实现具体类的蓝图。接口定义的方法通常是抽象的，这意味着接口只声明它们，而不去实现它们。
+
+实现是任何实现该接口的类的工作。通过规定一组方法，接口允许你编写能够与许多不同类型协同工作的代码，而无需关心它们的具体实现。
+
+Python 没有像 Java 或 Go 那样的 interface 关键字，也没有像 C++ 纯虚类那样极其相近的对等物。相反，它提供了两种用于对接口建模的技术：
+
+- 基于继承、使用抽象基类（ABCs）的接口
+
+- 基于结构子类型、使用协议（Protocols）的接口
+
+Python 的方法只是有所不同。Java、Go 或 C# 各自拥有专用的 interface 关键字，并要求类显式声明其实现了哪个接口；而 Python 则依赖于继承或结构匹配。
+
+- **基于抽象基类（ABCs）的继承式接口**
+
+Python 标准库中的 `abc` 模块为你提供了几种用于处理抽象基类（ABCs）并对基于继承的接口进行建模的工具。ABC 是 Python 首个正式的接口机制，它们建立在继承之上。具体类通过继承相应的 ABC 来声明其满足该接口的意图。
+
+ABC 强制执行接口契约。任何缺少必需方法的子类，在你尝试对其进行实例化的瞬间都会抛出 `TypeError` 错误。这使得 ABC 在由你掌控继承层次结构、且希望在实例化时严格强制执行特定接口时，成为一个稳妥的选择。
+
+## 定义基于 ABC 的接口
+
+ABC 使用 `abc` 模块中的 `@abstractmethod` 装饰器来声明抽象方法。任何子类都必须实现每一个抽象方法。否则，Python 会在你尝试实例化该子类的瞬间引发错误。
+
+假设你需要一个用于文件读取器的接口。针对不同格式（如 PDF 和电子邮件）的读取器需要相同的方法，但内部逻辑不同。其共同的契约是从某个路径加载文件并返回提取出的文本。
+
+以下是将该接口建模为 ABC 的示例：
+
+**文件名：readers_abc.py**
+
+```python
+from abc import ABC, abstractmethod
+
+class FileReaderInterface(ABC):
+    """Interface for file readers."""
+
+    @abstractmethod
+    def load_file(self, path: str) -> None:
+        """Load a file for text extraction."""
+
+    @abstractmethod
+    def extract_text(self) -> str:
+        """Return text extracted from the loaded file."""
+
+```
+
+在此代码片段中有几点需要注意：
+
+* `FileReaderInterface` 继承自 `abc.ABC`，它会为你配置好元类。
+* 每个抽象方法都带有 `@abstractmethod` 装饰器。
+* 抽象方法的主体可以包含描述性的文档字符串（docstring）、单纯的 `pass` 语句、省略号（`...`），或者抛出 `NotImplementedError` 异常。
+
+现在，创建两个继承自 `FileReaderInterface` 的具体类：`PdfReader` 和 `EmailReader`：
+
+**文件名：readers_abc.py**
+
+```python
+# ...
+class PdfReader(FileReaderInterface):
+    """Extract text from a PDF."""
+
+    def load_file(self, path: str) -> None:
+        """Load a PDF file for text extraction."""
+        print(f"Loading PDF from {path}")
+
+    def extract_text(self) -> str:
+        """Return text extracted from the loaded PDF."""
+        return "Extracted PDF text"
+
+class EmailReader(FileReaderInterface):
+    """Extract text from an Email."""
+
+    def load_file(self, path: str) -> None:
+        """Load an EML file for text extraction."""
+        print(f"Loading email from {path}")
+
+    def extract_email_text(self) -> str:
+        """Return text extracted from the loaded email."""
+        return "Extracted email text"
+
+```
+
+`PdfReader` 实现了全部两个抽象方法，因此它满足该接口。而 `EmailReader` 定义的是 `.extract_email_text()` 而不是所要求的 `.extract_text()`，因此它不满足该契约。
+
+观察尝试实例化这些类时会发生什么：
+
+```python
+>>> from readers_abc import PdfReader, EmailReader
+>>> pdf_reader = PdfReader()
+>>> email_reader = EmailReader()
+Traceback (most recent call last):
+  ...
+TypeError: Can't instantiate abstract class EmailReader with abstract method extract_text
+
+```
+
+你可以实例化 `PdfReader`，但在尝试实例化 `EmailReader` 时会收到一个 `TypeError`，因为该类没有实现预期的方法 `.extract_text()`。这就是使用 `abc.ABC` 的价值所在：遗漏方法不会成为深埋在代码深处的运行时意外。失败发生在实例化阶段，早于其他任何代码的运行。
+
+要修复该错误，只需将 `EmailReader` 中的 `.extract_email_text()` 重命名为 `.extract_text()`，你便能够对其进行实例化。不妨动手试一试。
+
+同样的规则适用于任何接口。在下面的交互式示例中，`Animal` 扮演 ABC 的角色。切换 `Dog` 子类实现了哪些抽象方法，仔细观察 `Dog()` 究竟在何时失败、何时成功：
+
+### 对 ABC 子类进行类型检查
+
+静态类型检查器无需任何额外配置即可通过继承关系来验证 ABC 子类关系。在运行时，你可以使用内置的 `isinstance()` 和 `issubclass()` 函数显式检查 ABC 子类的类型：
+
+```python
+>>> from readers_abc import FileReaderInterface, PdfReader
+>>> isinstance(PdfReader(), FileReaderInterface)
+True
+>>> issubclass(PdfReader, FileReaderInterface)
+True
+
+```
+
+两个函数都返回 `True`，因为 `PdfReader` 与 `FileReaderInterface` 存在直接的继承关系。
+
+### 注册虚拟子类
+
+有时，你希望某个 Python 类能够满足你的接口，但实际上并不继承自它。或许该类来自于你无法修改的第三方库，又或许你希望在不改变继承链的情况下记录一种结构关系。`abc` 模块通过虚拟子类注册机制来支持这一需求。
+
+暂时脱离文件读取器的示例，以下是如何将内置的 `float` 类注册为 `Double` 接口的虚拟子类：
+
+**文件名：virtual_subclass.py**
+
+```python
+from abc import ABC
+
+class Double(ABC):
+    """Double precision floating point number."""
+
+Double.register(float)
+
+```
+
+现在，`issubclass()` 和 `isinstance()` 都会将 `float` 视为 `Double` 的子类：
+
+```python
+>>> from virtual_subclass import Double
+>>> issubclass(float, Double)
+True
+>>> isinstance(1.2345, Double)
+True
+
+```
+
+你也可以将 `.register()` 用作类装饰器：
+
+```python
+>>> @Double.register
+... class Double64:
+...     """A 64-bit double-precision floating-point number."""
+...
+>>> issubclass(Double64, Double)
+True
+
+```
+
+不过，应谨慎使用注册机制。虚拟子类不会强制执行任何方法要求，它们仅仅是声明了一种关系。对于真正检查方法的基于形态的匹配，请使用 `typing.Protocol`，你接下来就会学到它。
+
+---
+
+**基于协议（Protocols）的结构子类型接口**
+
+`typing.Protocol` 引入于 Python 3.8，它将结构子类型机制带入了标准库，并且比 ABC 更贴近 Python 的“鸭子类型”（duck-typing）风格。
+
+协议更倾向于提示契约而非强制执行。静态类型检查器可以在代码运行之前验证契约，但如果未满足该契约，Python 本身并不会阻止代码执行。
+
+> **注意：** 要了解有关协议的更多信息，请查阅教程《Python Protocols: Leveraging Structural Subtyping》（Python 协议：利用结构子类型）。
+
+与 ABC 不同，具体类不必继承自目标协议。只要它拥有符合预期且具有正确签名的方法，就被视为实现了该协议的类。
+
+当你不需要在运行时强制约束接口，或者相关类之间不具备自然的继承关系时，协议往往是最佳选择。
+
+### 定义基于协议的接口
+
+下面是一个与 `FileReaderInterface` 对应的 `FileReaderProtocol` 类：
+
+**文件名：readers_protocol.py**
+
+```python
+from typing import Protocol
+
+class FileReaderProtocol(Protocol):
+    """Protocol for file readers."""
+
+    def load_file(self, path: str) -> None:
+        """Load a file for text extraction."""
+        ...
+
+    def extract_text(self) -> str:
+        """Return text extracted from the loaded file."""
+        ...
+
+```
+
+在这个示例中，`FileReaderProtocol` 继承自 `typing.Protocol` 而非 `abc.ABC`。
+
+你还会注意到，每个方法体在文档字符串之后都以 `...` 结尾，而不是像 ABC 示例那样仅有文档字符串。这是一种约定上的差异：ABC 通常仅依赖文档字符串来标记抽象方法体，而协议通常会在文档字符串后添加省略号，或单独使用省略号。
+
+具体类仅需通过实现协议中定义的方法即可满足该协议：
+
+**文件名：readers_protocol.py**
+
+```python
+# ...
+class PdfReader:
+    """Extract text from a PDF."""
+
+    def load_file(self, path: str) -> None:
+        """Load a PDF file for text extraction."""
+        print(f"Loading PDF from {path}")
+
+    def extract_text(self) -> str:
+        """Return text extracted from the loaded PDF."""
+        return "Extracted PDF text"
+
+class EmailReader:
+    """Extract text from an Email."""
+
+    def load_file(self, path: str) -> None:
+        """Load an EML file for text extraction."""
+        print(f"Loading email from {path}")
+
+    def extract_text(self) -> str:
+        """Return text extracted from the loaded email."""
+        return "Extracted email text"
+
+```
+
+注意，`PdfReader` 和 `EmailReader` 都没有继承自 `FileReaderProtocol`。然而，像 mypy 这样的静态类型检查器仍然会将它们识别为合法的 `FileReaderProtocol` 子类型，因为它们实现了具有正确签名的预期方法。
+
+### 静态类型检查协议子类型
+
+考虑以下期望接收一个读取器对象作为参数的 `read()` 函数：
+
+```python
+def read(reader, path: str) -> str:
+    reader.load_file(path)
+    return reader.extract_text()
+
+read(PdfReader(), "/reports/report.pdf")
+read(EmailReader(), "/mail/message.eml")
+
+```
+
+如果不借助协议或继承，你将很难为 `reader` 参数提供类型注解。如果你将其声明为 `PdfReader`，静态类型检查器会对 `read()` 的第二次调用报错，因为 `EmailReader` 并不是 `PdfReader`。
+
+要解决这个问题，可以使用 `FileReaderProtocol` 来注解 `reader` 参数：
+
+```python
+def read(reader: FileReaderProtocol, path: str) -> str:
+    reader.load_file(path)
+    return reader.extract_text()
+
+# 类型检查器接受以下调用
+read(PdfReader(), "/reports/report.pdf")
+read(EmailReader(), "/mail/message.eml")
+
+```
+
+现在，静态类型检查器会通过检查 `read()` 参数的方法及其签名，而不是检查继承关系，来验证该实参是否满足 `FileReaderProtocol` 协议。这就是结构子类型的实际收益。
+
+### 运行时类型检查协议子类型
+
+如果你需要通过 `isinstance()` 和 `issubclass()` 在运行时进行类型检查，请使用 `@runtime_checkable` 装饰该 Protocol 类：
+
+**文件名：readers_protocol.py**
+
+```python
+from typing import Protocol, runtime_checkable
+
+@runtime_checkable
+class FileReaderProtocol(Protocol):
+    # ...
+
+```
+
+有了这一项补充，你就可以使用 `isinstance()` 和 `issubclass()` 函数来检查类型了：
+
+```python
+>>> from readers_protocol import FileReaderProtocol, PdfReader
+>>> isinstance(PdfReader(), FileReaderProtocol)
+True
+>>> issubclass(PdfReader, FileReaderProtocol)
+True
+
+```
+
+请注意，可在运行时检查的协议（runtime-checkable protocols）仅验证方法是否存在，并不会验证它们的签名。如果需要在运行时进行完整的签名级验证，可以使用第三方运行时类型检查库，如 `beartype` 或 `typeguard`。
+
+如果你想在更多场景中了解协议的实际应用，Real Python 的《Python 中的协议探索》（*Exploring Protocols in Python*）课程会逐步讲解结构子类型、运行时检查以及常见的协议模式。
+
+---
+
+### 鸭子类型、ABC 与协议
+
+Python 因使用“鸭子类型”（duck typing）而闻名，其核心思想是：如果它走起路来像鸭子，叫起来也像鸭子，那它一定就是鸭子。
+
+鸭子类型依赖运行时的契约。一个对象是继承自某个 ABC、满足某个 Protocol，还是恰好暴露了正确的方法，都无关紧要。在鸭子类型的语境下，完全无关的类只要暴露了调用方所期望的方法，就可以互换使用。
+
+在符合 Python 习惯（idiomatic Python）的代码中，通常更倾向于使用鸭子类型，而不是显式的 `isinstance()` 和 `issubclass()` 检查。其指导原则是 EAFP（请求宽恕比获得许可更容易 / easier to ask for forgiveness than permission）：直接调用你需要的方法，如果对象不支持这些方法，就让 Python 报错即可。显式的类型检查增加了通常并非必需的额外步骤。
+
+> **注意：** 如需深入了解鸭子类型，请查阅教程《Python 中的鸭子类型：编写灵活解耦的代码》（*Duck Typing in Python: Writing Flexible and Decoupled Code*）。
+
+鸭子类型保持了代码的灵活性，但代价是放弃了从 ABC 或协议中获得的早期提示信号。观察这种权衡取舍最直观的方式，就是完全不使用这两种机制来编写相同的读取器类。
+
+### 应用鸭子类型
+
+为了观察鸭子类型的实际运作，请看下面这些具有一组通用方法的普通读取器类：
+
+**文件名：readers.py**
+
+```python
+class PdfReader:
+    """Extract text from a PDF."""
+    def load_file(self, path: str) -> None:
+        print(f"Loading PDF from {path}")
+
+    def extract_text(self) -> str:
+        return "Extracted PDF text"
+
+class EmailReader:
+    """Extract text from an Email."""
+    def load_file(self, path: str) -> None:
+        print(f"Loading email from {path}")
+
+    def extract_text(self) -> str:
+        return "Extracted email text"
+
+def read(reader, path: str) -> str:
+    reader.load_file(path)
+    return reader.extract_text()
+
+```
+
+注意这里省略了什么：没有 `FileReaderInterface`，没有 `FileReaderProtocol`，也没有共享基类。从类型的角度来看，`PdfReader` 和 `EmailReader` 没有任何共同之处。它们只是恰好公开了相同的两个方法。
+
+只要 `read()` 接收到的对象具备 `.load_file()` 和 `.extract_text()`，它并不关心该对象属于哪个类：
+
+```python
+>>> from readers import PdfReader, EmailReader, read
+>>> read(PdfReader(), "/reports/report.pdf")
+Loading PDF from /reports/report.pdf
+'Extracted PDF text'
+>>> read(EmailReader(), "/mail/message.eml")
+Loading email from /mail/message.eml
+'Extracted email text'
+
+```
+
+这就是鸭子类型。契约取决于行为而非类型。Python 从不检查 `reader` 是什么，只检查你在其上调用方法时它能做什么。
+
+为了直观体会这种权衡取舍，请将 `EmailReader` 中的 `.extract_text()` 重命名为 `.extract_email_text()`：
+
+**文件名：readers.py**
+
+```python
+# ...
+class EmailReader:
+    """Extract text from an Email."""
+    def load_file(self, path: str) -> None:
+        print(f"Loading email from {path}")
+
+    def extract_email_text(self) -> str:
+        return "Extracted email text"
+# ...
+
+```
+
+现在 `read()` 会在一个不再提供该方法的对象上调用 `.extract_text()`，结果会导致 `AttributeError`。重启你的 Python 会话并运行以下代码片段：
+
+```python
+>>> from readers import EmailReader, read
+>>> read(EmailReader(), "/mail/message.eml")
+Loading email from /mail/message.eml
+Traceback (most recent call last):
+    ...
+AttributeError: 'EmailReader' object has no attribute 'extract_text'
+
+```
+
+直到 `read()` 在运行时真正尝试调用缺失的方法之前，这种不匹配都不会被捕获。这就是鸭子类型的权衡取舍：摆脱了形式化类型声明的束缚，但在运行代码之前没有任何安全防护网。
+
+---
+
+### 将鸭子类型与 ABC 及协议相结合
+
+鸭子类型可以与 ABC 以及协议无缝协同工作。当你将鸭子类型与 ABC 结合使用时，契约会在实例化时被强制执行，因此如果某个类不符合要求，你会在早期就收到失败提示。类型检查器也可以根据继承关系来验证类型：
+
+```python
+>>> from readers_abc import FileReaderInterface, PdfReader, EmailReader
+>>> def read(reader: FileReaderInterface, path: str) -> str:
+...     reader.load_file(path)
+...     return reader.extract_text()
+...
+>>> read(PdfReader(), "/reports/report.pdf")
+Loading PDF from /reports/report.pdf
+'Extracted PDF text'
+>>> read(EmailReader(), "/mail/message.eml")
+Loading email from /mail/message.eml
+'Extracted email text'
+
+```
+
+当你将鸭子类型与协议结合使用时，契约虽然不会在实例化时被强制执行，但静态类型检查器可以在你运行代码之前对其进行验证。你可以回顾“静态类型检查协议子类型”部分，温习其工作原理。
+
+ABC 和协议在鸭子类型之上叠加了一层结构，使其更加安全。ABC 在实例化阶段强制执行契约，而协议则在类型检查阶段捕获缺失的方法。
