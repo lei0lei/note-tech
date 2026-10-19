@@ -3794,23 +3794,4830 @@ $ python optional_params.py
 
 ## [args和kwargs](https://realpython.com/python-kwargs-and-args/)
 
+### 向函数传递多个参数
+
+`*args` 和 `**kwargs` 允许你向函数传递多个参数或关键字参数。请看下面的例子。这是一个接收两个参数并返回它们之和的简单函数：
+
+```python
+def my_sum(a, b):
+    return a + b
+
+```
+
+这个函数运行良好，但它仅限于两个参数。如果你需要对数量可变的参数进行求和，而传递的具体参数数量只有在运行时才能确定，那该怎么办？如果能创建一个无论传入多少个整数都能对其进行求和的函数，岂不是很好？
+
+### 在函数定义中使用 Python 的 args 变量
+
+向函数传递可变数量的参数有几种方法。对于有集合类型使用经验的人来说，第一种方法通常是最直观的。你只需将包含所有参数的列表或集合传递给函数即可。因此，对于 `my_sum()`，你可以传入一个包含所有需要相加的整数的列表：
+
+文件名：
+`sum_integers_list.py`
+
+```python
+def my_sum(my_integers):
+    result = 0
+    for x in my_integers:
+        result += x
+    return result
+
+list_of_integers = [1, 2, 3]
+print(my_sum(list_of_integers))
+
+```
+
+这种实现方式可行，但每次调用该函数时，你都需要创建一个参数列表传递给它。这可能会很不方便，尤其是当你无法预先知道所有应该放入列表的值时。
+
+这正是 `*args` 非常有用的地方，因为它允许你传递可变数量的位置参数。请看以下示例：
+
+文件名：
+`sum_integers_args.py`
+
+```python
+def my_sum(*args):
+    result = 0
+    # 遍历 Python 的 args 元组
+    for x in args:
+        result += x
+    return result
+
+print(my_sum(1, 2, 3))
+
+```
+
+在这个例子中，你不再是向 `my_sum()` 传递一个列表。相反，你传递的是三个不同的位置参数。`my_sum()` 会接收输入中提供的所有参数，并将它们打包进一个名为 `args` 的单一可迭代对象中。
+
+请注意，`args` 只是一个名称。你并不强制要求使用 `args` 这个名字。你可以选择任何你喜欢的名称，例如 `integers`：
+
+文件名：
+`sum_integers_args_2.py`
+
+```python
+def my_sum(*integers):
+    result = 0
+    for x in integers:
+        result += x
+    return result
+
+print(my_sum(1, 2, 3))
+
+```
+
+即使你将可迭代对象命名为 `integers` 而不是 `args`，该函数仍然可以正常运行。这里真正关键的是你使用了解包操作符（`*`）。
+
+请记住，使用解包操作符 `*` 获得的可迭代对象不是列表，而是一个元组（tuple）。元组与列表相似，因为它们都支持切片和迭代。然而，元组至少在一个方面截然不同：列表是可变（mutable）的，而元组是不可变的。为了验证这一点，请运行以下代码。该脚本试图修改列表中的一个值：
+
+文件名：
+`change_list.py`
+
+```python
+my_list = [1, 2, 3]
+my_list[0] = 9
+print(my_list)
+
+```
+
+位于列表最开始索引处的值应该被更新为 9。如果你执行该脚本，你会看到列表确实被修改了：
+
+```console
+$ python change_list.py
+[9, 2, 3]
+
+```
+
+第一个值不再是 1（原文为 0），而是更新后的值 9。现在，尝试对元组做同样的操作：
+
+文件名：
+`change_tuple.py`
+
+```python
+my_tuple = (1, 2, 3)
+my_tuple[0] = 9
+print(my_tuple)
+
+```
+
+在这里，你看到了相同的值，只是它们组合在一起构成了一个元组。如果你尝试执行该脚本，你会看到 Python 解释器返回一个错误：
+
+```console
+$ python change_tuple.py
+Traceback (most recent call last):
+  File "change_tuple.py", line 3, in <module>
+    my_tuple[0] = 9
+TypeError: 'tuple' object does not support item assignment
+
+```
+
+这是因为元组是不可变对象，其值在赋值后无法被修改。在使用元组和 `*args` 时，请务必记住这一点。
+
+### 在函数定义中使用 Python 的 kwargs 变量
+
+好了，现在你已经理解了 `*args` 的作用，但是 `**kwargs` 呢？`**kwargs` 的工作机制和 `*args` 一模一样，不同的是它不接收位置参数，而是接收关键字参数（或命名参数）。请看以下示例：
+
+文件名：
+`concatenate.py`
+
+```python
+def concatenate(**kwargs):
+    result = ""
+    # 遍历 Python 的 kwargs 字典
+    for arg in kwargs.values():
+        result += arg
+    return result
+
+print(concatenate(a="Real", b="Python", c="Is", d="Great", e="!"))
+
+```
+
+当你执行上面的脚本时，`concatenate()` 将遍历 Python 的 `kwargs` 字典，并拼接它找到的所有值：
+
+```console
+$ python concatenate.py
+RealPythonIsGreat!
+
+```
+
+与 `args` 一样，`kwargs` 只是一个名称，可以随意改成任何你想要的名字。同样，这里的关键在于解包操作符（`**`）的使用。
+
+因此，之前的示例也可以写成这样：
+
+文件名：
+`concatenate_2.py`
+
+```python
+def concatenate(**words):
+    result = ""
+    for arg in words.values():
+        result += arg
+    return result
+
+print(concatenate(a="Real", b="Python", c="Is", d="Great", e="!"))
+
+```
+
+请注意，在上面的示例中，该可迭代对象是一个标准的 `dict`。如果你遍历该字典并希望返回其值，就像所示示例中那样，那么你必须使用 `.values()`。
+
+事实上，如果你忘记使用这个方法，你会发现自己遍历的将是 Python `kwargs` 字典的键（keys），如下例所示：
+
+文件名：
+`concatenate_keys.py`
+
+```python
+def concatenate(**kwargs):
+    result = ""
+    # 遍历 Python kwargs 字典的键
+    for arg in kwargs:
+        result += arg
+    return result
+
+print(concatenate(a="Real", b="Python", c="Is", d="Great", e="!"))
+
+```
+
+现在，如果你尝试执行这个示例，你会注意到以下输出：
+
+```console
+$ python concatenate_keys.py
+abcde
+
+```
+
+正如你所看到的，如果你不指定 `.values()`，你的函数将会遍历 Python `kwargs` 字典的键，从而返回错误的结果。
+
+### 在函数中为参数排序
+
+现在你已经了解了 `*args` 和 `**kwargs` 的作用，可以开始编写接收可变数量输入参数的函数了。但如果你想创建一个既能接收可变数量的位置参数、又能接收可变数量的命名参数的函数，该怎么办呢？
+
+在这种情况下，你必须记住顺序至关重要。正如无默认值参数必须位于有默认值参数之前一样，`*args` 也必须位于 `**kwargs` 之前。
+
+简而言之，参数的正确顺序如下：
+
+1. 标准参数
+2. `*args` 参数
+3. `**kwargs` 参数
+
+例如，以下函数定义是正确的：
+
+文件名：
+`correct_function_definition.py`
+
+```python
+def my_function(a, b, *args, **kwargs):
+    pass
+
+```
+
+`*args` 变量适当地列在了 `**kwargs` 之前。但如果你尝试修改参数的顺序会发生什么呢？例如，请看以下函数：
+
+文件名：
+`wrong_function_definition.py`
+
+```python
+def my_function(a, b, **kwargs, *args):
+    pass
+
+```
+
+现在，在函数定义中 `**kwargs` 排在了 `*args` 之前。如果你尝试运行此示例，将会收到来自解释器的错误信息：
+
+```console
+$ python wrong_function_definition.py
+  File "wrong_function_definition.py", line 2
+    def my_function(a, b, **kwargs, *args):
+                                    ^
+SyntaxError: invalid syntax
+
+```
+
+在这种情况下，因为 `*args` 排在 `**kwargs` 之后，Python 解释器抛出了一个 `SyntaxError`（语法错误）。
+
+### 使用星号操作符解包：* 与 
+
+现在你已经能够使用 `*args` 和 `**kwargs` 来定义接收可变数量输入参数的 Python 函数了。让我们更深入地了解一下关于解包操作符的更多内容。
+
+单星号和双星号解包操作符是在 Python 2 中引入的。从 3.5 版本开始，得益于 PEP 448，它们变得更加强大。简而言之，解包操作符是用于解包 Python 中可迭代对象的值的操作符。单星号操作符 `*` 可以用于 Python 提供的任何可迭代对象，而双星号操作符 `**` 只能用于字典。
+
+让我们从一个例子开始：
+
+文件名：
+`print_list.py`
+
+```python
+my_list = [1, 2, 3]
+print(my_list)
+
+```
+
+这段代码定义了一个列表，然后将其打印到标准输出：
+
+```console
+$ python print_list.py
+[1, 2, 3]
+
+```
+
+请注意列表是如何打印出来的，它带有相应的括号和逗号。
+
+现在，尝试在你的列表名称前加上解包操作符 `*`：
+
+文件名：
+`print_unpacked_list.py`
+
+```python
+my_list = [1, 2, 3]
+print(*my_list)
+
+```
+
+在这里，`*` 操作符告诉 `print()` 首先解包该列表。
+
+在这种情况下，输出不再是列表本身，而是列表的内容：
+
+```console
+$ python print_unpacked_list.py
+1 2 3
+
+```
+
+你能看出这次执行与 `print_list.py` 的执行之间的区别吗？`print()` 接收的输入不再是一个列表，而是三个独立的参数。
+
+你还会注意到的另一件事是，在 `print_unpacked_list.py` 中，你是在调用函数时使用了解包操作符 `*`，而不是在函数定义中使用。在这种情况下，`print()` 会将列表中的所有元素视为单独的参数来接收。
+
+你也可以使用这种方法来调用自己的函数，但如果你的函数需要特定数量的参数，那么你解包的可迭代对象必须具有相同数量的参数。
+
+为了验证这种行为，请考虑以下脚本：
+
+文件名：
+`unpacking_call.py`
+
+```python
+def my_sum(a, b, c):
+    print(a + b + c)
+
+my_list = [1, 2, 3]
+my_sum(*my_list)
+
+```
+
+在这里，`my_sum()` 明确声明了 `a`、`b` 和 `c` 是必需的参数。
+
+如果你运行该脚本，你将获得 `my_list` 中三个数字的和：
+
+```console
+$ python unpacking_call.py
+6
+
+```
+
+`my_list` 中的 3 个元素与 `my_sum()` 中必需的参数完美匹配。
+
+现在看一下以下脚本，其中 `my_list` 有 4 个参数（元素）而不是 3 个：
+
+文件名：
+`wrong_unpacking_call.py`
+
+```python
+def my_sum(a, b, c):
+    print(a + b + c)
+
+my_list = [1, 2, 3, 4]
+my_sum(*my_list)
+
+```
+
+在这个例子中，`my_sum()` 仍然只需要三个参数，但是 `*` 操作符从列表中获取了 4 个元素。如果你尝试执行该脚本，你会看到 Python 解释器无法运行它：
+
+```console
+$ python wrong_unpacking_call.py
+Traceback (most recent call last):
+  File "wrong_unpacking_call.py", line 6, in <module>
+    my_sum(*my_list)
+TypeError: my_sum() takes 3 positional arguments but 4 were given
+
+```
+
+当你使用 `*` 操作符解包列表并向函数传递参数时，其效果完全等同于单独传递每一个参数。这意味着你可以使用多个解包操作符从多个列表中获取值，并将它们全部传递给单个函数。
+
+为了验证这种行为，请考虑以下示例：
+
+文件名：
+`sum_integers_args_3.py`
+
+```python
+def my_sum(*args):
+    result = 0
+    for x in args:
+        result += x
+    return result
+
+list1 = [1, 2, 3]
+list2 = [4, 5]
+list3 = [6, 7, 8, 9]
+
+print(my_sum(*list1, *list2, *list3))
+
+```
+
+如果你运行这个示例，所有三个列表都会被解包。每个单独的元素都会传递给 `my_sum()`，从而产生以下输出：
+
+```console
+$ python sum_integers_args_3.py
+45
+
+```
+
+解包操作符还有其他方便的用途。例如，假设你需要将一个列表分成三个不同的部分。输出应该显示第一个值、最后一个值以及它们之间的所有值。使用解包操作符，你只需一行代码就可以做到这一点：
+
+文件名：
+`extract_list_body.py`
+
+```python
+my_list = [1, 2, 3, 4, 5, 6]
+a, *b, c = my_list
+print(a)
+print(b)
+print(c)
+
+```
+
+在这个例子中，`my_list` 包含 6 个元素。第一个变量赋给了 `a`，最后一个赋给了 `c`，所有其他值都被打包进了一个新列表 `b` 中。如果你运行该脚本，`print()` 将会向你显示这三个变量拥有你所期望的值：
+
+```console
+$ python extract_list_body.py
+1
+[2, 3, 4, 5]
+6
+
+```
+
+使用解包操作符 `*` 能够做的另一件有趣的事是拆分任何可迭代对象的元素。例如，如果你需要合并两个列表，这可能会非常有用：
+
+文件名：
+`merging_lists.py`
+
+```python
+my_first_list = [1, 2, 3]
+my_second_list = [4, 5, 6]
+my_merged_list = [*my_first_list, *my_second_list]
+print(my_merged_list)
+
+```
+
+解包操作符 `*` 被置于 `my_first_list` 和 `my_second_list` 的前面。
+
+如果你运行该脚本，你会看到结果是一个合并后的列表：
+
+```console
+$ python merging_lists.py
+[1, 2, 3, 4, 5, 6]
+
+```
+
+你甚至可以使用解包操作符 `**` 来合并两个不同的字典：
+
+文件名：
+`merging_dicts.py`
+
+```python
+my_first_dict = {"A": 1, "B": 2}
+my_second_dict = {"C": 3, "D": 4}
+my_merged_dict = {**my_first_dict, **my_second_dict}
+print(my_merged_dict)
+
+```
+
+在这里，要合并的可迭代对象是 `my_first_dict` 和 `my_second_dict`。
+
+执行这段代码会输出一个合并后的字典：
+
+```console
+$ python merging_dicts.py
+{'A': 1, 'B': 2, 'C': 3, 'D': 4}
+
+```
+
+请记住，`*` 操作符适用于任何可迭代对象。它也可以用来解包字符串：
+
+文件名：
+`string_to_list.py`
+
+```python
+a = [*"RealPython"]
+print(a)
+
+```
+
+在 Python 中，字符串是可迭代对象，因此 `*` 会解包它并将所有单独的值放入列表 `a` 中：
+
+```console
+$ python string_to_list.py
+['R', 'e', 'a', 'l', 'P', 'y', 't', 'h', 'o', 'n']
+
+```
+
+前面的示例看起来很棒，但在使用这些操作符时，牢记 Tim Peters 所著的《Python 之禅》（The Zen of Python）中的第七条规则非常重要：可读性至关重要（Readability counts）。
+
+要了解其中的原因，请看以下示例：
+
+文件名：
+`mysterious_statement.py`
+
+```python
+*a, = "RealPython"
+print(a)
+
+```
+
+这里有解包操作符 `*`，紧接着是一个变量、一个逗号和一个赋值操作。一行里塞了太多东西！事实上，这段代码与前面的示例没有什么不同。得益于解包操作符 `*`，它只是接收字符串 `RealPython` 并将所有元素赋值给新列表 `a`。
+
+`a` 后面的逗号起到了关键作用。当你在变量赋值中使用解包操作符时，Python 要求你的目标变量必须是列表或元组。通过末尾的逗号，你定义了一个只有一个命名变量 `a` 的元组，而这个 `a` 就是列表 `['R', 'e', 'a', 'l', 'P', 'y', 't', 'h', 'o', 'n']`。
+
+虽然这是一个巧妙的技巧，但许多 Pythonista 并不认为这段代码具有很好的可读性。因此，最好尽量少用这种构造。
 
 
+## [内联函数](https://realpython.com/inner-functions-what-are-they-good-for/)
+### 在 Python 中在函数内部创建函数
+
+定义在另一个函数内部的函数被称为内部函数（inner function）或嵌套函数（nested function）。是的，在 Python 中，你可以在一个函数内部定义另一个函数。这种类型的函数可以访问外层作用域（enclosing scope）中定义的名称。
+
+以下是在 Python 中创建内部函数的一个示例：
+
+```python
+>>> def outer_func():
+...     def inner_func():
+...         print("Hello, World!")
+...     inner_func()
+... 
+>>> outer_func()
+Hello, World!
+
+```
+
+在这个例子中，你在 `outer_func()` 内部定义了 `inner_func()`，以便将 "Hello, World!" 消息打印到屏幕上。为此，你在 `outer_func()` 的最后一行调用了 `inner_func()`。这是在 Python 中编写和使用内部函数最直接快捷的方式。
+
+除了上面示例中所看到的内容外，内部函数还提供了其他几种有趣的可能性。内部函数的核心特性在于：即使外层函数已经返回，内部函数依然能够访问来自其外层函数的变量和对象。外层函数提供了一个可供内部函数访问的命名空间：
+
+```python
+>>> def outer_func(who):
+...     def inner_func():
+...         print(f"Hello, {who}")
+...     inner_func()
+... 
+>>> outer_func("World!")
+Hello, World!
+
+```
+
+请注意，你可以将一个字符串作为参数传递给 `outer_func()`，而 `inner_func()` 可以通过名称 `who` 访问该参数。这个名称是在 `outer_func()` 的局部作用域内定义的。从内部函数的角度来看，定义在外部函数局部作用域中的名称属于非局部名称（nonlocal names）。
+
+以下是一个更切合实际的内部函数示例：
+
+```python
+>>> def factorial(number):
+...     if not isinstance(number, int):
+...         raise TypeError("number must be an integer")
+...     if number < 0:
+...         raise ValueError("number must be zero or positive")
+... 
+...     def inner_factorial(number):
+...         if number <= 1:
+...             return 1
+...         return number * inner_factorial(number - 1)
+...     return inner_factorial(number)
+... 
+>>> factorial(4)
+24
+
+```
+
+在 `factorial()` 中，你首先验证输入数据，以确保用户提供的是一个大于或等于零的整数。接着，你定义了一个名为 `inner_factorial()` 的递归内部函数。该函数执行阶乘计算并返回结果。最后一步则是调用 `inner_factorial()`。
+
+注意：关于递归和递归函数的更详细讨论，请参阅《Thinking Recursively in Python》（Python 中的递归思维）以及《Recursion in Python: An Introduction》（Python 递归：入门篇）。
+
+使用上述示例中这种模式的一个优势在于：你可以在外层函数中完成所有的参数验证，从而在内部函数中跳过错误检查，专注于眼前的计算任务。
+
+在 Python 中使用内部函数
+
+Python 内部函数的应用场景非常多样。你可以用它们来实现封装，隐藏函数以防止外部访问。你也可以编写实用的辅助内部函数（helper inner functions）。最后，你还可以使用内部函数来创建闭包（closures）和装饰器（decorators）。
+
+在本节中，你将学习内部函数的前两种用例；在后续章节中，你将学习如何创建闭包和装饰器。
+
+### 提供封装
+
+内部函数的一个常见用例出现在当你需要保护或隐藏某个特定函数不受其外部发生的一切影响时，从而使该函数在全局作用域中被完全隐藏。这种行为被称为封装（encapsulation）。
+
+以下是一个展示该概念的示例：
+
+```python
+>>> def increment(number):
+...     def inner_increment():
+...         return number + 1
+...     return inner_increment()
+... 
+>>> increment(10)
+11
+>>> inner_increment()
+Traceback (most recent call last):
+    ...
+NameError: name 'inner_increment' is not defined
+
+```
+
+在这个例子中，你无法直接访问 `inner_increment()`，因为它被封装在 `increment()` 中。如果你尝试直接访问它，就会收到一个 `NameError` 异常。`increment()` 函数完全隐藏了 `inner_increment()`，从而阻止了来自全局作用域的访问。
+
+### 构建辅助内部函数
+
+有时，你的函数体内可能在多个地方重复相同的代码块。为了避免这种重复，你可以使用内部函数。
+
+例如，假设你想编写 Python 代码来处理一个包含纽约市 Wi-Fi 热点信息的 CSV 文件。你可以在本教程的配套材料中找到该 CSV 文件。
+
+为了找出纽约市的热点总数以及提供最多热点的公司，你创建了以下模块：
+
+文件名：
+`hotspots_v1.py`
+
+```python
+import csv
+from collections import Counter
+from io import TextIOWrapper
+
+def process_hotspots(file: str | TextIOWrapper):
+    hotspots = []
+
+    if isinstance(file, str):
+        with open(file, "r") as csv_file:
+            for row in csv.DictReader(csv_file):
+                hotspots.append(row["Provider"])
+    else:
+        with file as csv_file:
+            for row in csv.DictReader(csv_file):
+                hotspots.append(row["Provider"])
+
+    provider, count = Counter(hotspots).most_common(1)[0]
+    print(
+        f"There are {len(hotspots)} Wi-Fi hotspots in NYC.\n"
+        f"{provider} has the most with {count}."
+    )
+
+```
+
+在这里，`process_hotspots()` 接收一个 CSV 文件作为参数。然后，它会检查该文件是指向物理文件的字符串路径，还是一个文件对象。接着，它使用 `collections.Counter` 对象统计每个提供商的 Wi-Fi 热点数量，最后打印出包含所获取信息的消息。
+
+如果你调用该函数，将得到以下输出：
+
+```python
+>>> from hotspots_v1 import process_hotspots
+>>> file_obj = open(
+...     "./NYC_Wi-Fi_Hotspot_Locations.csv", mode="r", encoding="utf-8"
+... )
+>>> process_hotspots(file_obj)
+There are 3319 Wi-Fi hotspots in NYC.
+LinkNYC - Citybridge has the most with 1868.
+>>> process_hotspots("./NYC_Wi-Fi_Hotspot_Locations.csv")
+There are 3319 Wi-Fi hotspots in NYC.
+LinkNYC - Citybridge has the most with 1868.
+
+```
+
+无论你传入的是字符串形式的文件路径还是文件对象来调用 `process_hotspots()`，都会得到相同的结果。
+
+如果你仔细检查该函数的实现，会发现 `if` 和 `else` 代码块非常相似且显得重复，尤其是那个 `for` 循环。
+
+注意：是的，上述示例中的重复很少，并且有更好的方式来编写这个函数，但这只是一个演示示例。点击下方的“显示/隐藏”折叠开关可查看一个直接的解决方案：
+
+以下是如何使用内部函数来消除这种重复并使代码更具可读性：
+
+文件名：
+`hotspots_v2.py`
+
+```python
+import csv
+from collections import Counter
+from io import TextIOWrapper
+
+def process_hotspots(file: str | TextIOWrapper):
+    hotspots = []
+
+    def extract_hotspots(csv_file):
+        for row in csv.DictReader(csv_file):
+            hotspots.append(row["Provider"])
+
+    if isinstance(file, str):
+        with open(file, "r") as csv_file:
+            extract_hotspots(csv_file)
+    else:
+        with file as csv_file:
+            extract_hotspots(csv_file)
+
+    provider, count = Counter(hotspots).most_common(1)[0]
+    print(
+        f"There are {len(hotspots)} Wi-Fi hotspots in NYC.\n"
+        f"{provider} has the most with {count}."
+    )
+
+```
+
+在这个新实现中，你创建了一个内部函数来封装 `for` 循环，并赋予了它一个描述性的名称。然后，像之前一样在条件分支中调用这个辅助内部函数。
+
+该内部函数使用 `csv.DictReader` 将文件内容读取到一个生成字典的生成器中。然后，生成 Wi-Fi 提供商列表并将其存储在 `hotspots` 中以便进一步处理。赶快像测试前一个版本那样试运行这段代码吧！
+
+### 使用内部辅助函数与非公开辅助函数
+
+通常，当你想要实现封装时，你会创建类似于 `extract_hotspots()` 这样的辅助内部函数。如果你认为除了包含它的函数之外不会在其他任何地方调用它，你也可以创建内部函数。
+
+尽管将辅助函数编写为内部函数能够达到预期的效果，但将它们提取为顶层函数（top-level functions）可能会更好。在这种情况下，你可以在函数名称前加上前导下划线（`_`），以表明它对当前模块或类是非公开的（non-public）。这种做法将允许你从当前模块或类的其他部分访问你的辅助函数，并根据需要复用它们。
+
+将内部函数提取为顶层的非公开函数可以减少代码重复并提高可读性。这种做法能够产出顺理成章遵循单一职责原则（single-responsibility principle）的函数。
 
 
+使用内部函数创建闭包
 
-## 内联函数
+在 Python 中，函数是一等公民（first-class citizens）。这意味着它们与任何其他对象处于同等地位，例如数字、字符串、列表、元组、模块等。你可以动态地创建或销毁它们，将它们存储在数据结构中，作为参数传递给其他函数，用作返回值等等。
+
+你还可以在 Python 中创建高阶函数（higher-order functions）。高阶函数是指通过接收其他函数作为参数、返回函数，或两者兼具来对其他函数进行操作的函数。
+
+到目前为止你所看到的内部函数示例，都是恰好嵌套在其他函数内部的普通函数。除非你需要向外界隐藏你的函数，否则并没有特定的理由去嵌套它们。你可以将这些函数定义为非公开的顶层函数，这样也能正常工作。
+
+在本节中，你将学习闭包工厂函数（closure factory functions）。闭包是作为函数对象返回的内部函数。它们的主要特征是能够访问外层作用域中定义的变量和名称，即使外层函数已经执行完毕。
+
+当你返回一个内部函数对象时，Python 会将该函数与其所处的封闭环境打包在一起。这个包就是一个闭包。
+
+在底层，函数对象保留了对内部函数实际使用的其外层作用域中每个名称的引用。要定义一个闭包，你需要执行以下三个步骤：
+
+1. 创建一个内部函数。
+2. 引用外层函数中的变量。
+3. 返回内部函数对象，而不是调用它。
+
+掌握了这些知识后，你就可以开始在 Python 中创建闭包，并利用它们的主要特性：在多次函数调用之间保持状态。
+
+### 在闭包中保持状态
+
+闭包能够在连续的函数调用之间保持状态。闭包并不是内部函数本身，而是内部函数连同其封闭环境。闭包捕获外层函数中的局部变量和名称并保留它们。
+
+请看以下示例：
+
+文件名：
+`powers.py`
+
+```python
+def generate_power(exponent):
+    def power(base):
+        return base**exponent
+
+    return power
+
+```
+
+在这个例子中，你创建了 `generate_power()`，它是一个闭包工厂函数。这意味着每次调用它时，它都会创建并返回一个新的闭包。在该函数内部，你定义了 `power()`，这是一个接收单个参数 `base` 并返回表达式 `base**exponent` 结果的内部函数。最后，你将 `power` 作为函数对象返回，而不调用它。
+
+`power()` 是从哪里获取 `exponent` 的值的？在这个例子中，`power()` 从外层函数获取 `exponent` 的值。以下是当你调用 `generate_power()` 函数时 Python 所做的工作：
+
+1. 定义一个新的 `power()` 实例，该实例接收单个参数 `base`。
+2. 捕获 `power()` 使用的周边作用域中的名称，包括 `exponent` 参数。
+3. 返回 `power` 函数对象及其整个周边作用域。
+
+当你调用由 `generate_power()` 返回的闭包时，你会看到 `power()` 函数记住了 `exponent` 的值：
+
+```python
+>>> from powers import generate_power
+>>> square = generate_power(2)
+>>> cube = generate_power(3)
+>>> square(4)
+16
+>>> square(5)
+25
+>>> cube(4)
+64
+>>> cube(5)
+125
+
+```
+
+在这些示例中，`square()` 记住了 `exponent=2`，而 `cube()` 记住了 `exponent=3`。请注意，这两个闭包在调用之间都记住了各自对应的 `exponent`。
+
+现在考虑另一个示例：
+
+```python
+>>> def has_permission(page):
+...     def permission(username):
+...         if username.lower() == "admin":
+...             return f"'{username}' has access to {page}."
+...         else:
+...             return f"'{username}' doesn't have access to {page}."
+...     return permission
+... 
+>>> check_permission = has_permission("Admin Page")
+>>> check_permission("admin")
+"'admin' has access to Admin Page."
+>>> check_permission("john")
+"'john' doesn't have access to Admin Page."
+
+```
+
+该内部函数用于检查用户是否具有访问给定页面的正确权限。`check_permission` 对象是一个闭包，在调用之间记住了输入的 `page`。
+
+如你在上述示例中所见，你通常会创建不修改其外层作用域状态的闭包，或者具有静态外层状态的闭包。然而，你也可以利用可变对象来创建能够修改其外层作用域的闭包。
+
+假设你需要计算一个数据集的均值。数据以被分析参数的连续值流的形式传来，并且你需要你的函数在调用之间保留先前的值。在这种情况下，你可以编写如下的闭包工厂函数：
+
+```python
+>>> def mean():
+...     samples = []
+...     def inner_mean(number):
+...         samples.append(number)
+...         return sum(samples) / len(samples)
+...     return inner_mean
+... 
+>>> samples_mean = mean()
+>>> samples_mean(100)
+100.0
+>>> samples_mean(105)
+102.5
+>>> samples_mean(101)
+102.0
+>>> samples_mean(98)
+101.0
+
+```
+
+`samples_mean` 闭包在连续调用之间保留了 `samples` 的状态。尽管你在 `mean()` 中定义了 `samples`，但它在闭包中仍然可用，并且你可以对其进行修改。在这个例子中，`samples` 充当了连续数据值的持久化存储。
+
+### 修改闭包状态
+
+通常，闭包中的变量对外部世界是完全隐藏的。但是，你可以为它们提供 getter 和 setter 内部函数：
+
+```python
+>>> def make_point(x, y):
+...     def point():
+...         print(f"Point({x}, {y})")
+...     def get_x():
+...         return x
+...     def get_y():
+...         return y
+...     def set_x(value):
+...         nonlocal x
+...         x = value
+...     def set_y(value):
+...         nonlocal y
+...         y = value
+... 
+...     # 关联 getters 和 setters
+...     point.get_x = get_x
+...     point.set_x = set_x
+...     point.get_y = get_y
+...     point.set_y = set_y
+...     return point
+... 
+>>> point = make_point(1, 2)
+>>> point.get_x()
+1
+>>> point.get_y()
+2
+>>> point()
+Point(1, 2)
+>>> point.set_x(42)
+>>> point.set_y(7)
+>>> point()
+Point(42, 7)
+
+```
+
+在这个例子中，`make_point()` 返回一个代表点对象的闭包。该对象关联了 getter 和 setter 函数。你可以使用这些函数来读取和修改变量 `x` 和 `y`，这两个变量定义在外层作用域中并随闭包一起传递。
+
+尽管该函数创建的闭包看起来像一个类，但你需要意识到这种技术并不提供主要特性，例如继承、属性（properties）、描述符（descriptors）以及类方法和静态方法。如果你想更深入地了解这项技术，请查看《Simple Tool for Simulating Classes Using Closures and Nested Scopes (Python Recipe)》（使用闭包和嵌套作用域模拟类的简单工具（Python 配方））。
+
+### 在 Python 中使用嵌套函数构建装饰器
+
+Python 装饰器是内部函数（特别是闭包）的另一个流行用例。装饰器是一种高阶函数，它接收一个可调用对象（函数、方法、类）作为参数，并返回另一个具有修改后行为的可调用对象。
+
+你可以使用装饰器函数来动态地向现有可调用对象添加功能，并在不影响或不修改原始实现的情况下透明地扩展其行为。
+
+一旦你准备好了一个装饰器函数，就可以将它应用于任何可调用对象。为此，你需要在装饰器名称前使用 @ 符号（`@`），然后将其单独放在被修饰的可调用对象正上方的一行中：
+
+```python
+@decorator
+def decorated_func():
+    pass
+
+```
+
+这种语法使得 `@decorator` 能够自动将被修饰的 `decorated_func` 函数对象作为参数接收，并在其函数体内对其进行处理。这是以下赋值语句的语法糖：
+
+```python
+decorated_func = decorator(decorated_func)
+
+```
+
+以下是一个如何构建装饰器以向现有函数添加新功能的示例：
+
+```python
+>>> def add_messages(func):
+...     def _add_messages():
+...         print("This is my first decorator")
+...         func()
+...         print("Bye!")
+...     return _add_messages
+... 
+>>> @add_messages
+... def greet():
+...     print("Hello, World!")
+... 
+>>> greet()
+This is my first decorator
+Hello, World!
+Bye!
+
+```
+
+在这个例子中，你使用 `@add_messages` 来装饰 `greet()`。通过这种方式，你向被装饰的函数添加了新功能。现在，当你调用 `greet()` 时，它不再只是打印 "Hello, World!"，而是还会打印两条新消息。
+
+Python 装饰器的一些最常见用例包括：
+
+* 调试（Debugging）
+* 缓存（Caching）
+* 日志记录（Logging）
+* 计时（Timing）
+
+例如，你可以编写如下装饰器来调试你的函数：
+
+```python
+>>> def debug(func):
+...     def _debug(*args, **kwargs):
+...         result = func(*args, **kwargs)
+...         print(
+...             f"{func.__name__}"
+...             f"(args: {args}, kwargs: {kwargs}) -> {result}"
+...         )
+...         return result
+...     return _debug
+... 
+>>> @debug
+... def add(a, b):
+...     return a + b
+... 
+>>> add(5, 6)
+add(args: (5, 6), kwargs: {}) -> 11
+11
+
+```
+
+在这个例子中，你将 `debug()` 定义为一个装饰器，它接收一个函数作为参数，并打印其签名连同每个参数的当前值以及相应的返回值。你可以使用这个装饰器来调试你的函数。一旦获得了预期的结果，你就可以移除装饰器调用 `@debug`，你的函数就可以直接投入使用了。
+
+注意：要更深入了解 `*args` 和 `**kwargs` 的工作原理，请查看教程《Python args and kwargs: Demystified》（揭秘 Python 中的 args 与 kwargs）。
+
+作为最后一个例子，你将重新实现 `generate_power()` 使其作为装饰器工作：
+
+```python
+>>> def generate_power(exponent):
+...     def power(func):
+...         def inner_power(*args):
+...             base = func(*args)
+...             return base**exponent
+...         return inner_power
+...     return power
+... 
+>>> @generate_power(2)
+... def square(n):
+...     return n
+... 
+>>> square(7)
+49
+>>> @generate_power(3)
+... def cube(n):
+...     return n
+... 
+>>> cube(5)
+125
+
+```
+
+这个版本的 `generate_power()` 产生了与原始实现相同的结果。在这个例子中，你同时使用了记住 `exponent` 的闭包，以及一个返回输入函数对象 `func` 的修改版本的装饰器。
+
+由于装饰器需要接收一个参数（`exponent`），因此你需要两层嵌套函数。第一层对应于 `power()`，它接收被修饰的函数作为参数。第二层是 `inner_power()`，它将参数打包在 `args` 中（译注：此处原文为 "packs the argument exponent in args"，实际代码中 `args` 接收的是传给底层函数的参数），进行最终的幂运算，并返回结果。
 
 
+## [内建函数](https://realpython.com/python-built-in-functions/)
+Python 内置函数
 
+Python 提供了若干可以直接在代码中任何地方使用的函数。这些函数被称为内置函数（built-in functions），它们涵盖了许多常见的编程问题，从数学计算到 Python 特有的功能特性。
 
+注意：所有这些函数都位于 `builtins` 模块中，Python 在启动时会加载该模块并通过内置作用域公开它们，因此你无需导入该模块即可在任何地方使用它们。如果你知道自己将用自己的变量或函数遮蔽（shadow）某个内置名称，那么显式导入该模块会很有用。这样做可以通过 `builtins.name` 随时访问原始函数。
 
+在这些内置功能中，你还会发现一些具有函数式命名的类，例如 `str`、`tuple`、`list` 和 `dict`，它们定义了内置数据类型。这些类在 Python 官方文档中被列为内置函数，因此本教程也会对它们进行介绍。
 
-## 内建函数
+在本教程中，你将学习 Python 内置函数的基础知识。学完本教程后，你将了解它们的应用场景以及工作原理。你将首先从用于数学计算的内置函数开始学起。
 
+使用数学相关的内置函数
 
+在 Python 中，你会发现一些负责处理常见数学运算的内置函数，比如计算数字的绝对值、计算幂等等。以下是 Python 中与数学相关的内置函数汇总：
 
+| 函数 | 描述 |
+| --- | --- |
+| `abs()` | 计算数字的绝对值 |
+| `divmod()` | 计算整数除法的商和余数 |
+| `max()` | 找出给定参数或可迭代对象中元素的最大值 |
+| `min()` | 找出给定参数或可迭代对象中元素的最小值 |
+| `pow()` | 计算数字的幂 |
+| `round()` | 对浮点数值进行四舍五入 |
+| `sum()` | 对可迭代对象中的值求和 |
 
+在接下来的各节中，你将学习这些函数的工作原理以及如何在 Python 代码中使用它们。
+
+### 获取数字的绝对值：abs()
+
+实数的绝对值或模是其非负值。换句话说，绝对值就是去掉符号后的数字。例如，-5 的绝对值是 5，5 的绝对值也是 5。
+
+注意：要了解有关 `abs()` 的更多信息，请查看教程《How to Find an Absolute Value in Python》（如何在 Python 中求绝对值）。
+
+Python 的内置 `abs()` 函数允许你快速计算数字的绝对值。以下是它的函数签名：
+
+```python
+abs(number)
+
+```
+
+`number` 参数可以是任何数值，包括整数、浮点数、复数、分数和小数。看几个例子：
+
+```python
+>>> from decimal import Decimal
+>>> from fractions import Fraction
+>>> abs(-42)
+42
+>>> abs(42)
+42
+>>> abs(-42.42)
+42.42
+>>> abs(42.42)
+42.42
+>>> abs(complex("-2+3j"))
+3.605551275463989
+>>> abs(complex("2+3j"))
+3.605551275463989
+>>> abs(Fraction("-1/2"))
+Fraction(1, 2)
+>>> abs(Fraction("1/2"))
+Fraction(1, 2)
+>>> abs(Decimal("-0.5"))
+Decimal('0.5')
+>>> abs(Decimal("0.5"))
+Decimal('0.5')
+
+```
+
+在这些示例中，你使用 `abs()` 函数计算了不同数值类型的绝对值。首先使用的是整数，然后是浮点数和复数，最后是分数和小数。在所有情况下，当你使用负值调用该函数时，最终结果都会去除符号。
+
+来看一个实际例子，假设你需要根据一个月的交易记录计算公司的总利润和总亏损：
+
+```python
+>>> transactions = [-200, 300, -100, 500]
+>>> incomes = sum(income for income in transactions if income > 0)
+>>> expenses = abs(
+...     sum(expense for expense in transactions if expense < 0)
+... )
+>>> print(f"Total incomes: ${incomes}")
+Total incomes: $800
+>>> print(f"Total expenses: ${expenses}")
+Total expenses: $300
+>>> print(f"Total profit: ${incomes - expenses}")
+Total profit: $500
+
+```
+
+在这个例子中，为了计算支出（expenses），你使用 `abs()` 函数来获取支出的绝对值，从而得到一个正值。
+
+### 找出除法中的商和余数：divmod()
+
+Python 提供了一个名为 `divmod()` 的内置函数，它接收两个数字作为参数，并返回一个元组，其中包含输入数字进行整数除法所得到的商和余数。以下是它的函数签名：
+
+```python
+divmod(dividend, divisor)
+
+```
+
+`dividend`（被除数）和 `divisor`（除数）都应该是数字。看看该函数的实际运行效果：
+
+```python
+>>> divmod(8, 4)
+(2, 0)
+>>> divmod(6.5, 3.5)
+(1.0, 3.0)
+
+```
+
+当使用整数作为参数时，结果与 `(a // b, a % b)` 相同。使用浮点数时，结果为 `(q, a % b)`，其中 `q` 通常是 `math.floor(a / b)`，但也可能比该值小 1。
+
+关于何时使用该函数的一个实际例子：假设你想编写一个接收毫秒时间值并返回 "00:00:00" 格式字符串的函数。以下是使用 `divmod()` 函数的一种可能实现：
+
+```python
+>>> def hh_mm_ss(milliseconds):
+...     seconds = round(milliseconds / 1000)
+...     minutes, seconds = divmod(seconds, 60)
+...     hours, minutes = divmod(minutes, 60)
+...     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+... 
+>>> hh_mm_ss(10000)
+'00:00:10'
+>>> hh_mm_ss(68000)
+'00:01:08'
+>>> hh_mm_ss(3680000)
+'01:01:20'
+
+```
+
+在这个函数中，你首先将输入的毫秒转换为秒，并将结果四舍五入到最接近的整数。
+
+然后，你使用 `divmod()` 将总秒数除以 60，因为一分钟有 60 秒。此计算会为你得出分钟数和剩余的秒数。最后，你再次使用 `divmod()` 将分钟数除以 60，因为一小时有 60 分钟。这一次，你将得到小时数和剩余的分钟数。
+
+### 查找最小值和最大值：min() 与 max()
+
+有时，你需要在一个可迭代对象中或一系列值中找出最小值和最大值。这些是编程中常见的计算，Python 为它们提供了内置函数。
+
+注意：要了解有关 `min()` 和 `max()` 函数的更多信息，请查看教程《Python’s min() and max(): Find Smallest and Largest Values》（Python 的 min() 与 max()：查找最小值与最大值）。
+
+`min()` 函数允许你查找可迭代对象中的最小值，而 `max()` 函数则帮助你查找最大值。以下是这两个函数的签名：
+
+```python
+min(iterable, *[, default, key])
+max(iterable, *[, default, key])
+
+```
+
+两个函数都接收一个名为 `iterable` 的必需参数，并分别返回最小值和最大值。它们还接收两个可选的仅限关键字参数（keyword-only arguments）：
+
+| 参数 | 描述 |
+| --- | --- |
+| `default` | 可用于保存当输入的可迭代对象为空时你希望返回的值 |
+| `key` | 接收一个单参数函数，用于自定义比较标准 |
+
+以下是使用不同参数组合调用 `min()` 和 `max()` 函数的几个简短示例：
+
+```python
+>>> min([1, 2, 3, 4])
+1
+>>> max([1, 2, 3, 4])
+4
+>>> min(1, 2, 3, 4)
+1
+>>> max(1, 2, 3, 4)
+4
+>>> min([], default=0)
+0
+>>> max([], default=0)
+0
+>>> min([-2, 3, 4, -5, 1], key=abs)
+1
+>>> max([-2, 3, 4, -5, 1], key=abs)
+-5
+
+```
+
+在前两个示例中，你对一个数字列表使用了 `min()` 和 `max()`。你也可以在一系列位置参数上使用这些函数。
+
+接着，有两个使用 `default` 参数的示例，用于在输入的可迭代对象为空时返回一个合适的值。最后，有两个使用 `key` 参数的示例。在这些示例中，你使用 `abs()` 函数来提供比较标准。
+
+### 计算幂：pow()
+
+当你在代码中需要计算幂时，可以使用内置的 `pow()` 函数。该函数接收一个数字并将其提升到指定的幂次方。以下是该函数的签名：
+
+```python
+pow(base, exp[, mod=None])
+
+```
+
+调用 `pow()` 时，你将得到 `base` 的 `exp` 次方。传入这两个参数时，`pow()` 等同于 `base**exp`：
+
+```python
+>>> pow(2, 8)
+256
+>>> 2**8
+256
+
+```
+
+该运算计算了 2 的 8 次方，结果为 256。这等同于使用 `**` 操作符进行的幂运算，在实际代码中这种写法更为常见。
+
+`mod` 参数允许你执行类似于 `pow(base, exp) % mod` 的操作，但计算效率更高：
+
+```python
+>>> import timeit
+>>> base = 2
+>>> exp = 1000000
+>>> mod = 1000000
+>>> timeit.timeit(
+...     "pow(base, exp, mod)", globals=globals(), number=10
+... ) * 1000
+0.021042011212557554
+>>> timeit.timeit(
+...     "pow(base, exp) % mod", globals=globals(), number=10
+... ) * 1000
+61.956208024639636
+
+```
+
+在这个例子中，你使用 `timeit` 模块中的 `timeit()` 函数来测量计算速度。然后，你定义了几个变量来进行计算。在第一次调用 `timeit()` 时，你使用了 `mod` 参数。在第二次调用中，你使用了取模操作符（`%`）。
+
+对比生成的时间消耗，你可以得出结论：使用 `mod` 参数远比先计算幂然后再应用取模操作符（如 `pow(base, exp) % mod`）快得多。
+
+### 对数字进行四舍五入：round()
+
+Python 的内置 `round()` 函数接收一个数值参数，并返回四舍五入到指定位数后的值。
+
+注意：要了解有关数字舍入和 `round()` 函数的更多信息，请查看教程《How to Round Numbers in Python》（如何在 Python 中对数字进行舍入）。
+
+`round()` 的函数签名如下代码所示：
+
+```python
+round(number[, ndigits])
+
+```
+
+在此签名中，`number` 通常是一个浮点数，而 `ndigits` 是一个可选参数，且必须是一个整数。后一个参数用于定义精度或小数点后的位数。
+
+以下是一些示例：
+
+```python
+>>> from math import pi
+>>> pi
+3.141592653589793
+>>> round(pi, 2)
+3.14
+>>> round(pi, 4)
+3.1416
+>>> round(pi, 6)
+3.141593
+
+```
+
+在这些示例中，你使用了 `math` 模块中的 `pi` 常量以及 `round()` 函数，来以不同的精度表示该数字。
+
+当你只传入单个参数使用 `round()` 时，可能会得到令人惊讶的结果：
+
+```python
+>>> round(1.5)
+2
+>>> round(2.5)
+2
+
+```
+
+在这两个示例中，`round()` 函数将 1.5 向上舍入为 2，并将 2.5 向下舍入为 2。这是因为 `round()` 会舍入到最接近 10 的负 ndigits 次方的倍数。如果两个倍数距离相等，则会向偶数方向舍入。这种“四舍六入五成双”（rounding half to even）策略有助于减少舍入偏差。这就是为什么 2.5 会舍入为 2 而不是 3。
+
+### 计算总和：sum()
+
+Python 的内置 `sum()` 函数提供了一种高效且符合 Python 习惯（Pythonic）的方式来对数值列表求和，这在许多计算中也是一个常见的中间步骤。因此，对于 Python 程序员来说，`sum()` 是一个非常顺手的工具。
+
+注意：要更深入了解如何使用 `sum()`，请查看教程《Python’s sum(): The Pythonic Way to Sum Values》（Python 的 sum()：符合 Python 习惯的值求和方式）。
+
+`sum()` 函数允许你将一系列值相加。其函数签名如下所示：
+
+```python
+sum(iterable[, start=0])
+
+```
+
+你可以使用以下两个参数来调用 `sum()`：
+
+| 参数 | 描述 |
+| --- | --- |
+| `iterable` | 一个必需参数，可接收任何 Python 可迭代对象。 |
+| `start` | 一个可选参数，用于保存一个初始值。 |
+
+当你调用 `sum()` 时，该函数会在内部将 `start` 与 `iterable` 中的值相加。输入的可迭代对象中的元素通常是数值。不过，你也可以使用列表或元组。`start` 参数可以接收数字、列表或元组，具体取决于你的可迭代对象包含的内容。
+
+以下是使用不同输入调用 `sum()` 的几个示例：
+
+```python
+>>> sum([])
+0
+>>> sum([1, 2, 3, 4, 5])
+15
+>>> sum([1, 2, 3, 4, 5], 100)  # 作为位置参数
+115
+>>> sum([1, 2, 3, 4, 5], start=100)  # 作为关键字参数
+115
+>>> num_lists = [[1, 2, 3], [4, 5, 6]]
+>>> sum(num_lists, start=[])
+[1, 2, 3, 4, 5, 6]
+>>> num_tuples = ((1, 2, 3), (4, 5, 6))
+>>> sum(num_tuples, start=())
+(1, 2, 3, 4, 5, 6)
+
+```
+
+当你使用空的可迭代对象调用 `sum()` 时，得到的结果是 0，因为这是 `start` 的默认值。使用包含值的列表调用该函数会返回所提供值的总和。
+
+如果你想使用除 0 以外的 `start` 值，可以将其作为位置参数或关键字参数提供。然而，后一种方式的可读性更好。
+
+最后两个示例表明，你还可以使用 `sum()` 来拼接列表和元组。请注意，要使这个技巧生效，你需要将 `start` 设置为合适的对象。如果你想拼接列表，则 `start` 必须保存一个列表，依此类推。尽管这个技巧可行，但这种做法既不高效率也不常见。相反，常规的拼接应该使用加号运算符（`+`）。
+
+使用 `sum()` 的一个经典示例是当你需要计算多个数值的平均值时。在这种情况下，你需要先对输入数据求和作为中间步骤。这里有一个例子：
+
+文件名：
+`mean.py`
+
+```python
+def mean(values):
+    try:
+        return sum(values) / len(values)
+    except ZeroDivisionError:
+        raise ValueError("mean() arg shouldn't be empty") from None
+
+```
+
+在这个 `mean()` 函数中，你使用 `sum()` 对输入的值求和，然后将结果除以输入数据中值的数量。
+
+创建和操作基本数据类型
+
+Python 提供了若干内置函数，允许你操作基本数据类型，例如整数、浮点数、字符串和布尔值。以下是帮助你处理基本数据类型的内置函数汇总：
+
+| 函数 | 描述 |
+| --- | --- |
+| `int()` | 从数字或字符串构建整数对象 |
+| `bin()` | 将整数转换为二进制字符串 |
+| `oct()` | 将整数转换为八进制字符串 |
+| `hex()` | 将整数转换为十六进制字符串 |
+| `float()` | 从数字或字符串构建浮点数对象 |
+| `complex()` | 从参数构建复数 |
+| `str()` | 创建字符串对象 |
+| `repr()` | 创建对开发者友好的对象字符串表示形式 |
+| `ascii()` | 返回对象仅包含可打印 ASCII 字符的表示形式 |
+| `bool()` | 将参数转换为布尔值 |
+| `ord()` | 查询字符的整数码点（code point） |
+| `chr()` | 查询给定整数码点对应的字符 |
+| `bytes()` | 创建 bytes 对象（类似于 bytearray，但是不可变的） |
+| `bytearray()` | 创建 bytearray 类的对象 |
+
+在接下来的各节中，你将学习使用这些函数的基础知识，以及如何在你的 Python 代码中使用它们。
+
+### 转换和表示整数：int()、bin()、oct() 和 hex()
+
+整数在编程中非常有用。Python 有一个名为 `int` 的内置数据类型来表示整数。在使用整数时，有时你需要以不同的进制表示它们，例如 2 进制、8 进制或 16 进制。你可能还需要将字符串或其他数值类型转换为整数。
+
+对于后一项任务，你可以使用内置的 `int()` 函数。以下是它的函数签名：
+
+```python
+int(value=0)
+int(string, base=10)
+
+```
+
+第一个签名通过数字或按 10 进制解释的字符串创建一个 `int` 对象。第二个签名允许你解析 2 到 36 之间任意进制的字符串。看几个例子：
+
+```python
+>>> int()
+0
+>>> int(42.42)
+42
+>>> int("42")
+42
+>>> int("42.42")
+Traceback (most recent call last):
+    ...
+ValueError: invalid literal for int() with base 10: '42.42'
+>>> int("one")
+Traceback (most recent call last):
+    ...
+ValueError: invalid literal for int() with base 10: 'one'
+
+```
+
+在不带参数的情况下，`int()` 返回 0。当需要为像 `collections` 模块中的 `defaultdict` 这样的类提供工厂函数时，这种行为特别有用。传入浮点数时，`int()` 只是去掉小数部分并返回整数部分。最后，使用字符串作为参数时，仅当该字符串表示有效的整数时，`int()` 才会返回相应的整数。
+
+你还可以使用 `int()` 将二进制、八进制或十六进制的字符串表示形式转换为整数：
+
+```python
+>>> int("0b10", base=2)
+2
+>>> int("0o10", base=8)
+8
+>>> int("0x10", base=16)
+16
+
+```
+
+在第一个示例中，你使用 `int()` 将表示二进制格式数字的字符串转换为对应的十进制整数。请注意，要使此操作生效，你需要将 `base` 参数设置为适当的基数，对于二进制数字来说是 2。接着，你对八进制和十六进制字符串执行了类似的转换。同样，你必须将 `base` 设置为适当的值。
+
+`bin()`、`oct()` 和 `hex()` 函数允许你执行相反的操作。使用它们，你可以将给定的整数转换为其二进制、八进制或十六进制表示形式。以下是它们的函数签名：
+
+```python
+bin(number)
+oct(number)
+hex(number)
+
+```
+
+`number` 参数必须是整数，或者实现了 `.__index__()` 特殊方法的任何对象。以下是一些示例：
+
+```python
+>>> bin(42)
+'0b101010'
+>>> oct(42)
+'0o52'
+>>> hex(42)
+'0x2a'
+
+```
+
+在这些示例中，你将整数作为参数传递给 `bin()`、`oct()` 和 `hex()`。结果分别得到了输入值在二进制、八进制和十六进制格式下的字符串表示形式。
+
+### 操作其他数字：float() 与 complex()
+
+Python 拥有表示浮点数和复数的基本内置类型。这些类型有关联的内置函数用于转换目的。因此，对于浮点数，你有 `float()` 函数；对于复数，你有 `complex()`。
+
+注意：要更深入了解复数和 `complex()` 函数，请查看教程《Simplify Complex Numbers With Python》（用 Python 简化复数）。
+
+以下是这两个函数的签名：
+
+```python
+float(number=0.0)
+complex(real=0, imag=0)
+complex(string)
+
+```
+
+`float()` 函数接收一个表示数值的单一参数。该参数接收数字或表示有效数字的字符串：
+
+```python
+>>> float()
+0.0
+>>> float(42)
+42.0
+>>> float("42")
+42.0
+>>> float("3.14")
+3.14
+>>> float("one")
+Traceback (most recent call last):
+    ...
+ValueError: could not convert string to float: 'one'
+
+```
+
+在不带参数的情况下，`float()` 返回 0.0。传入整数时，它返回对应的以 0 作为小数部分的浮点数。传入表示数字的字符串时，`float()` 返回对应的浮点数。但是，如果输入的字符串不代表有效的数值，它就会报错失败。
+
+`complex()` 函数允许你处理复数。该函数有两种不同的签名。第一个签名有两个参数：
+
+| 参数 | 描述 |
+| --- | --- |
+| `real` | 该数字的实部 |
+| `imag` | 该数字的虚部 |
+
+这些参数接收数值，例如整数或浮点数。以下是 `complex()` 的这种变体的工作方式：
+
+```python
+>>> complex(3, 6)
+(3+6j)
+>>> complex(1, 0)
+(1+0j)
+>>> complex(0, 1)
+1j
+>>> complex(3.14, -2.75)
+(3.14-2.75j)
+
+```
+
+你可以使用数值调用 `complex()`，从而生成一个复数。请注意，Python 使用 `j` 来定义虚部。
+
+`complex()` 的第二个签名接收一个必须是字符串的单一参数：
+
+```python
+>>> complex("3+6j")
+(3+6j)
+>>> complex("1+0j")
+(1+0j)
+>>> complex("1j")
+1j
+>>> complex("3.14-2.75j")
+(3.14-2.75j)
+
+```
+
+当你使用字符串通过 `complex()` 创建复数时，必须确保输入的字符串格式有效。它应由实部、符号和虚部组成。你不能添加空格来分隔这些部分。
+
+### 构建和表示字符串：str()、repr() 和 ascii()
+
+要创建和处理 Python 字符串，你需要考虑两个基本的内置函数：
+
+1. `str()`
+2. `repr()`
+
+`str()` 函数具有以下签名：
+
+```python
+str(object="")
+str(object, encoding="utf-8", errors="strict")
+
+```
+
+第一个签名通过调用任何 Python 对象的 `.__str__()` 方法从该对象创建一个新字符串。第二个签名使用指定的 `encoding`（编码）和 `errors`（错误处理）策略将 `bytes` 或 `bytearray` 对象解码为字符串。看看第一个签名的实际应用：
+
+```python
+>>> str()
+''
+>>> str(42)
+'42'
+>>> str(3.14)
+'3.14'
+>>> str([1, 2, 3])
+'[1, 2, 3]'
+>>> str({"one": 1, "two": 2, "three": 3})
+"{'one': 1, 'two': 2, 'three': 3}"
+>>> str({"A", "B", "C"})
+"{'B', 'C', 'A'}"
+
+```
+
+在第一个示例中，你调用不带参数的 `str()` 来创建一个空字符串。在其他示例中，你得到了包含输入对象对用户友好的表示形式的字符串。
+
+关于实际用例，假设你有一个数值列表，并希望使用 `str.join()` 方法连接它们，而该方法仅接收字符串的可迭代对象。在这种情况下，你可以像下面这样做：
+
+```python
+>>> "-".join(str(value) for value in [1, 2, 3, 4, 5])
+'1-2-3-4-5'
+
+```
+
+在这个例子中，你在调用 `.join()` 之前使用生成器表达式将每个数字转换为它的字符串表示形式。这样，你就可以避免代码中出现错误。
+
+就内置的 `repr()` 函数而言，它会为你提供当前对象对开发者友好的表示形式。以下是它的签名：
+
+```python
+repr(object)
+
+```
+
+`object` 参数可以是任何 Python 对象。该函数返回一个字符串，理想情况下，你可以用它来重新创建原始对象。来看一下：
+
+```python
+>>> repr(42)
+'42'
+>>> repr(3.14)
+'3.14'
+>>> repr([1, 2, 3])
+'[1, 2, 3]'
+>>> repr({"one": 1, "two": 2, "three": 3})
+"{'one': 1, 'two': 2, 'three': 3}"
+>>> repr({"A", "B", "C"})
+"{'B', 'C', 'A'}"
+
+```
+
+对于内置类型，使用 `repr()` 获取的字符串表示形式与使用 `str()` 函数获取的表示形式相同。
+
+注意：在 `str()` 函数背后，是 `.__str__()` 特殊方法。同样，在 `repr()` 背后，是 `.__repr__()` 方法。要了解有关这些特殊方法的更多信息，请查看教程《When Should You Use .**repr**() vs .**str**() in Python?》（在 Python 中何时应该使用 .**repr**() 与 .**str**()？）。
+
+要查看 `str()` 和 `repr()` 之间的差异，请考虑以下使用 `datetime` 模块的示例：
+
+```python
+>>> import datetime
+>>> today = datetime.datetime.now()
+>>> repr(today)
+'datetime.datetime(2024, 7, 1, 12, 38, 53, 180208)'
+>>> str(today)
+'2024-07-01 12:38:53.180208'
+
+```
+
+`repr()` 方法为你提供了 `datetime` 对象对开发者友好的字符串表示形式。理想情况下，你应该能够使用这种表示形式重新创建该对象。换句话说，你应该能够复制并粘贴生成的表示形式来重新创建该对象。这就是为什么称这种字符串表示形式对开发者友好。
+
+相比之下，调用 `str()` 所获得的字符串表示形式应该力求对最终用户具有可读性和信息性。
+
+该家族中的第三个函数 `ascii()`，在当你需要 Python 对象的仅包含 ASCII 字符的可打印表示形式时派得上用场。它返回一个在无法很好渲染 Unicode 的环境（例如日志、终端或较旧的协议）中可以安全显示的字符串。
+
+`ascii()` 函数具有以下签名：
+
+```python
+ascii(object)
+
+```
+
+该函数对输入对象调用 `repr()`，然后使用 `\x`、`\u` 或 `\U` 转义序列对任何非 ASCII 字符进行转义。来看一下：
+
+```python
+>>> ascii("café")
+"'caf\\xe9'"
+>>> ascii("Python 🐍")
+"'Python \\U0001f40d'"
+>>> ascii(["ñ", "ü", "ç"])
+"['\\xf1', '\\xfc', '\\xe7']"
+>>> ascii("ASCII only")
+"'ASCII only'"
+
+```
+
+在这些示例中，`ascii()` 保持普通 ASCII 字符不变，并将每个非 ASCII 字符替换为其转义序列。请注意蛇 emoji 是如何变成 `\U0001f40d` 的，这正是它的 Unicode 码点。
+
+在实践中，你可以使用 `ascii()` 来生成在不支持 Unicode 的终端或流水线中保持可读的日志输出，并确保字符串表示形式在具有不同默认编码的系统之间保持稳定。
+
+### 处理布尔值：bool()
+
+Python 的内置 `bool()` 函数允许你确定任何 Python 对象的真值（truth value）。它是一个谓词函数（predicate function），因为它总是返回 `True` 或 `False`。为了判断一个对象是否为假（falsy）——换句话说，当对该对象应用 `bool()` 时是否返回 `False`——Python 使用了以下内部规则：
+
+* 被定义为假（false）的常量：`None` 和 `False`
+* 任何数值类型的零值：`0`、`0.0`、`0j`、`Decimal(0)`、`Fraction(0, 1)`
+* 空的序列和集合：`''`、`()`、`[]`、`{}`、`set()`、`range(0)`
+
+其余对象在 Python 中均被视为真（truthy）。自定义对象默认被视为真，除非它们提供了定义不同行为的 `.__bool__()` 特殊方法。
+
+注意：要了解有关布尔值和逻辑的更多信息，请查看教程《Python Booleans: Use Truth Values in Your Code》（Python 布尔值：在代码中使用真值）。
+
+`bool()` 函数具有以下签名：
+
+```python
+bool(object=False)
+
+```
+
+`object` 参数可以是任何 Python 值。当你在不传参数的情况下调用 `bool()` 时，会得到 `False`。以下是它如何工作的几个示例：
+
+```python
+>>> bool()
+False
+>>> bool(0)
+False
+>>> bool(42)
+True
+>>> bool(0.0)
+False
+>>> bool(3.14)
+True
+>>> bool("")
+False
+>>> bool("Hello")
+True
+>>> bool([])
+False
+>>> bool([1, 2, 3])
+True
+
+```
+
+在第一个示例中，你在不带参数的情况下调用 `bool()`，并得到 `False` 作为结果。在其余示例中，你可以证实 Python 一致地应用了上面列出的规则。在实践中，只有当你的代码明确需要一个布尔值而不是其他对象时，你才需要使用 `bool()`。
+
+作为使用 `bool()` 的一个示例，假设你对栈（stack）数据结构有以下实现：
+
+文件名：
+`stack.py`
+
+```python
+class Stack:
+    def __init__(self, items=None):
+        self.items = list(items) if items is not None else []
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop(self):
+        return self.items.pop()
+
+    def __bool__(self):
+        return bool(self.items)
+
+```
+
+在这个例子中，你的 `Stack` 类实现了 `.__bool__()` 特殊方法，以支持对其对象进行布尔运算。该方法保证当给定的 `Stack` 对象为空时，`bool()` 函数返回 `False`，否则返回 `True`。这里有一个例子：
+
+```python
+>>> from stack import Stack
+>>> stack = Stack()
+>>> bool(stack)
+False
+>>> stack.push(4)
+>>> bool(stack)
+True
+
+```
+
+在这段代码中，你首先创建了一个空栈。当你将该对象传递给 `bool()` 时，得到 `False`。然后，你向栈中压入一个值并再次调用 `bool()`。这一次，你得到了 `True`，因为栈不再为空。
+
+### 编码字符串：ord() 与 chr()
+
+字符编码在大多数编程语言中都是一个重要的主题。在 Python 中，字符串默认使用 Unicode 字符集。每个 Unicode 字符都有一个关联的码点（code point），它是一个整数。要获取给定字符的码点，可以使用内置的 `ord()` 函数。以下是它的签名：
+
+```python
+ord(character)
+
+```
+
+`character` 参数应该是一个包含单个字符的字符串。来看几个示例：
+
+```python
+>>> ord("A")
+65
+>>> ord("Z")
+90
+>>> ord("x")
+120
+>>> ord("ñ")
+241
+>>> ord("&")
+38
+
+```
+
+每个 Unicode 字符都有一个关联的码点，用于在 Unicode 表中唯一标识该字符。在这些示例中，你使用该函数获取了几个字符的码点。
+
+在实践中，你可以使用 `ord()` 函数来实现基本的密码学技术、对字符串或字符进行排序、验证输入字符等。以下是一个简单的演练示例函数，它仅检查字符串中的所有字符是否都是英文字母表中的大写字母：
+
+```python
+>>> def is_uppercase(text):
+...     for char in text:
+...         if not (65 <= ord(char) <= 90):
+...             return False
+...     return True
+... 
+>>> is_uppercase("HELLO")
+True
+>>> is_uppercase("Hello")
+False
+
+```
+
+在这个函数中，你使用 `ord()` 来确定字符串中的字符是否在 65 到 90 之间，这是 Unicode 表中大写字母 A 到 Z 的码点区间。
+
+有时，你可能需要确定与给定码点相对应的字符。在这种情况下，你可以使用内置的 `chr()` 函数，该函数具有以下签名：
+
+```python
+chr(code_point)
+
+```
+
+`code_point` 参数应该是一个在 0 到 1_114_111 范围内的整数。以下是一些示例：
+
+```python
+>>> chr(65)
+'A'
+>>> chr(90)
+'Z'
+>>> chr(120)
+'x'
+>>> chr(241)
+'ñ'
+>>> chr(38)
+'&'
+
+```
+
+`chr()` 函数执行与 `ord()` 相反的操作。它允许你找到与特定码点关联的字符。
+
+`ord()` 和 `chr()` 函数在某种程度上是互补的，因此你可能会发现它们经常配合使用。
+
+### 创建字节和字节数组：bytes() 与 bytearray()
+
+Python 的字节（bytes）和字节数组（byte arrays）是 Python 开箱即用的内置类型，用于操作二进制数据、编码和解码文本、处理文件输入输出以及通过网络进行通信。
+
+`bytes` 数据类型是不可变的，而 `bytearray` 类型是可变的。要创建派生自这些数据类型的对象，你可以使用内置的 `bytes()` 和 `bytearray()` 函数。
+
+`bytes()` 和 `bytearray()` 函数具有以下签名：
+
+```python
+bytes(source=b"")
+bytes(source, encoding)
+bytes(source, encoding, errors)
+bytearray(source=b"")
+bytearray(source, encoding)
+bytearray(source, encoding, errors)
+
+```
+
+这两个函数都有三种不同的签名。这两个函数的第一个签名都接收一个字节字面量（bytes literal）作为参数。这些字面量类似于字符串字面量，但它们以 `b` 开头并且只接收 ASCII 字符。
+
+以下是参数及其含义的汇总：
+
+| 参数 | 描述 |
+| --- | --- |
+| `source` | 字节字面量或字符串 |
+| `encoding` | 如果 `source` 保存的是字符串，用于对其进行解码的字符编码 |
+| `errors` | 编码和解码错误的处理程序 |
+
+仅当 `source` 参数是字符串时才需要 `encoding` 参数，在这种情况下，你必须提供适当的编码，以便 Python 可以将字符串转换为字节。
+
+最后，`errors` 参数也是可选的，应包含以下错误处理程序之一：
+
+| 处理程序 | 描述 |
+| --- | --- |
+| `"strict"` | 当出现编码问题时引发 `UnicodeDecodeError` 或 `UnicodeEncodeError` 异常 |
+| `"ignore"` | 忽略无法编码的字符 |
+| `"replace"` | 将无法编码的字符替换为问号（`?`） |
+| `"xmlcharrefreplace"` | 将无法编码的字符替换为 XML 字符引用 |
+| `"backslashreplace"` | 将无法编码的字符替换为 Python 字符串反斜杠转义序列 |
+
+通过选择适当的错误处理程序，你可以在使用错误数据调用 `bytes()` 和 `bytearray()` 函数时建立良好的应对策略。
+
+以下是使用 `bytes()` 和 `bytearray()` 函数的几个示例：
+
+```python
+>>> bytes()
+b''
+>>> bytes(b"Using ASCII characters or bytes \xc3\xb1")
+b'Using ASCII characters or bytes \xc3\xb1'
+>>> bytes("Using non-ASCII characters: ñ Ł", encoding="utf-8")
+b'Using non-ASCII characters: \xc3\xb1 \xc5\x81'
+>>> bytearray()
+bytearray(b'')
+>>> bytearray(b"Using ASCII characters or bytes \xc3\xb1")
+bytearray(b'Using ASCII characters or bytes \xc3\xb1')
+>>> bytearray("Using non-ASCII characters: ñ Ł", encoding="utf-8")
+bytearray(b'Using non-ASCII characters: \xc3\xb1 \xc5\x81')
+
+```
+
+在这些示例中，你使用字节字面量以及带有正确编码参数的字符串创建了 `bytes` 和 `bytearray` 对象。请注意，你可以在不带参数的情况下调用 `bytes()` 函数来创建一个空的 `bytes` 对象。
+
+注意：要了解有关使用 `bytes` 和 `bytearray` 的更多信息，请查看以下教程：
+
+* 《Bytes Objects: Handling Binary Data in Python》（字节对象：在 Python 中处理二进制数据）
+* 《Python’s Bytearray: A Mutable Sequence of Bytes》（Python 的 Bytearray：可变字节序列）
+
+现在考虑以下展示如何使用错误处理程序的示例：
+
+```python
+>>> bytes(
+...     "Using non-ASCII characters with the ASCII encoding: ñ Ł",
+...     encoding="ascii"
+... )
+Traceback (most recent call last):
+    ...
+UnicodeEncodeError: 'ascii' codec can't encode character '\xf1'
+    in position 52: ordinal not in range(128)
+>>> bytes(
+...     "Using non-ASCII characters with the ASCII encoding: ñ Ł",
+...     encoding="ascii",
+...     errors="ignore"
+... )
+b'Using non-ASCII characters with the ASCII encoding:  '
+>>> bytes(
+...     "Using non-ASCII characters with the ASCII encoding: ñ Ł",
+...     encoding="ascii",
+...     errors="replace"
+... )
+b'Using non-ASCII characters with the ASCII encoding: ? ?'
+>>> bytes(
+...     "Using non-ASCII characters with the ASCII encoding: ñ Ł",
+...     encoding="ascii",
+...     errors="xmlcharrefreplace"
+... )
+b'Using non-ASCII characters with the ASCII encoding: &#241; &#321;'
+>>> bytes(
+...     "Using non-ASCII characters with the ASCII encoding: ñ Ł",
+...     encoding="ascii",
+...     errors="backslashreplace"
+... )
+b'Using non-ASCII characters with the ASCII encoding: \\xf1 \\u0141'
+
+```
+
+在这些示例中，你仅使用了 `bytes()`，因为 `bytearray()` 的工作方式与此类似。唯一的区别在于 `bytes()` 返回不可变对象，而 `bytearray()` 返回可变对象。
+
+这些示例将非 ASCII 字符与 ASCII 编码一起使用，这将导致你需要处理的编码错误。`errors` 参数的默认值是 `"strict"`。这就是为什么你在上面的第一个示例中得到了 `UnicodeEncodeError` 异常。
+
+然后，你将 `errors` 设置为 `"ignore"`，以便 Python 忽略任何编码错误。在这种情况下，字符 `ñ` 和 `Ł` 被移除了。如果你将 `errors` 设置为 `"replace"`，则 `ñ` 和 `Ł` 各自都会被替换为一个问号。
+
+使用 `"xmlcharrefreplace"` 作为错误处理程序会使 Python 将字符 `ñ` 和 `Ł` 替换为它们各自的 XML 字符引用。最后，使用 `"backslashreplace"` 会通过使用相应的转义序列对有问题的字符进行转义。
+
+创建集合数据类型
+
+Python 的一个基本特性是语言内置了丰富的集合数据类型。你将拥有若干允许操作这些数据类型的内置函数，其中包括列表、元组、字典、集合以及字节。
+
+以下是帮助你处理集合数据类型的内置函数汇总：
+
+| 函数 | 描述 |
+| --- | --- |
+| `list()` | 从可迭代对象创建列表对象 |
+| `tuple()` | 从可迭代对象创建元组对象 |
+| `dict()` | 从一系列键值对或关键字参数创建字典（dict）对象 |
+| `set()` | 从可迭代对象创建集合（set）对象 |
+| `frozenset()` | 从可迭代对象创建不可变集合（frozenset）对象 |
+
+在接下来的各节中，你将学习使用这些函数的基础知识，并运用它们在你的 Python 代码中创建和操作集合。
+
+### 创建列表和元组：list() 与 tuple()
+
+Python 的列表（list）是一个功能极为强大的基本内置数据类型。列表是可变的，允许你高效地组织和操作数据，这些数据可以是异构的（heterogeneous），但通常是同构的（homogeneous）。例如，你可以使用列表来存储数据库表中的一列。
+
+注意：要了解有关使用列表和 `list()` 函数的更多信息，请查看教程《Python’s list Data Type: A Deep Dive With Examples》（深入理解 Python 的 list 数据类型：带示例）。
+
+类似地，Python 的元组（tuple）也是一种内置类型。与列表不同，元组是不可变的。你可以使用它们来组织数据，这些数据可以是同构的，但通常是异构的。例如，你可以使用元组来存储数据库表中的一行。
+
+注意：要了解有关使用元组和 `tuple()` 函数的更多信息，请查看教程《Python’s tuple Data Type: A Deep Dive With Examples》（深入理解 Python 的 tuple 数据类型：带示例）。
+
+Python 的内置 `list()` 和 `tuple()` 函数允许你创建列表和元组对象。
+
+`list()` 函数接收一个可迭代对象作为参数，并返回一个由输入数据构建的列表对象。因此，它的签名大致如下所示：
+
+```python
+list([iterable])
+
+```
+
+请注意，`iterable` 周围的方括号表示该参数是可选的，因此方括号并不是语法本身的一部分。
+
+注意：在实践中，`list()` 是一个类构造器（class constructor）而不是函数。然而，Python 官方文档将其称为函数。
+
+以下是使用 `list()` 创建列表对象的几个示例：
+
+```python
+>>> list()
+[]
+>>> list("Hello")
+['H', 'e', 'l', 'l', 'o']
+>>> list((1, 2, 3, 4, 5))
+[1, 2, 3, 4, 5]
+>>> list({"circle", "square", "triangle", "rectangle", "pentagon"})
+['square', 'rectangle', 'triangle', 'pentagon', 'circle']
+>>> list({"name": "John", "age": 30, "city": "New York"})
+['name', 'age', 'city']
+>>> list({"name": "John", "age": 30, "city": "New York"}.keys())
+['name', 'age', 'city']
+>>> list({"name": "John", "age": 30, "city": "New York"}.values())
+['John', 30, 'New York']
+>>> list({"name": "John", "age": 30, "city": "New York"}.items())
+[('name', 'John'), ('age', 30), ('city', 'New York')]
+
+```
+
+当你在不传参数的情况下调用 `list()` 时，会创建一个新的空列表。当使用字符串作为参数时，会创建一个字符列表。当使用元组时，会将该元组转换为列表。
+
+注意：在大多数情况下，你会使用一对中括号 `[]` 来创建空列表。然而，在某些情况下，使用 `list()` 可能更具可读性或更加明确。
+
+`list()` 函数甚至接收集合（sets），但你需要记住集合是无序的数据结构，因此你将无法预测最终生成列表中元素的顺序。
+
+在字典上使用 `list()` 为你提供了四种可能性。你可以直接使用字典或使用其 `.keys()` 方法来创建键的列表。如果你想创建值的列表，可以使用 `.values()` 方法。最后，如果你想创建键值对的列表，可以使用 `.items()` 方法。
+
+列表灵活且功能丰富，因此你几乎会在每一段 Python 代码中看到它们的身影。
+
+元组通常用于存储异构且不可变的数据。`tuple()` 函数允许你动态创建元组。以下是它的签名：
+
+```python
+tuple([iterable])
+
+```
+
+`iterable` 周围的方括号表示该参数是可选的，因此方括号并不是语法本身的一部分。
+
+请考虑在你的代码中使用 `tuple()` 的以下示例：
+
+```python
+>>> tuple()
+()
+>>> tuple("Hello")
+('H', 'e', 'l', 'l', 'o')
+>>> tuple(["Jane Doe", 25, 1.75, "Canada"])
+('Jane Doe', 25, 1.75, 'Canada')
+>>> tuple({
+...     "manufacturer": "Ford",
+...     "model": "Mustang",
+...     "color": "Blue",
+... }.values())
+('Ford', 'Mustang', 'Blue')
+
+```
+
+你可以不带参数使用 `tuple()` 来创建一个空元组。这会比使用一对空圆括号 `()` 更具可读性。当你向 `tuple()` 传入一个字符串时，会得到一个字符元组。
+
+在第三个示例中，你使用 `tuple()` 将一个包含异构数据的列表转换为元组，对于存储这类数据来说，元组是更为合适的数据结构。最后，你使用字典的值构建了一个元组。
+
+就像列表一样，元组在 Python 中非常有用。你会在许多用例中看到它们的使用，特别是在需要存储不可变异构数据的情况下。
+
+### 构建字典：dict()
+
+字典是 Python 中一个基本的内置数据结构。它们无处不在，是这门语言本身的核心组成部分。在你的代码中，你会发现字典有许多用例。与其他内置集合一样，Python 也有一个允许你创建字典的内置函数：`dict()` 函数。
+
+注意：要了解有关字典和 `dict()` 函数的更多信息，请查看教程《Dictionaries in Python》（Python 中的字典）。
+
+`dict()` 函数具有以下签名：
+
+```python
+dict(**kwargs)
+dict(mapping, **kwargs)
+dict(iterable, **kwargs)
+
+```
+
+所有这些签名都接收所谓的关键字参数（`**kwargs`）或命名参数。第二个签名接收一个映射（mapping），它可以是另一个字典。最后，第三个签名接收一个键值对的可迭代对象，例如可以是包含两个元素元组的列表。
+
+以下是以不同方式使用 `dict()` 函数的几个简短示例：
+
+```python
+>>> dict()
+{}
+>>> jane = dict(name="Jane", age="30", country="Canada")
+>>> jane
+{'name': 'Jane', 'age': '30', 'country': 'Canada'}
+>>> dict(jane, job="Python Dev")
+{'name': 'Jane', 'age': '30', 'country': 'Canada', 'job': 'Python Dev'}
+>>> dict([("name", "Jane"), ("age", 30), ("country", "Canada")])
+{'name': 'Jane', 'age': 30, 'country': 'Canada'}
+
+```
+
+同样，在创建空字典时，你可以使用不带参数的 `dict()` 函数。这不如使用一对花括号 `{}` 常见，但同样，在某些语境下它可能更具可读性和明确性。
+
+接着，你使用关键字参数创建了一个 `jane` 字典。这是在 Python 中构建字典的一种清晰而优雅的方式。
+
+第三个示例展示了如何将映射与关键字参数结合起来创建新的字典对象。最后，在第四个示例中，你从一个元组列表创建了一个新字典。
+
+### 创建集合和不可变集合：set() 与 frozenset()
+
+Python 的集合（set）是一种用于创建唯一且可哈希对象（通常称为元素或成员）集合的内置数据类型。在 Python 中，集合支持为数学集合定义的各种操作，包括并集、差集、对称差集等。
+
+Python 有两种类型的集合：
+
+1. `set`
+2. `frozenset`
+
+这两种数据类型之间的区别在于 `set` 对象是可变的，而 `frozenset` 对象是不可变的。
+
+注意：要了解有关集合和 `set()` 函数的更多信息，请查看教程《Sets in Python》（Python 中的集合）。
+
+与其他数据类型一样，Python 也提供了用于创建集合和不可变集合的内置函数。你分别拥有 `set()` 和 `frozenset()` 函数。这些函数的签名如下所示：
+
+```python
+set([iterable])
+frozenset([iterable])
+
+```
+
+同样，方括号表示输入的可迭代对象是可选的。现在来看看创建集合和不可变集合的以下示例：
+
+```python
+>>> set()
+set()
+>>> frozenset()
+frozenset()
+>>> set(["square", "rectangle", "triangle", "pentagon", "circle"])
+{'square', 'triangle', 'circle', 'rectangle', 'pentagon'}
+>>> frozenset(["square", "rectangle", "triangle", "pentagon", "circle"])
+frozenset({'square', 'triangle', 'circle', 'rectangle', 'pentagon'})
+>>> set(("red", "green", "blue", "red"))
+{'green', 'red', 'blue'}
+>>> frozenset(("red", "green", "blue", "red"))
+frozenset({'green', 'red', 'blue'})
+
+```
+
+当你在不带参数的情况下调用 `set()` 和 `frozenset()` 时，会分别创建一个空集合或空不可变集合。对于集合来说，你没有可以用来创建空集合的字面量，因为一对花括号（`{}`）定义的是空字典。因此，要创建空集合，你必须使用 `set()` 函数。
+
+在其余示例中，你使用可迭代对象（如列表和元组）来创建集合和不可变集合。需要特别注意的是，当输入的可迭代对象包含重复元素时，最终的集合中该重复项将只保留一份。此外，集合是无序的数据结构，因此在提供列表时，你无法预测最终生成集合中元素的顺序。
+
+处理可迭代对象与迭代器
+
+Python 的迭代器（iterators）和可迭代对象（iterables）是两个不同但相关的工具，当你需要遍历数据流或数据集合时，它们会派上用场。迭代器驱动并控制迭代过程，而可迭代对象通常保存着可以一次迭代一个值的数据。
+
+Python 提供了若干可用于处理可迭代对象和迭代器的内置函数。以下是这些函数的汇总：
+
+| 函数 | 描述 |
+| --- | --- |
+| `len()` | 计算具有大小（sized）的对象的长度 |
+| `reversed()` | 构建反向迭代器 |
+| `sorted()` | 从可迭代对象创建排序后的列表 |
+| `all()` | 检查可迭代对象的所有元素是否都为真 |
+| `any()` | 检查可迭代对象中是否有任意元素为真 |
+| `range()` | 生成整数值范围 |
+| `enumerate()` | 从可迭代对象创建包含索引和值的元组迭代器 |
+| `slice()` | 创建切片对象 |
+| `zip()` | 创建聚合来自多个可迭代对象元素的迭代器 |
+| `iter()` | 构建迭代器对象 |
+| `next()` | 从迭代器中检索下一项 |
+| `aiter()` | 从异步可迭代对象构建异步迭代器 |
+| `anext()` | 从异步迭代器中检索下一项 |
+| `filter()` | 从可迭代对象中过滤元素 |
+| `map()` | 对可迭代对象的每一项应用函数 |
+
+在接下来的各节中，你将了解所有这些内置函数，以及它们在你的 Python 代码中处理可迭代对象和迭代器时能发挥怎样的作用。
+
+### 获取容器的长度：len()
+
+你对集合执行的最常见操作之一，就是确定存储在现有序列或集合中的元素数量。为了完成这项任务，Python 提供了内置的 `len()` 函数。
+
+注意：要了解有关 `len()` 函数的更多信息，请查看教程《Using the len() Function in Python》（在 Python 中使用 len() 函数）。
+
+`len()` 函数具有以下签名：
+
+```python
+len(iterable)
+
+```
+
+`iterable` 参数可以是实现了 `.__len__()` 特殊方法（也称为长度协议）的任何对象。这包括序列（例如字符串、元组和列表），以及集合（例如字典、集合和不可变集合）。该函数返回输入对象的长度或元素数量。
+
+以下是在不同对象上使用 `len()` 的几个示例：
+
+```python
+>>> len("Python")
+6
+>>> len(("Jane Doe", 25, 1.75, "Canada"))
+4
+>>> len([1, 2, 3, 4, 5])
+5
+>>> len({"green", "red", "blue"})
+3
+>>> len({"name": "Jane", "age": 30, "country": "Canada"})
+3
+
+```
+
+在第一个示例中，你使用 `len()` 获取字符串中的字符数。然后，你使用该函数确定元组、列表和集合的长度。最后，你以字典作为参数使用 `len()`。在这种情况下，你得到了输入字典中键值对的数量。
+
+请注意，当使用空容器调用 `len()` 时，它会返回 0：
+
+```python
+>>> len("")
+0
+>>> len(())
+0
+>>> len([])
+0
+
+```
+
+在这些示例中，你对空字符串、空元组和空列表使用了 `len()`。在所有情况下，得到的结果都是 0。
+
+`len()` 函数在多种情况下都很有用。一个常见的例子是当你需要计算一系列数值的平均值时：
+
+```python
+>>> grades = [90, 97, 100, 87]
+>>> sum(grades) / len(grades)
+93.5
+
+```
+
+在这个例子中，`len()` 给出了成绩列表中的数值数量。然后，你使用该值来计算平均成绩。
+
+### 反转与排序可迭代对象：reversed() 与 sorted()
+
+反转和排序可迭代对象中的值是编程中另一项有用的操作。因为这些操作非常普遍，Python 为它们提供了内置函数。当你想要反转一个可迭代对象时，可以使用内置的 `reversed()` 函数。
+
+注意：要更深入了解使用 `reversed()` 函数反转列表，请查看教程《Reverse Python Lists: Beyond .reverse() and reversed()》（反转 Python 列表：超越 .reverse() 与 reversed()）。
+
+`reversed()` 函数具有以下签名：
+
+```python
+reversed(iterable)
+
+```
+
+`iterable` 参数可以是一个序列，例如字符串、元组或列表。该函数返回一个以相反顺序生成元素的迭代器：
+
+```python
+>>> reversed([0, 1, 2, 3, 4, 5])
+<list_reverseiterator object at 0x107062b30>
+>>> list(reversed([0, 1, 2, 3, 4, 5]))
+[5, 4, 3, 2, 1, 0]
+
+```
+
+在这个例子中，你使用一个数字列表调用 `reversed()`。该函数返回一个反向迭代器。要显示其内容，可以使用 `list()` 函数从该迭代器构建一个列表。
+
+注意：将迭代器转换为列表是 `list()` 函数的一个常见用例，特别是在调试或进行交互式操作时。
+
+类似地，当你需要对可迭代对象中的值进行排序时，可以使用 `sorted()` 函数。该函数具有以下签名：
+
+```python
+sorted(iterable, key=None, reverse=False)
+
+```
+
+第一个参数是一个可迭代对象，例如字符串、列表、元组或字典。接着是 `key` 和 `reverse` 参数，它们具有以下含义：
+
+| 参数 | 描述 |
+| --- | --- |
+| `key` | 指定一个单参数函数，用于从输入可迭代对象的每个元素中提取比较键 |
+| `reverse` | 是一个布尔值，如果设置为 `True`，允许你以相反顺序对元素进行排序 |
+
+`key` 参数接收函数对象。换句话说，是不带调用括号的函数。
+
+注意：要了解有关 `sorted()` 函数的更多信息，请查看教程《How to Use sorted() and .sort() in Python》（如何在 Python 中使用 sorted() 与 .sort()）。
+
+以下是以不同内置容器作为参数使用 `sorted()` 的几个示例：
+
+```python
+>>> sorted("bdeac")
+['a', 'b', 'c', 'd', 'e']
+>>> sorted([4, 2, 7, 5, 1, 6, 3])
+[1, 2, 3, 4, 5, 6, 7]
+>>> sorted([4, 2, 7, 5, 1, 6, 3], reverse=True)
+[7, 6, 5, 4, 3, 2, 1]
+
+```
+
+与 `reversed()` 不同，`sorted()` 函数始终返回一个列表对象，而不是迭代器。在第一个示例中，你使用字符串作为 `sorted()` 的参数，并得到了一个按字母顺序排列的字符列表。在底层，Python 使用字符的 Unicode 码点来比较字符串。
+
+注意：要更深入了解字符串排序，请查看教程《How to Sort Unicode Strings Alphabetically in Python》（如何在 Python 中按字母顺序对 Unicode 字符串进行排序）。
+
+在第三个示例中，你将 `reverse` 参数设置为 `True`，得到了按降序排序的数字列表。
+
+最后，`key` 参数在多种情况下可能很有用。该参数的一个常见用例是当你需要对本身也是容器的元素进行排序时。以下是对二元组列表进行排序的示例：
+
+```python
+>>> points = [(1, 2), (3, 1), (4, 0), (2, 1)]
+>>> sorted(points, key=lambda point: point[0])
+[(1, 2), (2, 1), (3, 1), (4, 0)]
+>>> sorted(points, key=lambda point: point[1])
+[(4, 0), (3, 1), (2, 1), (1, 2)]
+
+```
+
+在第一个高亮行中，你使用了一个 lambda 函数，它接收一个点作为参数并返回其第一个坐标。由于 Python 比较元组的方式，如果你在不带 `key` 的情况下调用 `sorted()`，该示例也会产生相同的结果。在第二个高亮行中，lambda 函数返回第二个坐标。这些函数为排序过程提供了比较键。
+
+因此，在第一个示例中，你按点的第一个坐标对其进行排序；而在第二个示例中，你按点的第二个坐标对其进行排序。
+
+### 确定可迭代对象中元素的真值：all() 与 any()
+
+有时，你可能需要确定可迭代对象中的所有元素是否都为真。为此，Python 提供了内置的 `all()` 函数。在其他时候，你可能需要查明可迭代对象中是否至少有一个元素为真。为此，Python 提供了内置的 `any()` 函数。
+
+`all()` 和 `any()` 的签名如下所示：
+
+```python
+all(iterable)
+any(iterable)
+
+```
+
+这两个函数都接收一个对象的强可迭代对象作为参数。当输入可迭代对象中的所有元素都为真时，`all()` 函数返回 `True`；当至少有一个元素为假时，返回 `False`。
+
+注意：要了解有关 `all()` 函数的更多信息，请查看教程《Python’s all(): Check Your Iterables for Truthiness》（Python 的 all()：检查可迭代对象的真值）。
+
+以下是 `all()` 如何工作的几个示例：
+
+```python
+>>> all([1, 2, 3, 4])
+True
+>>> all([1, 2, 3, 4, 0])
+False
+>>> all(["Hello", ""])
+False
+>>> all(["Hello", "World"])
+True
+
+```
+
+在前两个示例中，你对数字列表使用了 `all()`。第一个列表包含不同于 0 的整数值，Python 将其视为真。因此，`all()` 返回 `True`。接着，在第二个示例中，你向列表中添加了一个 0，`all()` 返回 `False`，因为该值在 Python 中被视为假。
+
+在最后两个示例中，你使用了一个字符串列表。Python 将空字符串视为假，因此 `all()` 返回 `False`。最后，你传入一个包含两个非空字符串的列表，`all()` 返回 `True`。
+
+在实际代码中，你可以为 `all()` 找到多种用例。将生成器表达式作为参数传递尤其方便。例如，假设你想确定列表中的所有数字是否都在给定区间内。在这种情况下，你可以像以下代码那样使用 `all()`：
+
+```python
+>>> numbers = [10, 5, 6, 4, 7, 8, 18]
+>>> # 介于 0 和 10 之间
+>>> all(0 <= x <= 10 for x in numbers)
+False
+>>> # 介于 0 和 20 之间
+>>> all(0 <= x <= 20 for x in numbers)
+True
+
+```
+
+在第一个高亮行中，你使用了生成器表达式作为 `all()` 的参数。该生成器检查数字是否在 0 到 10 之间，并根据条件的结果生成布尔值。
+
+`all()` 函数检查所有生成的值是否都为 `True`。如果是这样，你就会得到 `True`。另一方面，如果生成的值中至少有一个是 `False`，你就会得到 `False`。
+
+与 `all()` 相对，如果至少有一个元素为真，`any()` 函数将返回 `True`；如果所有元素都为假，则返回 `False`。因此，当你需要确定可迭代对象中是否至少有一个元素为真时，可以使用 `any()`。
+
+注意：要了解有关 `any()` 函数的更多信息，请查看教程《How to Use any() in Python》（如何在 Python 中使用 any()）。
+
+以下是在 Python 中使用 `any()` 的几个示例：
+
+```python
+>>> any([0, 0.0, False, "", []])
+False
+>>> any([0, 0.0, False, "", [], 42])
+True
+
+```
+
+在第一个示例中，根据 Python 确定对象真值的内部规则，输入列表中的所有对象都为假。由于所有对象都为假，`any()` 返回 `False`。在第二个示例中，你将数字 42 添加到输入列表的末尾。因为 42 为真（truthy），所以 `any()` 返回 `True`。
+
+同样，就像 `all()` 一样，`any()` 与检查某些条件的生成器表达式结合使用时特别方便。例如，假设你想知道给定文本中是否至少有一个字母是大写的。在这种情况下，你可以像下面这样做：
+
+```python
+>>> any(letter.isupper() for letter in  "hello, world!")
+False
+>>> any(letter.isupper() for letter in  "Hello, World!")
+True
+
+```
+
+在这些示例中，你使用 `str.isupper()` 方法来确定字母是否为大写。该方法返回 `True` 或 `False`，因此你得到了一个布尔值的可迭代对象。`any()` 的工作就是确定这些值中是否有任意一个为真。
+
+在第一个示例中，你没有大写字母，因此 `any()` 返回 `False`。在第二个示例中，你有一个大写的 H，因此 `any()` 返回 `True`。
+
+### 创建整数值范围：range()
+
+有时，你需要构建数值范围来表示给定区间内的一系列整数值。通常，你需要数字是连续的，但也可能希望它们是非连续的。
+
+例如，你可以使用 Python 列表创建一个包含所有数字字符（0-9）的值范围：
+
+```python
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+```
+
+如果你的范围相对较小（就像本例中的范围），这种方法是可行的。但是，如果你的范围需要包含一百万个值呢？用列表构建这种范围将是一项艰巨的任务。还有一种更好的方法。
+
+Python 提供了内置的 `range()` 函数来简化数值范围的创建：
+
+```python
+>>> range(10)
+range(0, 10)
+>>> list(range(10))
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+>>> range(1_000_000)
+range(0, 1000000)
+>>> list(range(1_000_000))
+[0, 1, 2, ..., 999998, 999999]
+
+```
+
+`range()` 函数返回的是一个 range 对象，而不是列表。如果你想查看具体范围内的值，可以像在第二个示例中所做的那样，将其包装在对 `list()` 的调用中。现在你拥有了一个数字列表。
+
+在第三个示例中，你创建了一个包含从 0 到 999999 的一百万个整数的范围。如果你想看看它的实际效果，可以将其传递给 `list()`。你将得到一个填满数字的终端窗口！
+
+注意：要更深入了解使用范围和 `range()` 函数，请查看教程《Python range(): Represent Numerical Ranges》（Python range()：表示数值范围）。
+
+内置的 `range()` 函数具有以下签名：
+
+```python
+range(stop)
+range(start, stop, step=1)
+
+```
+
+你拥有该函数的单参数和三参数变体。以下是每个参数的含义：
+
+| 参数 | 描述 |
+| --- | --- |
+| `start` | 保存范围内的初始值。默认为 0，并且包含在范围内。 |
+| `stop` | 保存范围停止的值。这是一个必需参数，其值不包含在范围内。 |
+| `step` | 保存连续值之间的步长。这是一个可选参数，默认为 1。 |
+
+到目前为止，你使用的是单参数变体，它从 0 开始构建连续整数范围。以下是展示三参数变体的几个示例：
+
+```python
+>>> list(range(1, 11))
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+>>> list(range(10, 101, 10))
+[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
+```
+
+请注意，在三参数变体中，第三个参数是可选的。这意味着你可以使用两个参数调用该函数，并依赖 `step` 的默认值 1。这就是你在第一个示例中所做的，它构建了从 1 到 11 的连续整数范围。同样，11 不包含在最终范围内，因为它是 `range()` 停止输出值的值。
+
+在第二个示例中，你创建了一个从 10 开始、以 10 为步长、一直到 101 的范围。
+
+你也可以为 `range()` 的参数使用负值。此特性的一个常见用例是当你需要创建负数范围以及倒数范围时：
+
+```python
+>>> list(range(-10, 0))
+[-10, -9, -8, -7, -6, -5, -4, -3, -2, -1]
+>>> list(range(100, 0, -10))
+[100, 90, 80, 70, 60, 50, 40, 30, 20, 10]
+
+```
+
+在这个例子中，第一个范围包含从 -10 到 0 的连续负数。第二个范围以 -10 为步长从 100 倒数到 0。
+
+范围在多种情况下都很有用。范围的一个绝佳用例是当你需要执行某项操作指定次数时：
+
+```python
+>>> for _ in range(3):
+...     print("Beep")
+... 
+Beep
+Beep
+Beep
+
+```
+
+这个循环运行三次，并在屏幕上打印一条消息。但是，该循环不需要在其循环体内使用循环变量。因此，你使用下划线来表示这是一个废弃变量（throwaway variable）。
+
+Python 中对 range 对象的一个常见误用是将其作为遍历现有可迭代对象的一种方式：
+
+```python
+>>> letters = ["a", "b", "c", "d"]
+>>> for index in range(len(letters)):
+...     print(index, letters[index])
+... 
+0 a
+1 b
+2 c
+3 d
+
+```
+
+这种 for 循环并不是符合 Python 风格结构的最佳范例。它使用 `range()` 通过数字索引来遍历字母。在下一节中，你将学习编写这种循环的 Pythonic 方式。
+
+### 在循环中枚举元素：enumerate()
+
+符合 Python 风格的 for 循环会遍历可迭代对象中的元素，而不考虑给定元素所在的索引或处理元素的顺序。你会发现大多数 Python for 循环看起来大致如下：
+
+```python
+>>> colors = ["red", "orange", "yellow", "green"]
+>>> for color in colors:
+...     print(color)
+... 
+red
+orange
+yellow
+green
+
+```
+
+在 Python 中以这种方式编写循环既明确、直观，又具有良好的可读性。然而，有时你将需要一种方法来访问给定元素在输入可迭代对象中所处的索引。
+
+通常，当你刚开始学习 Python 并需要在循环中访问索引时，你最终可能会写出如下所示的循环：
+
+```python
+>>> for index in range(len(colors)):
+...     print(index, colors[index])
+... 
+0 red
+1 orange
+2 yellow
+3 green
+
+```
+
+这种循环可以工作。然而，它并不是你能称之为 Pythonic 的循环。它使用了一些技巧来在某种程度上模仿对索引的迭代。Python 提供了更好的工具来完成此操作，该工具就是内置的 `enumerate()` 函数。
+
+注意：要更深入了解使用 `enumerate()` 函数，请查看教程《Python enumerate(): Simplify Loops That Need Counters》（Python enumerate()：简化需要计数器的循环）。
+
+以下是你将如何使用 `enumerate()` 函数编写上述循环：
+
+```python
+>>> for index, color in enumerate(colors):
+...     print(index, color)
+... 
+0 red
+1 orange
+2 yellow
+3 green
+
+```
+
+这个循环可读性强且表达明确。`enumerate()` 函数接收一个可迭代对象作为参数，并生成包含整数索引和关联元素的二元组。
+
+以下是该函数的签名：
+
+```python
+enumerate(iterable, start=0)
+
+```
+
+第一个参数是一个可迭代对象。第二个参数 `start` 允许你选择为枚举定义起始值。默认值为 0，因为这是编程中索引的通常起始值。然而，在某些情况下，使用不同的起点（如 1）可能会很方便。
+
+为了说明如何使用 `start` 参数，假设你正在构建一个基于文本的用户界面（TUI）应用程序，并希望显示一个包含某些选项的菜单。这些选项应该具有关联的数字，以便用户可以选择所需的操作。在这种情况下，你可以像以下代码那样使用 `enumerate()`：
+
+```python
+>>> def list_menu(options):
+...     print("Main Menu:")
+...     for index, option in enumerate(options, start=1):
+...         print(f"{index}. {option}")
+... 
+>>> list_menu(["Open", "Save", "Settings", "Quit"])
+Main Menu:
+1. Open
+2. Save
+3. Settings
+4. Quit
+
+```
+
+从最终用户的角度来看，将菜单列表从 1 开始是理所当然的做法。你可以通过在调用 `enumerate()` 时将 `start` 设置为 1 来实现此效果。现在，菜单从 1 开始而不是从 0 开始。
+
+### 提取序列的切片或片段：slice()
+
+当你使用 Python 时，可能需要提取现有序列（例如字符串、列表或元组）的一部分或切片。为此，你通常会使用切片操作符（`[]`）。不过，你也可以使用内置的 `slice()` 函数。`slice()` 函数具有以下签名：
+
+```python
+slice(stop)
+slice(start, stop, step=None)
+
+```
+
+`slice()` 函数返回一个切片对象，代表由 `range(start, stop, step)` 指定的索引集。这里的参数含义与 `range()` 函数中的含义类似：
+
+| 参数 | 描述 |
+| --- | --- |
+| `start` | 保存切片中的初始值。默认为 `None`，表示序列的开头。 |
+| `stop` | 保存切片停止的值。这是一个必需参数，其值不包含在切片中。当设置为 `None` 时，表示序列的末尾（`len(sequence)`）。 |
+| `step` | 保存连续值之间的步长。这是一个可选参数，默认为 `None`，表示步长为 1。 |
+
+切片不表示数值范围，而是表示索引集。你可以使用这些索引来提取列表的一部分。以下是一些示例：
+
+```python
+>>> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+>>> even = numbers[slice(1, None, 2)]
+>>> even
+[2, 4, 6, 8]
+>>> odd = numbers[slice(None, None, 2)]
+>>> odd
+[1, 3, 5, 7, 9]
+
+```
+
+在第一个切片中，你从 1 开始，以 2 为步长一直到列表末尾。这个切片为你提供了一个偶数列表。在第二个示例中，你从列表的开头开始，以 2 为步长一直到列表末尾。通过这个切片，你得到了一个奇数列表。
+
+请注意，在大多数 Python 代码中，你不会像上面示例那样看到或使用 `slice()`。在大多数情况下，你将使用切片操作符 `[start:stop:step]`。使用该操作符时看起来如下所示：
+
+```python
+>>> even = numbers[1::2]
+>>> even
+[2, 4, 6, 8]
+>>> odd = numbers[::2]
+>>> odd
+[1, 3, 5, 7, 9]
+
+```
+
+在这些示例中，你使用切片操作符从原始列表中获取偶数和奇数。请注意，省略给定的索引会使该索引依赖于其默认值。例如，当你未提供起始索引时，它将默认为列表的开头。
+
+### 打包可迭代对象进行并行迭代：zip()
+
+Python 的内置 `zip()` 函数允许你并行遍历多个可迭代对象。该函数创建一个迭代器，用于聚合来自两个或多个可迭代对象的元素，生成值的元组。
+
+注意：要了解有关 `zip()` 函数的更多信息，请查看教程《Using the Python zip() Function for Parallel Iteration》（使用 Python zip() 函数进行并行迭代）。
+
+以下是内置 `zip()` 函数的签名：
+
+```python
+zip(*iterables, strict=False)
+
+```
+
+该函数接收任意数量的可迭代对象作为参数，并按需生成元素的元组。这些元组将包含来自每个输入可迭代对象的一个元素，使其成为并行迭代的理想选择。
+
+以下是一些简短示例：
+
+```python
+>>> letters = ["a", "b", "c"]
+>>> numbers = [1, 2, 3]
+>>> operators = ["*", "/", "+"]
+>>> for characters in zip(letters, numbers, operators):
+...     print(characters)
+... 
+('a', 1, '*')
+('b', 2, '/')
+('c', 3, '+')
+>>> for l, n, o in zip(letters, numbers, operators):
+...     print(f"{l} {n} {o}")
+... 
+a 1 *
+b 2 /
+c 3 +
+
+```
+
+在第一个循环中，你使用单个循环变量来存储从 `zip()` 获取的每个元组。第一个元组包含每个输入可迭代对象的第一个元素。第二个元组包含第二个元素，依此类推。在第二个循环中，你使用三个循环变量来解包每个生成元组的元素。
+
+`zip()` 的一个绝佳用例是当你拥有两个列表并希望从它们创建字典时。请考虑以下示例：
+
+```python
+>>> keys = ["name", "age", "country"]
+>>> values = ["Jane", "30", "Canada"]
+>>> dict(zip(keys, values))
+{'name': 'Jane', 'age': '30', 'country': 'Canada'}
+
+```
+
+在这个例子中，你使用 `zip()` 组合了两个现有列表，并将生成的元组传递给 `dict()` 函数来创建一个字典。
+
+`zip()` 的 `strict` 参数是在 Python 3.10 中添加的，它是一个仅限关键字参数，提供了一种安全处理不等长可迭代对象的方法。该参数的默认值为 `False`，这意味着 `zip()` 将仅生成与最短可迭代对象中的元素数量相同的元组。
+
+如果将 `strict` 设置为 `True`，当输入的可迭代对象长度不相同时，你将收到一个 `ValueError` 异常：
+
+```python
+>>> list(zip(range(5), range(100)))
+[(0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
+>>> list(zip(range(5), range(100), strict=True))
+Traceback (most recent call last):
+    ...
+ValueError: zip() argument 2 is longer than argument 1
+
+```
+
+在第一个示例中，你依赖 `strict` 的默认值并获得了五个元组，因为最短的范围只有五个值。在第二个示例中，你将 `strict` 设置为 `True`。这一次，你收到了一个错误，因为输入的范围不具有相同数量的值。
+
+### 构建和消费迭代器：iter()、next()、aiter() 和 anext()
+
+在 Python 中，迭代器实现了迭代器设计模式（iterator design pattern），允许你遍历容器并访问其元素。迭代器模式将迭代算法与容器（如列表、元组、字典和集合）解耦。
+
+注意：要了解有关迭代器和可迭代对象的更多信息，请查看教程《Iterators and Iterables in Python: Run Efficient Iterations》（Python 中的迭代器与可迭代对象：运行高效迭代）。
+
+Python 有两个内置函数可以在处理迭代器时为你提供帮助。`iter()` 函数允许你从可迭代对象构建迭代器，而 `next()` 函数允许你一次消费迭代器中的一项。
+
+请考虑以下演示示例：
+
+```python
+>>> colors = ["red", "orange", "yellow", "green"]
+>>> colors_it = iter(colors)
+>>> colors_it
+<list_iterator object at 0x10566a170>
+>>> next(colors_it)
+'red'
+>>> next(colors_it)
+'orange'
+>>> next(colors_it)
+'yellow'
+>>> next(colors_it)
+'green'
+>>> next(colors_it)
+Traceback (most recent call last):
+    ...
+StopIteration
+
+```
+
+在这个例子中，你使用 `iter()` 函数从现有的颜色列表中创建了一个迭代器对象。与可迭代对象不同，迭代器支持 `next()` 函数。当你以迭代器为参数调用此函数时，在第一次调用中会得到第一项。再次调用该函数时，会得到第二项，依此类推。
+
+当你遍历完迭代器中的所有项时，`next()` 会引发 `StopIteration` 异常。Python 在内部使用此异常来停止 for 循环或推导式中的迭代过程。请注意，你只能遍历迭代器一次。在那之后，迭代器将被耗尽（exhausted）或消费完毕。
+
+以下是 `iter()` 的签名：
+
+```python
+iter(iterable)
+iter(object, sentinel)
+
+```
+
+在第一个签名中，`iterable` 表示任何可迭代类型。在第二个签名中，`object` 参数必须是一个可调用对象。你已经看到了第一个签名的实际应用。现在，是时候快速浏览一下第二个签名了。
+
+为了举例说明，假设你正在开发一个命令行界面（CLI）应用程序，并希望获取用户的输入，直到他们输入单词 "done" 为止。以下是你如何使用 `iter()` 函数实现此功能：
+
+```python
+>>> def read_user_input():
+...     print("Enter word (type 'done' to finish):")
+...     for word in iter(input, "done"):
+...         print(f"Processing word: '{word}'")
+... 
+>>> read_user_input()
+Enter word (type 'done' to finish):
+Python
+Processing word: 'Python'
+Programming
+Processing word: 'Programming'
+Iterators
+Processing word: 'Iterators'
+done
+
+```
+
+在高亮行中，你使用了带有两个参数的 `iter()`。对于第一个参数，你使用了内置的 `input()` 函数，该函数允许你从用户那里获取输入。请注意，你没有调用该函数，而是将其作为函数对象传递。
+
+然后，你拥有单词 "done"，它充当哨兵值（sentinel）。换句话说，`iter()` 将为你调用 `input()`，并在其返回值与哨兵单词匹配时引发 `StopIteration` 异常。
+
+当你调用该函数时，系统会要求你输入一个单词；然后代码会处理该单词并允许你输入另一个单词。这些操作会一直重复，直到你输入哨兵值——单词 "done"。
+
+`next()` 函数也有两个不同的签名：
+
+```python
+next(iterator)
+next(iterator, default)
+
+```
+
+同样，你已经见过了如何将迭代器作为唯一参数来使用 `next()`。现在，你可以专注于使用第二个签名。在这种情况下，你有一个名为 `default` 的第二个参数。该参数允许你提供在输入迭代器耗尽时希望返回的值：
+
+```python
+>>> count_down = iter([3, 2, 1])
+>>> next(count_down, 0)
+3
+>>> next(count_down, 0)
+2
+>>> next(count_down, 0)
+1
+>>> next(count_down, 0)
+0
+>>> next(count_down, 0)
+0
+
+```
+
+在这个例子中，你从数字列表创建了一个迭代器。然后，你使用 `next()` 一次消费一个数字。在 `next()` 消费完整个迭代器后，你得到 0 作为结果，因为这是你传递给第二个位置参数 `default` 的值。对该函数的后续调用也将返回 0。
+
+Python 还提供了 `aiter()` 和 `anext()`，它们是 `iter()` 和 `next()` 的异步对应版本。当你使用异步迭代器（以异步而非同步方式产生值的对象）时，会发现它们很有用。
+
+以下是它们的签名：
+
+```python
+aiter(async_iterable)
+anext(async_iterator)
+anext(async_iterator, default)
+
+```
+
+`aiter()` 函数接收一个异步可迭代对象并返回一个异步迭代器。`anext()` 函数返回一个可等待对象（awaitable），该对象解析为下一项，或者在迭代器耗尽时解析为 `default`。
+
+考虑这个小型的异步可迭代对象：
+
+```python
+>>> import asyncio
+>>> async def colors():
+...     for color in ["red", "orange", "yellow"]:
+...         yield color
+... 
+>>> async def main():
+...     it = aiter(colors())
+...     print(await anext(it))
+...     print(await anext(it))
+...     print(await anext(it))
+...     print(await anext(it, "done"))
+... 
+>>> asyncio.run(main())
+red
+orange
+yellow
+done
+
+```
+
+在这个例子中，你创建了一个异步生成器，然后使用 `aiter()` 来获取它的迭代器。每个 `await anext(it)` 调用都会解析为下一个 yield 出的颜色。当迭代器耗尽时，你传入 "done" 作为默认值以避免 `StopAsyncIteration` 异常。
+
+通常，当你需要手动驱动异步迭代器时（例如交错来自多个异步流的项），你会用到 `aiter()` 和 `anext()`。
+
+### 过滤与映射可迭代对象：filter() 与 map()
+
+函数式编程是一种编程范式，在该范式中，程序由对纯函数的调用所主导，纯函数是指其输出值完全取决于输入值且没有任何可观察副作用的函数。
+
+Python 算不上你所谓的函数式编程语言。然而，它具有几个作为经典函数式工具的内置函数。这些工具就是内置的 `filter()` 和 `map()` 函数。
+
+你可以使用 `filter()` 函数从可迭代对象中提取值，这被称为过滤操作。
+
+注意：要更深入了解使用 `filter()` 函数，请查看教程《Python’s filter(): Extract Values From Iterables》（Python 的 filter()：从可迭代对象中提取值）。
+
+`filter()` 的签名大致如下：
+
+```python
+filter(function, iterable)
+
+```
+
+第一个参数 `function` 必须是一个单参数函数，而第二个参数可以是任何 Python 可迭代对象。以下是这些参数的简要描述：
+
+| 参数 | 描述 |
+| --- | --- |
+| `function` | 接收单个参数的谓词函数或布尔值函数 |
+| `iterable` | 一个 Python 可迭代对象 |
+
+`function` 参数是一个决策函数，也称为过滤函数。它提供了决定是否保留给定值的标准。
+
+在实践中，`filter()` 将 `function` 应用于 `iterable` 中的所有项。然后，它创建一个迭代器，仅生成符合 `function` 所检查标准的项。换句话说，它生成使 `function` 返回 `True` 的项。
+
+`filter()` 函数允许你在没有显式循环的情况下处理可迭代对象。以下是使用 `filter()` 从数值列表中提取偶数的示例：
+
+```python
+>>> numbers = [1, 3, 10, 45, 6, 50]
+>>> list(filter(lambda n: n % 2 == 0, numbers))
+[10, 6, 50]
+
+```
+
+在这个例子中，lambda 函数接收一个整数，如果输入值是偶数则返回 `True`，否则返回 `False`。对 `filter()` 的调用将此 lambda 函数应用于 `numbers` 中的值并过滤掉奇数，返回偶数。请注意，你使用 `list()` 函数从 `filter()` 返回的迭代器创建了一个列表。
+
+注意：匿名函数是函数式编程中的常用工具。Python 允许你使用 `lambda` 关键字创建这种类型的函数。要了解有关它们的更多信息，请查看《How to Use Python Lambda Functions》（如何使用 Python Lambda 函数）。
+
+函数式编程中的另一个基本工具是 `reduce()`，它曾经是一个内置函数，但现在可以在 `functools` 模块中使用。欲了解更多信息，请参阅《Python’s reduce(): From Functional to Pythonic Style》（Python 的 reduce()：从函数式到 Pythonic 风格）。
+
+`map()` 函数是函数式编程中的另一个常见工具。该函数允许你对可迭代对象中的所有值应用一个转换函数。
+
+注意：要了解有关 `map()` 函数的更多信息，请查看教程《Python’s map(): Processing Iterables Without a Loop》（Python 的 map()：无需循环处理可迭代对象）。
+
+Python 的 `map()` 具有以下签名：
+
+```python
+map(function, iterable, *iterables, strict=False)
+
+```
+
+`map()` 函数在循环中对 `iterable` 中的每一项应用 `function`，并返回一个新的迭代器，按需生成转换后的项。
+
+以下是参数及其含义的汇总：
+
+| 参数 | 描述 |
+| --- | --- |
+| `function` | 一个 Python 函数，其接收的参数数量等于输入可迭代对象的数量 |
+| `iterable` | 一个必需参数，可保存任何 Python 可迭代对象 |
+| `*iterables` | 可变数量的 Python 可迭代对象 |
+| `strict` | 一个仅限关键字参数，用于控制 `map()` 如何处理不等长的可迭代对象 |
+
+`function` 参数就是所谓的转换函数。它对其参数应用特定的转换并返回转换后的值。
+
+为了说明 `map()` 是如何工作的，假设你有两个列表。第一个列表包含一系列你希望用作幂运算底数的值。第二个列表包含你希望应用于每个底数的指数。你可以使用 `map()` 函数处理这些列表并获取幂的迭代器：
+
+```python
+>>> bases = [8, 5, 2]
+>>> exponents = [2, 3, 4]
+>>> list(map(pow, bases, exponents))
+[64, 125, 16]
+
+```
+
+在这个例子中，你使用内置的 `pow()` 函数作为 `map()` 的第一个参数。正如你已经学到的，`pow()` 接收底数和指数作为参数并返回幂。然后，你将 `bases` 和 `exponents` 传递给 `map()`，以便它计算所需的幂。
+
+`map()` 的 `strict` 参数是在 Python 3.14 中添加的，与 `zip()` 的 `strict` 参数相对应。默认情况下，一旦最短的输入可迭代对象耗尽，`map()` 就会停止。如果将 `strict` 设置为 `True`，当输入的可迭代对象长度不相同时，你将收到一个 `ValueError` 异常：
+
+```python
+>>> list(map(pow, [2, 3, 4], [2, 3]))
+[4, 27]
+>>> list(map(pow, [2, 3, 4], [2, 3], strict=True))
+Traceback (most recent call last):
+    ...
+ValueError: map() argument 2 is shorter than argument 1
+
+```
+
+在第一个示例中，由于第二个可迭代对象耗尽，`map()` 在生成两对后静默停止。在第二个示例中，`strict=True` 使这种不匹配显式报错，这有助于在你期望可迭代对象一一对齐时捕获程序缺陷。
+
+### 处理输入与输出
+
+如果你需要从用户或文件中获取输入，并向用户展示输出，那么你应该知道该语言提供了一些内置函数来帮助你完成这些任务：
+
+| 函数 | 描述 |
+| --- | --- |
+| `input()` | 从控制台读取输入 |
+| `open()` | 打开文件并提供对文件对象的访问 |
+| `print()` | 打印到文本流或控制台 |
+| `format()` | 将值转换为格式化后的表示形式 |
+
+在接下来的各节中，你将深入学习在 Python 代码中使用这些函数来处理输入和输出操作。
+
+#### 接收用户输入：input()
+
+在命令行界面（CLI）和基于文本的界面（TUI）应用程序中，从用户那里获取输入是一项常见操作。Python 有一个专门针对此类操作的内置函数。该函数被顺理成章地命名为 `input()`。
+
+注意：要更深入了解使用 `input()` 函数，请查看教程《How to Read User Input From the Keyboard in Python》（如何在 Python 中从键盘读取用户输入）。
+
+内置的 `input()` 函数读取用户的输入并将其作为字符串捕获。以下是该函数的签名：
+
+```python
+input([prompt])
+
+```
+
+`prompt` 周围的方括号表示该参数是可选的。该参数允许你提供一个提示符，以向用户索取所需或期望的输入。
+
+作为使用 `input()` 的示例，假设你想创建一个猜数字游戏。该游戏将提示用户输入一个 1 到 10 之间的数字，并检查输入的值是否与秘密数字匹配。
+
+以下是该游戏的代码：
+
+文件名：
+`guess.py`
+
+```python
+from random import randint
+
+LOW, HIGH = 1, 10
+secret_number = randint(LOW, HIGH)
+clue = ""
+
+while True:
+    guess = input(f"Guess a number between {LOW} and {HIGH} {clue} ")
+    number = int(guess)
+    if number > secret_number:
+        clue = f"(less than {number})"
+    elif number < secret_number:
+        clue = f"(greater than {number})"
+    else:
+        break
+
+print(f"You guessed it! The secret number is {number}")
+
+```
+
+在这段代码中，你定义了一个无限循环，提示用户通过输入 1 到 10 之间的数字来进行猜测。循环中的第一行是对内置 `input()` 函数的调用。你使用了一个描述性的提示来告知用户该怎么做。
+
+去在命令行中运行该脚本以进行测试吧：
+
+```console
+$ python guess.py
+Guess a number between 1 and 10  2
+Guess a number between 1 and 10 (greater than 2) 3
+Guess a number between 1 and 10 (greater than 3) 8
+Guess a number between 1 and 10 (less than 8) 6
+You guessed it! The secret number is 6
+
+```
+
+太棒了！你的游戏要求用户输入数字，将其与秘密数字进行比较，并在用户猜对时告知他们。`input()` 函数在游戏流程中起到了核心作用，允许你获取并处理用户的输入。
+
+#### 打开文件：open()
+
+从文件中读取数据和向文件中写入数据是常见的编程任务。在 Python 中，你可以出于这些目的使用内置的 `open()` 函数。你通常会在 `with` 语句中使用 `open()` 函数。
+
+作为一个简单的示例，假设你有一个包含以下内容的文本文件：
+
+文件名：
+`fruits.txt`
+
+```text
+apple
+banana
+cherry
+orange
+mango
+
+```
+
+你想打开该文件并读取其内容，同时将其打印到屏幕上。为此，你可以使用以下代码：
+
+```python
+>>> with open("fruits.txt") as file:
+...     print(file.read())
+... 
+apple
+banana
+cherry
+orange
+mango
+
+```
+
+在这个 `with` 语句中，你以文件名作为参数调用了 `open()`。此调用会打开该文件以进行读取。`open()` 函数返回一个文件对象，`with` 语句通过 `as` 说明符将其赋值给 `file` 变量。
+
+注意：要了解有关处理文件的更多信息，请查看教程《Reading and Writing Files in Python (Guide)》（在 Python 中读写文件（指南））。
+
+`open()` 函数具有以下签名：
+
+```python
+open(
+    file,
+    mode="r",
+    buffering=-1,
+    encoding=None,
+    errors=None,
+    newline=None,
+    closefd=True,
+    opener=None,
+)
+
+```
+
+该函数最多可以接收八个参数。第一个参数 `file` 是唯一的必需参数。其余参数都是可选的。以下是各参数含义的汇总：
+
+| 参数 | 描述 | 注释 |
+| --- | --- | --- |
+| `file` | 保存目标文件路径的类路径对象（path-like object） | 这是一个必需参数。 |
+| `mode` | 指定你希望打开文件的模式的字符串 | 默认为 `"r"`，即读取模式。稍后你将了解所有可用模式。 |
+| `buffering` | 设置缓冲区策略的整数 | 你可以传入 0 来关闭缓冲，这仅在二进制模式下可行。你可以使用 1 来选择行缓冲，这仅在文本模式下可用。最后，你可以使用大于 1 的整数来表示固定大小分块缓冲区的大小（以字节为单位）。 |
+| `encoding` | 用于解码或编码文件的编码名称 | 你只能在文本模式下使用此参数。 |
+| `errors` | 指定如何处理编码和解码错误的字符串 | 你只能在文本模式下使用此参数。它可以取以下值之一：`"strict"`、`"ignore"`、`"replace"`、`"surrogateescape"`、`"xmlcharrefreplace"`、`"backslashreplace"` 或 `"namereplace"`。这些值的含义与你在关于 `ord()` 和 `chr()` 函数章节中所学的含义相似。 |
+| `newline` | 确定如何从数据流中解析换行符的字符串 | 它可以是 `None`、`""`、`"\n"`、`"\r"` 或 `"\r\n"`。 |
+| `closefd` | 定义是否要关闭文件描述符的布尔值 | 当你提供文件描述符而不是文件名，并且希望在文件关闭时该描述符保持打开状态时，它可以为 `False`。否则，它必须为 `True`。 |
+| `opener` | 用作目标文件的自定义打开器的可调用对象 | 打开器必须返回一个打开的文件描述符。 |
+
+在本教程中，你不会涵盖所有这些参数。相反，你将学习两个最常用的参数，即 `mode` 和 `encoding`。
+
+以下是允许的 `mode` 值列表：
+
+| 值 | 描述 |
+| --- | --- |
+| `"r"` | 打开文件进行读取，这是默认值 |
+| `"w"` | 打开文件进行写入，先截断（清空）文件 |
+| `"x"` | 独占创建模式打开文件，如果文件已存在则失败 |
+| `"a"` | 打开文件进行写入，如果文件已存在，则将新数据追加到文件末尾 |
+| `"b"` | 以二进制模式打开文件 |
+| `"t"` | 以文本模式打开文件，这是默认模式 |
+| `"+"` | 打开文件进行更新，允许读取和写入操作 |
+
+在此表中，`"b"` 和 `"t"` 值分别定义了二进制文件和文本文件的两种常规模式。你可以将这两种模式与其他模式组合使用。例如，`"wb"` 模式允许你将二进制数据写入文件，`"rt"` 模式允许你从文件中读取基于文本的数据，依此类推。
+
+请注意，`"t"` 是默认模式。因此，如果你将模式设置为 `"w"`，Python 会假定你想向目标文件写入文本。
+
+以下是将一些文本写入工作目录中文件的代码片段：
+
+```python
+>>> with open("hello.txt", "w") as file:
+...     file.write("Hello, World!")
+... 
+13
+
+```
+
+在这个例子中，你打开了一个名为 `hello.txt` 的文件以便向其写入文本。在 `with` 语句的代码块中，你调用了文件对象上的 `.write()` 方法来写入一些文本。请注意，该方法返回写入的字节数。这就是为什么你在屏幕上得到 13 的原因。
+
+运行代码后，你的工作目录中将包含 `hello.txt` 文件。去打开它并检查其内容吧。
+
+你可以尝试使用其他模式，并了解它们的工作原理，以便在代码中安全地使用它们。把这当成一次实践练习吧！
+
+在使用文本文件时，使用 `encoding` 参数是另一个常见要求。在这种情况下，显式声明你在代码中使用的文本编码是一种最佳实践。UTF-8 编码就是你传递给 `encoding` 的一个常见取值示例：
+
+```python
+>>> with open("hello.txt", "w", encoding="utf-8") as file:
+...     file.write("Hello, Pythonista!")
+... 
+18
+>>> with open("hello.txt", "r", encoding="utf-8") as file:
+...     print(file.read())
+... 
+Hello, Pythonista!
+
+```
+
+在这个例子中，你使用 UTF-8 编码对文本文件进行写入和读取。请注意，你需要显式使用参数名来提供编码值。这是因为列表中的下一个参数是 `buffering` 而不是 `encoding`，如果你不使用显式名称，就会收到 `TypeError` 异常。
+
+#### 将文本打印到屏幕或其他输出：print()
+
+在创建 CLI 或 TUI 应用程序时出现的另一个常见需求是在屏幕上显示信息，以便让用户了解应用程序的状态。在这种情况下，你可以使用内置的 `print()` 函数。
+
+注意：要更深入了解使用 `print()` 函数，请查看教程《Your Guide to the Python print() Function》（Python print() 函数指南）。
+
+`print()` 函数具有以下签名：
+
+```python
+print(*objects, sep=" ", end="\n", file=None, flush=False)
+
+```
+
+默认情况下，调用 `print()` 会将输入的对象打印到屏幕上。你可以使用其余参数来调整该函数的工作方式。以下是参数及其含义的汇总：
+
+| 参数 | 描述 |
+| --- | --- |
+| `*objects` | 任意数量的 Python 对象 |
+| `sep` | 用于分隔各个输入对象的字符串 |
+| `end` | 用于最后一个输入对象之后的字符串 |
+| `file` | 你想要写入输入对象的打开文件对象 |
+| `flush` | 定义是否刷新输出缓冲区的布尔值 |
+
+当你调用 `print()` 时，它会获取输入对象，将它们转换为字符串，使用 `sep` 进行连接，并追加 `end`。如果你在不传参数的情况下调用 `print()`，那么它会打印 `end`。请注意，`sep`、`end`、`file` 和 `flush` 参数都是关键字参数。
+
+以下是使用 `print()` 函数的几个示例：
+
+```python
+>>> print()
+
+>>> print("Hello")
+Hello
+>>> print("Hello", "Pythonista!")
+Hello Pythonista!
+>>> print("Hello", "Pythonista!", sep="\t")
+Hello	Pythonista!
+>>> print("Hello", "Pythonista!", sep="\t", end=" 👋\n")
+Hello	Pythonista! 👋
+
+```
+
+当你在不带参数的情况下调用 `print()` 时，`end` 会被打印在屏幕上。该参数默认为换行符，所以你得到的就是换行。传入一个对象作为参数时，该对象会被打印，其后跟着一个换行符。传入多个对象作为参数时，这些参数由 `sep` 连接，并在最后添加一个换行符。
+
+你还可以调整 `end` 的值，使 Python 在输出的末尾打印不同的内容。
+
+`file` 参数默认为标准输出，即你的屏幕。`sys.stdout` 流提供了这个默认值。但是，你可以将输出重定向到你偏好的文件对象：
+
+```python
+>>> with open("hello.txt", mode="w") as text_file:
+...     print("Hello, World!", file=text_file)
+... 
+
+```
+
+此代码片段将覆盖上一节中已有的 `hello.txt` 文件，并将短语 "Hello, World!" 写入其中。
+
+最后，你拥有与数据缓冲有关的 `flush` 参数。默认情况下，Python 会在内存数据缓冲区中对 `print()` 的调用进行缓冲。这使得 Python 能够通过在缓冲区中批量暂存字符并通过单次系统调用一次性写出，从而减少写操作的系统调用次数。
+
+如果你希望代码的输出实时显示，可以将 `flush` 参数设置为 `True`。如果保持 `flush` 的默认值 `False`，Python 将对输出进行缓冲，并且该输出仅在数据缓冲区满时或程序执行结束时才会显示。
+
+注意：要更深入了解刷新 `print()` 的输出，请查看教程《How to Flush the Output of the Python Print Function》（如何刷新 Python Print 函数的输出）。
+
+使用 `flush` 的一个绝妙示例是当你需要为 CLI 应用程序创建进度条时。请考虑以下函数：
+
+文件名：
+`progress.py`
+
+```python
+def progress(percent=0, width=30):
+    end = "" if percent < 100 else "\n"
+    left = width * percent // 100
+    right = width - left
+    print(
+        "\r[",
+        "#" * left,
+        " " * right,
+        "]",
+        f" {percent:.0f}%",
+        sep="",
+        end=end,
+        flush=True,
+    )
+
+```
+
+该函数利用 `flush` 参数生成一个水平进度条。以下是你如何在代码中使用它：
+
+```python
+>>> from time import sleep
+>>> from progress import progress
+>>> for percent in range(101):
+...     sleep(0.2)
+...     progress(percent)
+... 
+[###########                   ] 38%
+
+```
+
+该循环使用一系列假定的进度值调用 `progress()`。每次调用的输出都会被刷新，进度条会显示在同一行中。
+
+#### 格式化字符串：format()
+
+Python 拥有几个用于字符串插值和格式化的便捷工具，包括 f-strings 和 `str.format()` 方法。这些工具利用了 Python 的字符串格式化微语言（mini-language），它允许你使用专用语法精美地格式化字符串。
+
+内置的 `format()` 函数是你可以用来格式化值的另一个工具。该函数具有以下签名：
+
+```python
+format(value, format_spec="")
+
+```
+
+该函数将 `value` 转换为格式化后的表示形式。要定义所需的格式，你可以使用 `format_spec` 参数，该参数接收遵循字符串格式化微语言中所定义语法的字符串。`format_spec` 参数默认为空字符串，这会导致该函数原样返回传入的值。
+
+请考虑使用 `format()` 函数的以下示例：
+
+```python
+>>> import math
+>>> from datetime import datetime
+>>> format(math.pi, ".4f")  # 保留四位小数
+'3.1416'
+>>> format(math.pi, "e")  # 科学计数法
+'3.141593e+00'
+>>> format(1000000, ",.2f")  # 千位分隔符
+'1,000,000.00'
+>>> format("Header", "=^30")  # 居中并填充
+'============Header============'
+>>> format(datetime.now(), "%a %b %d, %Y")  # 日期
+'Mon Jul 01, 2024'
+
+```
+
+在这些示例中，你使用了几种不同的格式说明符。`".4f"` 说明符将输入值格式化为保留四位小数的浮点数。`"e"` 说明符允许你使用科学计数法格式化输入值。
+
+注意：要了解有关格式说明符的更多信息，请查看教程《Python’s Format Mini-Language for Tidy Strings》（用于整洁字符串的 Python 格式化微语言）。
+
+使用 `",.2f"` 格式说明符，你可以使用逗号作为千位分隔符并保留两位小数来格式化数字，这是适合货币值的格式。然后，你使用 `"=^30"` 说明符将字符串 "Header" 居中格式化在 30 个字符的宽度内，使用等号作为填充字符。最后，你使用 `"%a %b %d, %Y"` 来格式化日期。
+
+### 使用类、对象和属性
+
+Python 通过类、类型、继承和许多其他相关特性来支持面向对象编程（OOP）。在 Python 中，一切皆对象。因此，OOP 范式是语言本身的核心。
+
+你将拥有若干内置函数，它们可以帮助你完成与类、类型、属性、方法、继承以及其他与 OOP 相关的概念有关的不同任务。
+
+以下是 Python 中与 OOP 相关的内置函数汇总：
+
+| 函数 | 描述 |
+| --- | --- |
+| `property()` | 返回类的属性值（property） |
+| `classmethod()` | 返回类方法 |
+| `staticmethod()` | 返回静态方法 |
+| `getattr()` | 返回对象的命名属性的值 |
+| `setattr()` | 设置对象的命名属性的值 |
+| `delattr()` | 从对象中删除属性 |
+| `hasattr()` | 如果对象具有给定属性，则返回 True |
+| `type()` | 返回对象的类型，或允许动态创建新类 |
+| `isinstance()` | 确定对象是否是给定类的实例 |
+| `issubclass()` | 确定一个类是否是给定类的子类 |
+| `callable()` | 如果对象看起来可调用，则返回 True |
+| `super()` | 返回一个将方法调用委托给父类或同级类的代理对象 |
+| `object()` | 创建一个新的无特征对象 |
+
+在接下来的各节中，你将了解所有这些函数，以及如何在面向对象的 Python 代码中使用它们。
+
+#### 构建属性：property()
+
+Python 的内置 `property()` 函数允许你在类中创建托管属性（managed attributes）。托管属性（也称为 properties）具有关联的值以及内部实现或类似函数的行为。
+
+为了通过示例说明这一点，假设你想创建一个 `Point` 类。在 Python 中，你将从类似以下内容开始：
+
+```python
+>>> class Point:
+...     def __init__(self, x, y):
+...         self.x = x
+...         self.y = y
+... 
+>>> point = Point(42, 21)
+>>> point.x
+42
+>>> point.y
+21
+>>> point.x = 0
+>>> point.x
+0
+
+```
+
+在这个类中，你定义了两个属性 `.x` 和 `.y` 来表示点的坐标。你可以使用点号表示法直接访问和更新这些属性。因此，从现在开始，这两个属性都属于类的公共 API 的一部分。
+
+现在，假设你需要为 `.x` 和 `.y` 添加一些验证逻辑。例如，你可能需要验证这两个属性的输入值。你会怎么做呢？在像 Java 或 C++ 这样的编程语言中，你会使用 getter 和 setter 方法，转换成 Python 可能看起来大致如下：
+
+文件名：
+`point_v1.py`
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.set_x(x)
+        self.set_y(y)
+
+    def get_x(self):
+        return self._x
+
+    def set_x(self, x):
+        self._x = self.validate(x)
+
+    def get_y(self):
+        return self._y
+
+    def set_y(self, y):
+        self._y = self.validate(y)
+
+    def validate(self, value):
+        if not isinstance(value, int | float):
+            raise ValueError("coordinates must be numbers")
+        return value
+
+```
+
+在 `Point` 的这个新实现中，你通过在名称前加下划线将 `.x` 和 `.y` 变成了非公开属性，它们现在是 `._x` 和 `._y`。然后，你为这两个属性定义了 getter 和 setter 方法。在 setter 方法 `.set_x()` 和 `.set_y()` 中，你插入了在 `.validate()` 方法中定义的验证逻辑。
+
+现在，你必须像以下代码那样使用该类：
+
+```python
+>>> from point_v1 import Point
+>>> point = Point(42, 21)
+>>> point.get_x()
+42
+>>> point.get_y()
+21
+>>> point.set_x(0)
+>>> point.get_x()
+0
+>>> point.set_y("7")
+Traceback (most recent call last):
+    ...
+ValueError: coordinates must be numbers
+
+```
+
+更新后，你的类运行方式有所不同。你必须使用 getter 和 setter 方法，而不是直接访问 `.x` 和 `.y` 属性。验证逻辑生效了，这很好，但你破坏了类的 API。你的用户将无法执行如下操作：
+
+```python
+>>> point.x
+Traceback (most recent call last):
+    ...
+AttributeError: 'Point' object has no attribute 'x'
+
+```
+
+更新到新版 `Point` 后，该类的老用户会惊讶地发现自己的代码损坏了。那么，你该如何避免此类问题呢？符合 Python 习惯的方法是将公共属性转换为 property，而不是使用 getter 和 setter 方法。
+
+你可以使用内置的 `property()` 函数来进行这种转换。以下是它的签名：
+
+```python
+property(fget=None, fset=None, fdel=None, doc=None)
+
+```
+
+每个参数都是可选的。`fget` 参数保存 getter 函数，`fset` 保存 setter，`fdel` 保存 deleter，而 `doc` 是属性的文档字符串。在现代 Python 代码中，你通常将 `property()` 用作装饰器，而不是直接传递这些参数。
+
+以下是保持 `Point` 类 API 不变的方法：
+
+文件名：
+`point_v2.py`
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = self.validate(value)
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = self.validate(value)
+
+    def validate(self, value):
+        if not isinstance(value, int | float):
+            raise ValueError("coordinates must be numbers")
+        return value
+
+```
+
+`Point` 现在看起来有些不同了。它没有形式上的 getter 和 setter 方法。相反，它有一些用 `@property` 装饰的方法。是的，内置的 `property()` 函数大多用作装饰器。
+
+你用 `@property` 装饰的方法等同于 getter 方法。同时，你用 getter 的名称加上 `.setter()` 装饰的方法等同于 setter 方法。关于 property，最棒的一点是你仍然可以像使用普通属性一样使用这些属性：
+
+```python
+>>> from point_v2 import Point
+>>> point = Point(42, 21)
+>>> point.x
+42
+>>> point.y
+21
+>>> point.x = 0
+>>> point.x
+0
+>>> point.x = "7"
+Traceback (most recent call last):
+    ...
+ValueError: coordinates must be numbers
+
+```
+
+通过将普通属性转换为 property，你可以在不失去像普通属性一样使用它们的能力的情况下，为其添加类似函数的行为。Property 使你免于在代码的公共 API 中引入破坏性变更，从而不会破坏用户的代码。
+
+#### 创建类方法和静态方法：classmethod() 与 staticmethod()
+
+类允许你定义可复用的代码片段，将数据和行为封装在单一实体中。通常，你在属性中存储数据，属性是类中定义的变量。对于行为，你将使用方法，方法是类中定义的函数。
+
+在 Python 中，你有三种不同类型的方法：
+
+1. 实例方法，以当前对象作为其第一个参数
+2. 类方法，以当前类作为其第一个参数
+3. 静态方法，既不以当前实例也不以当前类作为参数
+
+实例方法需要以当前实例作为参数。按照惯例，在 Python 中该参数称为 `self`。
+
+要创建类方法，你需要使用 `@classmethod` 装饰器来修饰该方法。类似地，要创建静态方法，你需要使用 `@staticmethod` 装饰器来修饰该方法。这两个装饰器都是 Python 内置函数的一部分，并且具有以下签名：
+
+```python
+classmethod(function)
+staticmethod(function)
+
+```
+
+每个函数接收一个参数，即你想要转换为类方法或静态方法的函数。在实践中，你会将它们用作装饰器，而不是直接调用它们。
+
+类方法的一个常见用例是为类提供多个构造函数。为了说明如何编写类方法，假设你想要一个可以使用笛卡尔坐标或极坐标构造的 `Point` 类。在这种情况下，你可以像下面这样做：
+
+文件名：
+`point.py`
+
+```python
+import math
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    @classmethod
+    def from_polar(cls, distance, angle):
+        return cls(
+            x=distance * math.cos(math.radians(angle)),
+            y=distance * math.sin(math.radians(angle)),
+        )
+
+```
+
+在这个例子中，`.from_polar()` 方法是一个类方法。它以当前类作为其第一个参数，按照惯例你通常将其命名为 `cls`。该方法通过从极坐标计算笛卡尔坐标来返回该类的一个新实例。
+
+以下是在实践中如何使用此方法：
+
+```python
+>>> from point import Point
+>>> point = Point.from_polar(20, 15)
+>>> point.y
+5.176380902050415
+>>> point.x
+19.318516525781366
+
+```
+
+在这段代码中，你使用 `.from_polar()` 类方法创建了一个新的 `Point` 实例。在示例中，你在类上而不是在实例上调用该方法，以表明这是一个类方法。你也可以在其包含类的实例上调用类方法。
+
+第三种类型的方法是静态方法。静态方法不接收当前实例或类作为参数。这些方法类似于你出于便利而决定包含在给定类中的普通函数。从功能上讲，它们也可以在模块中定义为普通函数。
+
+例如，请考虑以下 `Formatter` 类：
+
+文件名：
+`formatting.py`
+
+```python
+class Formatter:
+    @staticmethod
+    def as_currency(value):
+        return f"${value:,.2f}"
+
+    @staticmethod
+    def as_percent(value):
+        return f"{value:.2%}"
+
+```
+
+此类定义了两个静态方法。第一个方法接收一个数值并将其格式化为货币值。第二个方法接收一个数值并将其表示为百分比。你本可以在模块级别将这些方法定义为普通函数。但是，你将它们定义在一个类中，作为一种根据它们将如何使用来进行便利分组的方式。
+
+你可以像以下示例中那样使用此类：
+
+```python
+>>> from formatting import Formatter
+>>> Formatter.as_currency(1000)
+'$1,000.00'
+>>> Formatter.as_percent(0.75)
+'75.00%'
+>>> formatter = Formatter()
+>>> formatter.as_currency(1000)
+'$1,000.00'
+>>> formatter.as_percent(0.8)
+'80.00%'
+
+```
+
+你可以通过在类或其某个实例上调用静态方法来使用它们。在这个例子中，`Formatter` 类充当了一个命名空间，你在其中出于便利定义了相关方法。然而，通过将这些方法定义为模块级函数，你可以获得相同的结果。
+
+注意：要更深入了解实例方法、类方法和静态方法，请查看教程《Python’s Instance, Class, and Static Methods Demystified》（揭秘 Python 的实例方法、类方法与静态方法）。
+
+#### 管理属性：getattr()、setattr() 与 delattr()
+
+有时，你可能需要在 Python 中访问、设置或删除对象的属性。在大多数情况下，你可以使用点号表示法、赋值运算符和 `del` 语句直接执行这些操作。
+
+在其他情况下，你只有在运行时才知道属性的名称，因此无法使用常规语法访问它们。在这些情况下，你可以使用内置的 `getattr()`、`setattr()` 和 `delattr()` 函数。这些函数具有以下签名：
+
+```python
+getattr(object, name)
+getattr(object, name, default)
+setattr(object, name, value)
+delattr(object, name)
+
+```
+
+在所有情况下，`object` 参数必须接收一个现有类的实例。类似地，`name` 必须是作为字符串的属性或方法名称。
+
+在 `getattr()` 的第二个签名中，`default` 参数是一个可选值，如果目标对象中不存在所需属性，你将获得该值。
+
+在 `setattr()` 的签名中，`value` 参数必须保存你想要分配给给定属性的新值。
+
+为了说明这些函数的工作原理，请考虑以下类：
+
+文件名：
+`person.py`
+
+```python
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+```
+
+此类具有两个实例属性，`.name` 和 `.age`。以下是你如何使用作为字符串的名称来访问、设置或删除这些属性：
+
+```python
+>>> from person import Person
+>>> jane = Person("Jane", 25)
+>>> getattr(jane, "name")
+'Jane'
+>>> getattr(jane, "age")
+25
+
+```
+
+在这些示例中，你使用 `getattr()` 检索存储在 `.name` 和 `.age` 中的值。该函数的第一个参数是需要从中检索属性的对象。第二个参数是作为字符串的属性名称。
+
+现在，假设你想更新 Jane 的年龄。你可以使用 `setattr()` 函数执行此操作：
+
+```python
+>>> setattr(jane, "age", 26)
+>>> jane.age
+26
+
+```
+
+然后，你使用 `setattr()` 函数为 `.age` 属性分配一个新值。该函数接收三个参数：对象、属性名称和新值。
+
+最后，你可以使用内置的 `delattr()` 函数从给定对象中删除属性：
+
+```python
+>>> delattr(jane, "age")
+>>> jane.age
+Traceback (most recent call last):
+    ...
+AttributeError: 'Person' object has no attribute 'age'
+
+```
+
+`delattr()` 函数以对象作为其第一个参数，以属性名称作为其第二个参数。调用该函数后，尝试访问 `.age` 将引发 `AttributeError` 异常。
+
+注意：要了解有关在 Python 中删除对象的更多信息，请查看教程《Python’s del: Remove References From Scopes and Containers》（Python 的 del：从作用域和容器中删除引用）。
+
+在实践中，当你需要使用作为字符串的名称来操作属性时，内置的 `getattr()`、`setattr()` 和 `delattr()` 函数会派上用场。例如，假设你想创建一个 `FileProcessor` 类来读取和写入 CSV 和 JSON 文件。在这种情况下，你可以为处理每种文件类型准备专门的类：
+
+文件名：
+`processors.py`
+
+```python
+import csv
+import json
+
+class CSVProcessor:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def read(self):
+        with open(self.filename, encoding="utf-8", newline="") as file:
+            return list(csv.DictReader(file))
+
+    def write(self, data):
+        with open(
+            self.filename, mode="w", encoding="utf-8", newline=""
+        ) as file:
+            writer = csv.DictWriter(file, fieldnames=data[0].keys())
+            writer.writeheader()
+            writer.writerows(data)
+
+class JSONProcessor:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def read(self):
+        with open(self.filename, encoding="utf-8") as file:
+            return json.load(file)
+
+    def write(self, data):
+        with open(self.filename, mode="w", encoding="utf-8") as file:
+            json.dump(data, file, indent=2)
+
+```
+
+在这个 `processors.py` 文件中，你定义了两个分别可以处理 CSV 和 JSON 文件的类。这两个类都有 `.read()` 和 `.write()` 方法。这些类看起来不错，但现在你需要让它们能够从你的 `FileProcessor` 类中使用。
+
+要编写 `FileProcessor` 类，你可以使用一种称为委托（delegation）的技术，它由在另一个对象的上下文中求值某个对象的属性或方法组成。以下是在 Python 中如何做到这一点：
+
+文件名：
+`processors.py`
+
+```python
+# ...
+class FileProcessor:
+    def __init__(self, filename, processor):
+        self.filename = filename
+        self.processor = processor(filename)
+
+    def __getattr__(self, attr):
+        return getattr(self.processor, attr)
+
+```
+
+在这个类中，你定义了 `.__getattr__()` 特殊方法。该方法支持 Python 类中的属性访问操作。在方法定义中，你使用 `getattr()` 函数从提供的处理器对象中访问属性和方法。
+
+在实践中，你将 `.__getattr__()` 方法与 `getattr()` 函数结合使用来实现委托。`FileProcessor` 类将文件处理委托给你在实例化期间传入的具体处理器类。
+
+以下是你如何在代码中使用 `FileProcessor` 类：
+
+```python
+>>> from processors import FileProcessor, CSVProcessor
+>>> file_proc = FileProcessor("products.csv", CSVProcessor)
+>>> file_proc.read()
+[    {'product': 'Laptop', 'price': '1200', 'sold_units': '30'},    {'product': 'Phone', 'price': '700', 'sold_units': '50'},    {'product': 'Tablet', 'price': '450', 'sold_units': '100'},    {'product': 'Desktop', 'price': '1000', 'sold_units': '20'},    {'product': 'Monitor', 'price': '300', 'sold_units': '50'}]
+
+```
+
+在这段代码中，你创建了一个 `FileProcessor` 实例来使用 `CSVProcessor` 处理 CSV 文件。尽管该实例没有 `.read()` 方法，但由于依赖于 `getattr()` 函数的委托技术，你可以调用该方法。
+
+#### 检查属性：hasattr()
+
+另一个与属性和方法密切相关的内置函数是 `hasattr()` 函数。该函数允许你检查给定对象是否具有某个属性或方法。该函数具有以下签名：
+
+```python
+hasattr(object, name)
+
+```
+
+在此签名中，`object` 参数可以接收任何 Python 对象，而 `name` 参数应保存作为字符串的属性名称。此函数是一个谓词，如果对象具有具有提供名称的属性，则返回 `True`，否则返回 `False`。
+
+在实践中，你可以在尝试使用对象的某个属性或方法之前，使用此函数来检查它是否具有该属性或方法。例如，假设你有以下类：
+
+文件名：
+`birds.py`
+
+```python
+class Duck:
+    def fly(self):
+        print("The duck is flying")
+
+    def swim(self):
+        print("The duck is swimming")
+
+class Pigeon:
+    def fly(self):
+        print("The pigeon is flying")
+
+```
+
+这些类代表两种不同的鸟类。这两种鸟都能飞，但只有鸭子会游泳。现在，假设你想在如下循环中使用它们：
+
+```python
+>>> from birds import Duck, Pigeon
+>>> birds = [Duck(), Pigeon()]
+>>> for bird in birds:
+...     bird.fly()
+...     bird.swim()
+... 
+The duck is flying
+The duck is swimming
+The pigeon is flying
+Traceback (most recent call last):
+    ...
+AttributeError: 'Pigeon' object has no attribute 'swim'
+
+```
+
+该循环适用于 `Duck` 的实例。然而，当你在 `Pigeon` 实例上调用 `.swim()` 时，它会引发 `AttributeError` 异常，因为该类没有此方法。为了避免此错误，你可以在调用该方法之前使用 `hasattr()` 函数检查该方法是否存在：
+
+```python
+>>> for bird in birds:
+...     bird.fly()
+...     if hasattr(bird, "swim"):
+...         bird.swim()
+... 
+The duck is flying
+The duck is swimming
+The pigeon is flying
+
+```
+
+你的代码现在不会报错失败了，因为你在调用 `.swim()` 方法之前已经使用 `hasattr()` 函数确认了当前鸟类具有该方法。
+
+#### 创建和检查类型：type()、isinstance() 与 issubclass()
+
+Python 是一种动态类型语言，这意味着 Python 仅在代码运行时检查类型，并且变量的类型在其生命周期内可以改变。由于这种语言特性，你可能需要在显式使用对象之前检查其类型，以使你的代码不会出错。
+
+注意：因为 Python 是一种动态类型语言，所以鸭子类型（duck typing）风格优于显式类型检查。要了解鸭子类型，请查看教程《Duck Typing in Python: Writing Flexible and Decoupled Code》（Python 中的鸭子类型：编写灵活且解耦的代码）。
+
+要了解给定对象的类型，可以使用内置的 `type()` 函数：
+
+```python
+>>> type(42)
+<class 'int'>
+>>> type(2.75)
+<class 'float'>
+>>> type("Hello")
+<class 'str'>
+
+```
+
+当你以任何 Python 对象作为参数调用 `type()` 时，你将获得该对象的类型，你也可以将其称为该对象的类。在这个例子中，你以整数作为参数调用 `type()`，并得到 `int` 类作为响应。然后，你对浮点数使用 `type()` 并得到 `float` 类，依此类推。
+
+如果你想用 `type()` 检查对象的类型，可以像下面这样做：
+
+```python
+>>> type(42) == int
+True
+>>> type(42) == float
+False
+
+```
+
+这种使用 `type()` 的方式行得通。然而，这不是推荐的方法。你稍后将了解有关类型检查的更多信息。现在，你将继续学习 `type()` 的基础知识。以下是该函数的签名：
+
+```python
+type(object)
+type(name, bases, dict, **kwds)
+
+```
+
+你已经使用过第一个签名了。在此签名中，`object` 参数代表任何 Python 对象。
+
+第二个签名稍微复杂一些。你将使用此签名动态创建新类，而不是确定对象的类型。以下是参数及其含义的汇总：
+
+| 参数 | 描述 |
+| --- | --- |
+| `name` | 类的名称 |
+| `bases` | 包含基类的元组 |
+| `dict` | 在类体中定义的属性和方法的字典 |
+| `**kwds` | 传递给元类构造函数的额外关键字参数 |
+
+当你将 `type()` 与这些参数一起使用时，你可以动态构建类。通过这种方式，`type()` 是 `class` 语句的一种动态形式。请考虑以下演示示例：
+
+```python
+>>> def greet(self):
+...     print("Hello, World!")
+... 
+>>> DemoClass = type("DemoClass", (), {"value": 42, "greet": greet})
+>>> DemoClass.value
+42
+>>> instance = DemoClass()
+>>> instance.value
+42
+>>> instance.greet()
+Hello, World!
+>>> dir(instance)
+[    '__class__',    '__delattr__',    '__dict__',    ...    'greet',    'value']
+
+```
+
+在这个简短的示例中，你使用 `type()` 创建了一个演示类，因为 `bases` 元组为空，所以它自动继承自 `object`。新类将具有一个名为 `.greet()` 的方法，该方法是你事先定义好的。它还有一个名为 `.value` 的类属性，你将其设置为 42。
+
+对于属性，你应该提供作为字符串的属性名称和属性的值。对于方法，你应该给出作为字符串的方法名称和一个方法对象（即不带调用括号的方法）。请注意，像 `.greet()` 这样的实例方法必须接收当前对象作为参数，按照惯例你通常将其命名为 `self`。
+
+来看一个更切合实际的例子，假设你想编写一个允许你从不同数据模式动态构建类的函数。在这种情况下，你可以像下面这样做：
+
+文件名：
+`factory.py`
+
+```python
+def create_class(name, custom_members):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+    def __repr__(self):
+        return f"{name}({self.__dict__})"
+
+    class_members = {
+        "__init__": __init__,
+        "__repr__": __repr__,
+    }
+    class_members.update(custom_members)
+
+    return type(name, (), class_members)
+
+```
+
+在这段代码中，你创建了一个接收两个参数的函数。第一个参数 `name` 应该是一个提供有效类名的字符串。第二个参数 `custom_members` 应该是一个包含属性和方法的字典。
+
+然后，你定义了一个名为 `.__init__()` 的内部函数，你将把它用作类初始化器。`.__repr__()` 函数将允许你为类的对象提供字符串表示形式。
+
+接着，你创建一个字典，将这些函数作为方法包含在你的类中，并使用 `class_members` 的内容更新该字典，这些内容应该来自用户。
+
+最后，你使用 `type()` 函数根据提供的名称和成员字典生成类。以下是如何使用此函数的几个示例：
+
+```python
+>>> from factory import create_class
+>>> User = create_class("User", {"name": "", "age": 0, "email": ""})
+>>> Product = create_class(
+...     "Product", {"name": "", "price": 0.0, "units": 0}
+... )
+>>> john = User(name="John", age=30, email="john@example.com")
+>>> table = Product(name="Table", price=200.0, units=5)
+>>> john.name
+'John'
+>>> john.age
+30
+>>> john.email
+'john@example.com'
+>>> table.name
+'Table'
+>>> table.price
+200.0
+>>> table.units
+5
+
+```
+
+在此代码片段中，你首先使用 `create_class()` 创建了两个类。第一个类代表用户，第二个类代表产品。两者具有不同的实例属性集。
+
+然后，你使用属性的适当值创建了每个类的具体实例。最后，你使用点号表示法访问这些属性。太棒了！你的类按预期工作。
+
+`type()` 函数是动态创建类的绝佳工具。尽管你也可以使用该函数来检查对象的类型，但显式类型检查的推荐工具是内置的 `isinstance()` 函数，因为它将子类考虑在内。
+
+`isinstance()` 的签名如下所示：
+
+```python
+isinstance(object, classinfo)
+
+```
+
+在此签名中，`object` 代表你感兴趣的任何 Python 对象。`classinfo` 参数是你要针对其进行检查的一个或多个类。此参数可以是单个类对象、类对象的元组或联合类型（union type）。
+
+请考虑以下使用 `isinstance()` 检查数值的示例：
+
+```python
+>>> isinstance(42, int)
+True
+>>> isinstance(42.0, (int, float))
+True
+>>> isinstance(42.0, int | float)
+True
+
+```
+
+在第一个示例中，你使用 `isinstance()` 检查 42 是否是 `int` 类的实例。在第二个示例中，你使用 `isinstance()` 检查 42.0 是否是 `int` 或 `float` 的实例。在此示例中，你使用类的元组来提供 `classinfo` 参数。
+
+最后，在第三个示例中，你执行了与第二个示例相同的检查。这一次，你使用管道字符（`|`）创建了包含 `int` 和 `float` 的联合类型。请注意，`isinstance()` 是一个谓词函数，如果输入对象是提供的类之一的实例，则返回 `True`。
+
+`isinstance()` 函数还会考虑子类。例如，`bool` 类是 `int` 的子类，因此如果你将 `bool` 的实例与 `int` 进行比较，将会得到 `True` 作为结果：
+
+```python
+>>> isinstance(False, int)
+True
+>>> type(False) == int
+False
+
+```
+
+因为 `bool` 是 `int` 的子类，所以当你根据 `int` 类检查布尔值时，`isinstance()` 函数返回 `True`。请注意，如果你尝试使用 `type()` 执行类似的检查，则会得到 `False`，因为 `type()` 不考虑子类。
+
+还有另一个可用于类型检查的内置函数。该函数称为 `issubclass()`，它检查给定类是否是另一个类的子类：
+
+```python
+>>> issubclass(int, object)
+True
+>>> issubclass(bool, int)
+True
+>>> issubclass(int, float)
+False
+
+```
+
+在第一个示例中，你检查 `int` 类是否是 `object` 的子类。在这种情况下，你得到 `True`，因为所有 Python 类都派生自 `object`。然后，你检查 `bool` 是否是 `int` 的子类，正如你已经学到的，这同样为真。
+
+在最后一个示例中，你使用 `issubclass()` 检查 `int` 是否是 `float` 的子类，结果为 `False`。
+
+`issubclass()` 的签名如下所示：
+
+```python
+issubclass(class, classinfo)
+
+```
+
+在这种情况下，`class` 参数是你要检查的类，而 `classinfo` 参数的作用与 `isinstance()` 中相同。
+
+#### 检查可调用对象：callable()
+
+Python 中的可调用对象（callable）是指你可以使用一对圆括号并在需要时传入一系列参数来调用的任何对象。在 Python 中，可调用对象包括函数、类、方法、带有 `.__call__()` 方法的类的实例、闭包以及生成器函数。
+
+有时，你可能需要在代码中调用某个对象之前知道它是否可调用。为此，你可以使用内置的 `callable()` 函数，该函数具有以下签名：
+
+```python
+callable(object)
+
+```
+
+`object` 参数可以是任何 Python 对象。如果该对象看起来是可调用的，则函数返回 `True`。否则，返回 `False`。
+
+以下是结合一些内置对象使用 `callable()` 的几个示例：
+
+```python
+>>> callable(abs)
+True
+>>> callable(int)
+True
+>>> callable(list)
+True
+>>> callable(True)
+False
+>>> callable(None)
+False
+
+```
+
+在前三个示例中，`callable()` 的参数都是函数，因此你得到 `True` 作为结果。在最后两个示例中，你使用 `True` 和 `None` 对象作为参数。这些对象不可调用，因此你得到 `False` 作为结果。
+
+作为一个实际例子，假设你需要构建一个处理命令的应用程序。每个命令都应该是可调用的；否则，它将无效。要检查此条件，可以使用 `callable()`。这里有一个演示实现：
+
+文件名：
+`commands.py`
+
+```python
+class CommandProcessor:
+    def __init__(self):
+        self.commands = {}
+
+    def register_command(self, command):
+        if not callable(command):
+            raise ValueError("command is not callable")
+        self.commands[command.__name__] = command
+
+    def execute_command(self, name, *args, **kwargs):
+        if (command := self.commands.get(name)) is None:
+            raise ValueError(f"command '{name}' not found")
+        return command(*args, **kwargs)
+
+```
+
+在此类中，`.register_command()` 方法使用 `callable()` 来检查输入的命令是否为可调用对象。如果是这种情况，你便将该命令注册为有效命令。接下来，你拥有 `.execute_command()` 方法，它将该命令作为可调用对象运行。
+
+以下是如何使用此类的示例：
+
+```python
+>>> from commands import CommandProcessor
+>>> command_processor = CommandProcessor()
+>>> def add(a, b):
+...     return a + b
+... 
+>>> command_processor.register_command(add)
+>>> command_processor.execute_command("add", 1, 2)
+3
+>>> subtract = 3 - 2
+>>> command_processor.register_command(subtract)
+Traceback (most recent call last):
+    ...
+ValueError: command is not callable
+
+```
+
+在这个例子中，你创建了一个 `CommandProcessor` 实例来处理命令。然后，你编写了 `add()` 以将其用作命令。因为 `add()` 是一个可调用对象，所以你可以将其注册为有效命令，并使用 `.execute_command()` 方法运行它。
+
+最后，你定义了 `subtract` 变量来保存减法运算的结果。该变量不可调用。因此，在将其注册为命令时，你会收到一个 `ValueError` 异常。
+
+#### 访问父类成员：super()
+
+在 Python 类中处理继承时，你经常需要在子类中访问父类的属性或方法。符合 Python 习惯的方法是使用内置的 `super()` 函数，该函数具有以下签名：
+
+```python
+super()
+super(type, object_or_type)
+
+```
+
+第一个签名是最常见的一个。你会在实例方法内部不带参数地使用它来引用父类。第二个签名允许你显式控制类型查找。你通常只在高级场景中需要这种形式，例如多重继承或在实例方法之外调用 `super()`。
+
+注意：要了解有关 `super()` 的更多信息，请查看教程《Supercharge Your Classes With Python super()》（使用 Python super() 增强你的类）。
+
+`super()` 的一个常见用例是当你需要创建现有类的子类，并且需要合适的方法来初始化父类的属性时。请考虑以下表示矩形和正方形的类：
+
+文件名：
+`shapes.py`
+
+```python
+class Rectangle:
+    def __init__(self, length, width):
+        self.length = length
+        self.width = width
+
+    def area(self):
+        return self.length * self.width
+
+    def perimeter(self):
+        return 2 * (self.length + self.width)
+
+class Square(Rectangle):
+    def __init__(self, side):
+        super().__init__(side, side)
+
+```
+
+在这段代码中，你定义了一个带有两个属性 `.length` 和 `.width` 的 `Rectangle` 类。它还有两个用于计算矩形面积和周长的方法。接下来，你定义了 `Square` 类。由于正方形是一种边长相等的矩形，因此将 `Square` 作为 `Rectangle` 的子类创建并复用你已经实现的功能是合情合理的。
+
+在 `Square()` 构造函数中，你只需要一个参数来表示边长。你可以使用此参数通过 `super()` 初始化父类，就像你在高亮行中所做的那样。`super()` 函数使你能够访问父类 `Rectangle`。一旦你可以访问该类，就可以调用其 `.__init__()` 方法，用 `side` 的值初始化 `.length` 和 `.width` 属性。
+
+#### 构建通用对象：object()
+
+在 Python 中，每一个类都隐式继承自语言内置的 `object` 类。换句话说，`object` 类是 Python 中所有类的基类：
+
+```python
+>>> issubclass(int, object)
+True
+>>> issubclass(float, object)
+True
+>>> issubclass(bool, object)
+True
+>>> issubclass(dict, object)
+True
+>>> class DemoClass:
+...     pass
+... 
+>>> issubclass(DemoClass, object)
+True
+
+```
+
+无论你考虑的类是内置类还是自定义类，它都继承自 `object`。
+
+在某些情况下，你可能想要创建 `object` 类的实例。为此，你可以使用内置的 `object()` 函数，它实际上是一个类构造器而不是函数，但 Python 官方文档将其列在其内置函数中。
+
+以下是它的签名：
+
+```python
+object()
+
+```
+
+`object()` 函数不接收任何参数，并返回一个新的无特征对象（featureless object），该对象具有所有 Python 对象通用的方法。与普通对象不同，调用 `object()` 获取的对象没有 `.__dict__` 属性，因此你无法动态地向这种类型的对象添加属性：
+
+```python
+>>> obj = object()
+>>> dir(obj)
+[    '__class__',    '__delattr__',    '__dir__',    ...    '__str__',    '__subclasshook__']
+>>> obj.attr = "Some value"
+Traceback (most recent call last):
+    ...
+AttributeError: 'object' object has no attribute 'attr' and no __dict__ for setting new attributes
+
+```
+
+在这个例子中，你通过调用 `object()` 创建了一个新的无特征对象。使用内置的 `dir()` 函数，你可以列出该对象提供的所有方法和属性。最后，如果你尝试动态地向无特征对象添加属性，就会收到一个 `AttributeError` 异常。
+
+在实践中，当你想要创建唯一的哨兵值（sentinel values）时，可以使用 `object()` 函数。哨兵值是一个唯一的标记，你可以用它来表示缺少某个值。你也可以将其用作停止迭代或递归算法的条件。
+
+为了说明如何使用 `object()` 创建哨兵值，请考虑以下 `Circle` 类：
+
+文件名：
+`circle.py`
+
+```python
+from time import sleep
+
+SENTINEL = object()
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+        self._diameter = SENTINEL
+
+    @property
+    def diameter(self):
+        if self._diameter is SENTINEL:
+            sleep(0.5)  # 模拟耗时的计算
+            self._diameter = self.radius * 2
+        return self._diameter
+
+```
+
+在这个类中，你有一个在实例化时获取值的 `.radius` 属性。然后，你有一个名为 `._diameter` 的非公开属性，你使用 `SENTINEL` 常量对其进行了初始化。为了创建此常量，你使用了 `object()` 函数。
+
+最后，你拥有 `.diameter` 属性，它从提供的半径计算直径。在这个例子中，你使用了 `time` 模块中的 `sleep()` 来模拟求直径是一项耗时的操作。由于计算成本高昂，你决定缓存直径，以便在对象的生命周期内仅计算一次。
+
+要检查直径是否已被计算，需要将其当前值与 `SENTINEL` 常量进行比较。在这个例子中，你也可以使用 `None` 作为哨兵值，因为圆的直径不太可能取空值。然而，当 `None` 可能是当前属性的有效值时，`object()` 就是理想的选择。
+
+### 处理 Python 作用域
+
+Python 与许多其他编程语言一样，管理着作用域（scopes）的概念。作用域规定了变量和名称在代码中是如何被查找的。它决定了一个变量或名称在代码中的可见性。
+
+作用域取决于你创建该变量的位置。Python 的作用域遵循一条被称为 LEGB 规则的准则。该缩写中的字母分别代表局部（local）、外层（enclosing）、全局（global）和内置（built-in）作用域，该规则总结了你在 Python 中能找到的四种作用域。
+
+注意：要更深入了解 Python 作用域，请查看教程《Python Scope & the LEGB Rule: Resolving Names in Your Code》（Python 作用域与 LEGB 规则：在代码中解析名称）。
+
+你会在 Python 中发现两个与作用域密切相关的内置函数。下表列出了这些函数：
+
+| 函数 | 描述 |
+| --- | --- |
+| `locals()` | 更新并返回一个代表当前局部符号表的字典 |
+| `globals()` | 返回一个代表当前全局符号表的字典 |
+
+在接下来的各节中，你将学习这些函数的基础知识，以及如何在 Python 代码中使用它们来管理名称作用域的某些方面。
+
+#### 检查和更新局部作用域：locals()
+
+局部作用域是函数作用域，因为它包含函数体。每次你调用函数时，Python 都会为该函数创建一个新的局部作用域。默认情况下，你在函数体内赋值的参数和名称仅存在于调用该函数时 Python 所创建的局部作用域中。当函数返回时，局部作用域消失，这些名称也会被遗忘。
+
+如果你需要检查当前局部作用域的状态，可以使用内置的 `locals()` 函数。以下是它的签名：
+
+```python
+locals()
+
+```
+
+该函数不接收任何参数，并返回一个代表当前局部符号表的字典。看一个例子：
+
+```python
+>>> def add(a, b):
+...     result = a + b
+...     print(locals())
+...     return result
+... 
+>>> add(2, 5)
+{'a': 2, 'b': 5, 'result': 7}
+7
+
+```
+
+在这个函数中，你接收了两个参数 `a` 和 `b`。这些参数对于 `add()` 是局部的，这意味着你只能在函数内部访问和使用它们。然后，你创建了一个名为 `result` 的局部变量，将其用作存储计算结果的临时变量。对 `locals()` 的调用返回了一个包含所有这些变量的名称和值的字典。
+
+请注意，`locals()` 仅获取截至你调用它那一刻的作用域信息：
+
+```python
+>>> def add(a, b):
+...     print(locals())
+...     result = a + b
+...     return result
+... 
+>>> add(2, 5)
+{'a': 2, 'b': 5}
+7
+
+```
+
+在 `add()` 的这个变体中，你在函数的开头调用了 `locals()`。因此，你在结果字典中只得到了参数。这是因为当你调用 `locals()` 时，`result` 变量尚未被定义。
+
+#### 检查和更新全局作用域：globals()
+
+全局作用域是 Python 中的另一个重要作用域。它是模块级作用域，允许你定义全局变量或名称。你可以从代码中的任何位置访问和修改全局名称。
+
+要检查和更新存在于当前全局作用域中的变量和名称，可以使用内置的 `globals()` 函数。以下是它的签名：
+
+```python
+globals()
+
+```
+
+该函数不接收任何参数，并返回一个代表当前全局符号表的字典。例如，当你启动一个新的 REPL 会话并调用 `globals()` 时，会得到类似下面的输出：
+
+```python
+>>> globals()
+{
+    '__name__': '__main__',
+    '__doc__': None,
+    ...
+    '__builtins__': <module 'builtins' (built-in)>
+}
+
+```
+
+默认情况下，当你启动 REPL 会话时，解释器会将若干名称和对象加载到你的全局作用域中。例如，`__name__` 对象保存当前模块的名称，当你在一个可执行模块中时，该名称为 `"__main__"`。如果你在一个被导入的模块中，则该变量将保存该模块的名称。
+
+接着是 `__doc__` 名称，如果提供了模块的文档字符串，它将保存该字符串。你还会拥有若干其他名称。最后，你拥有 `__builtins__` 名称，它保存定义内置名称的命名空间。这是一个特殊的模块，包含了本教程中涵盖的所有内置函数以及若干其他内置对象（如异常）。
+
+如果你开始在 REPL 会话中定义变量和函数，这些名称将被添加到 `globals()` 返回的字典中：
+
+```python
+>>> language = "Python"
+>>> number = 42
+>>> def greet():
+...     print("Hello, World!")
+... 
+>>> class Demo:
+...     pass
+... 
+>>> globals()
+{
+    ...
+    '__builtins__': <module 'builtins' (built-in)>,
+    'language': 'Python',
+    'number': 42,
+    'greet': <function greet at 0x100984040>,
+    'Demo': <class '__main__.Demo'>
+}
+
+```
+
+在这个例子中，你定义了两个变量、一个函数和一个类。当你调用 `globals()` 时，会在生成的字典末尾获取所有这些对象的名称。
+
+`globals()` 返回的字典是一个可写字典。当你需要手动修改或更新全局作用域的内容时，可以利用此特性。该特性常见的一个用例是当你需要从文件加载配置参数时。
+
+例如，假设你拥有以下包含数据库连接配置值的 JSON 文件：
+
+文件名：
+`config.json`
+
+```json
+{
+    "DATABASE_URL": "postgres://user:pass@localhost/dbname",
+    "DEBUG_MODE": true,
+    "MAX_CONNECTIONS": 10
+}
+
+```
+
+你需要编写一个函数来加载此文件并将提供的配置参数添加到当前的全局作用域中。以下是该函数的一种可能实现：
+
+文件名：
+`config.py`
+
+```python
+import json
+
+def load_config(config_file):
+    with open(config_file) as file:
+        config = json.load(file)
+
+    globals().update(config)
+
+```
+
+在此函数中，你首先打开配置文件并将其内容加载到名为 `config` 的字典中。然后，你使用 `config` 的内容更新 `globals()` 返回的字典。
+
+以下是上述函数的工作方式：
+
+```python
+>>> from config import load_config
+>>> load_config("config.json")
+>>> globals()
+{
+    ...
+    'DATABASE_URL': 'postgres://user:pass@localhost/dbname',
+    'DEBUG_MODE': True,
+    'MAX_CONNECTIONS': 10
+}
+>>> MAX_CONNECTIONS
+10
+
+```
+
+在以 `config.json` 文件为参数调用 `load_config()` 之后，配置参数便作为常量加载到了你的全局作用域中。现在，你可以直接在代码中使用这些常量了。
+
+### 内省对象
+
+在编程中，类型内省（type introspection）是指程序在运行时检查对象的类型和属性的能力。在 Python 中一切皆为对象，因此能够在运行时检查类型和属性是一项宝贵的特性。
+
+以下是允许你在 Python 中执行某种类型内省的几个内置函数：
+
+| 函数 | 描述 |
+| --- | --- |
+| `id()` | 返回对象的标识（identity） |
+| `dir()` | 返回当前局部作用域中的名称列表或对象的属性列表 |
+| `vars()` | 返回模块、类或对象的 `__dict__` 属性 |
+
+在接下来的各节中，你将学习这些函数的工作原理，以及如何在代码中使用它们来进行类型内省。你将从 `id()` 函数开始学起。
+
+#### 了解对象的标识：id()
+
+在 Python 中，每个独立的对象都有一个关联的标识。该标识是一个唯一且恒定的整数，用于在对象的生命周期内标识它。两个生命周期不重叠的对象可能具有相同的标识。
+
+如果你需要知道给定对象的标识，可以使用 `id()` 函数。以下是它的签名：
+
+```python
+id(object)
+
+```
+
+`object` 参数可以是任何 Python 对象。该函数以整数形式返回其标识。看几个例子：
+
+```python
+>>> id(42)
+4315605776
+>>> id("Python")
+4315120464
+>>> def greet():
+...     print("Hello, World!")
+... 
+>>> id(greet)
+4307259040
+>>> class Demo:
+...     pass
+... 
+>>> id(Demo)
+4892672720
+
+```
+
+当你以任何 Python 对象作为参数调用 `id()` 时，会得到一个数字，即该对象的标识。在 Python 的 CPython 实现中，对象的标识也是该对象所在的内存地址。
+
+了解对象的标识在调试代码时可能会有很大帮助。例如，假设你想编写一段代码来计算某种斐波那契数列的各个独立值。你可以通过很多种方式实现这一点。但是，你考虑使用一个具有可调用实例的类，并带有允许你缓存已计算值的实例属性。
+
+以下是该类的一种可能实现：
+
+文件名：
+`fibonacci.py`
+
+```python
+class Fibonacci:
+    def __init__(self, initial_value=1):
+        self._cache = [0, initial_value]
+
+    def __call__(self, index):
+        if index < len(self._cache):
+            fib_number = self._cache[index]
+            print(f"{index} {fib_number} id = {id(fib_number)}")
+        else:
+            fib_number = self(index - 1) + self(index - 2)
+            self._cache.append(fib_number)
+        return fib_number
+
+```
+
+在 `Fibonacci` 的初始化方法中，你定义了一个列表来保存已计算值的缓存。然后，你定义了 `.__call__()` 特殊方法，该方法允许你的类的实例像函数一样被调用。
+
+注意：常规的斐波那契数列以 0 和 1 开头。在你的类斐波那契数列中，第二个数可以是任意值，但你保留了数列中的一个数等于其前两个数之和的规则。
+
+在此方法中，你判断目标索引处的斐波那契值是否已被计算并存储在缓存中。然后，你添加了一个对 `print()` 的调用，该调用将通过使用 `id()` 确认是否使用了缓存值来帮助你调试代码。
+
+以下是该类在实践中的工作方式：
+
+```python
+>>> from fibonacci import Fibonacci
+>>> fibonacci_333 = Fibonacci(333)
+>>> fibonacci_333(2)
+1 333 id = 140276932935312
+0 0 id = 94800819952840
+333
+>>> fibonacci_333(4)
+2 333 id = 140276932934960
+1 333 id = 140276932935312
+2 333 id = 140276932934960
+999
+
+```
+
+在这个代码示例中，你创建了一个初始值为 333 的 `Fibonacci` 实例。该数列的前几个值将是 0、333、333、666、999 和 1665。
+
+你创建的实例是可调用的，因此你可以将其作为普通函数使用。接着，你以 2 为参数调用该实例。该调用分别打印了索引 0 和 1 处 0 和 333 值的标识。接下来，你以 4 为参数调用 `fibonacci_333()`。在这种情况下，你在索引 1 和 2 处三次获取了 333 的标识。
+
+当你观察这些标识时，会意识到你的函数针对相同的索引使用了相同的对象，而对于 333 的两个不同实例而言它是不同的。通过这种方式，你可以确认函数按预期使用了缓存。
+
+如果你使用通常的斐波那契数列 `Fibonacci(1)` 重复该示例，会看到略有不同的结果。在这种情况下，Python 会在底层对 1 进行驻留（intern），从而在缓存中的索引 1 和 2 处都使用相同的对象。
+
+#### 检查名称和属性：dir() 与 vars()
+
+有时，你需要知道给定对象或作用域中定义的属性或方法。针对这类需求，Python 提供了两个不同的内置函数：`dir()` 和 `vars()`。以下是它们的签名：
+
+```python
+dir([object])
+vars([object])
+
+```
+
+在这两个签名中，正如方括号所示，`object` 参数都是可选的。当你在不带参数的情况下调用任一函数时，都会获取有关当前局部作用域的信息。
+
+不带参数的 `dir()` 函数返回当前作用域中的名称列表。因此，结果将取决于你调用该函数的位置。传入任何 Python 对象作为参数时，`dir()` 会尝试返回该对象的属性列表。
+
+例如，如果你在一个新的 REPL 会话中不带参数调用 `dir()`，将得到如下输出：
+
+```python
+>>> dir()
+[
+    '__builtins__',
+    '__doc__',
+    '__loader__',
+    '__name__',
+    '__package__',
+    '__spec__'
+]
+
+```
+
+正如你所看到的，`dir()` 返回了在当前作用域中定义的名称列表，在此示例中该作用域是全局作用域。
+
+如果你以 Python 对象作为参数调用 `dir()`，将获得该对象的属性和方法列表。如果输入对象是一个类，你将获得方法和类属性的列表。如果对象是现有类的实例，你将获得方法、类属性和实例属性的列表。
+
+请考虑以下复用关于 `super()` 函数章节中的 `Rectangle` 类的示例：
+
+```python
+>>> class Rectangle:
+...     def __init__(self, length, width):
+...         self.length = length
+...         self.width = width
+...     def area(self):
+...         return self.length * self.width
+...     def perimeter(self):
+...         return 2 * (self.length + self.width)
+... 
+>>> dir(Rectangle)
+[
+    '__class__',
+    '__delattr__',
+    '__dict__',
+    ...
+    'area',
+    'perimeter'
+]
+>>> rectangle = Rectangle(2, 4)
+>>> dir(rectangle)
+[
+    '__class__',
+    '__delattr__',
+    '__dict__',
+    ...
+    'area',
+    'length',
+    'perimeter',
+    'width'
+]
+
+```
+
+在对 `dir()` 的第一次调用中，你获得了 `Rectangle` 类的类属性和方法。在这种情况下，你使用的是类对象作为参数。在对 `dir()` 的第二次调用中，你使用 `Rectangle` 的实例作为参数，并获取了所有方法、类属性和实例属性。
+
+默认的 `dir()` 行为对于不同类型的对象是不同的。以下是这些差异的汇总：
+
+| 对象 | 行为 |
+| --- | --- |
+| 模块对象 | 返回模块中定义的名称列表。 |
+| 类型或类对象 | 返回类属性、方法以及基类的属性和方法的名称列表。 |
+| 其他对象 | 返回属性和方法的列表，包括类属性和基类的属性。 |
+
+你还可以通过在自定义类中提供 `.__dir__()` 特殊方法来自定义 `dir()` 的默认行为。然而，这个主题超出了本教程的范围。
+
+`vars()` 函数返回模块、类、实例或任何其他具有 `.__dict__` 属性的对象的 `.__dict__` 属性：
+
+```python
+>>> vars(Rectangle)
+mappingproxy({
+    '__module__': '__main__',
+    '__firstlineno__': 1,
+    '__init__': <function Rectangle.__init__ at 0x10352d080>,
+    'area': <function Rectangle.area at 0x10352d120>,
+    'perimeter': <function Rectangle.perimeter at 0x10352d1c0>,
+    '__static_attributes__': ('length', 'width'),
+    '__dict__': <attribute '__dict__' of 'Rectangle' objects>,
+    '__weakref__': <attribute '__weakref__' of 'Rectangle' objects>,
+    '__doc__': None
+})
+>>> vars(rectangle)
+{'length': 2, 'width': 4}
+
+```
+
+在这个例子中，你以 `Rectangle` 类作为参数调用 `vars()`。你得到了该类的 `.__dict__` 属性，其中包含方法和类属性。请注意，它还包含一个 `.__dict__` 属性，用于保存该类实例的属性。当你以该类的实例调用 `vars()` 时，得到的正是那个 `.__dict__`。
+
+`.__dict__` 属性是一个字典，用作将名称映射到对象的命名空间。例如，它可以将方法名称映射到方法对象，或者将属性名称映射到特定的值或对象。
+
+### 从字符串运行 Python 代码
+
+在极少数情况下，求值表达式或运行以字符串对象形式提供的代码可能会很有用。这种做法在实际代码中并不常见，因为它可能不安全，尤其是当目标代码来自不可信的来源（例如用户输入）时。
+
+撇开涉及的安全问题不谈，Python 提供了三个内置函数，允许你求值表达式或运行以字符串形式提供的代码。以下是这些函数的汇总：
+
+| 函数 | 描述 |
+| --- | --- |
+| `eval()` | 从字符串或已编译的代码输入中求值任意 Python 表达式 |
+| `exec()` | 从字符串或已编译的代码输入中执行任意 Python 代码 |
+| `compile()` | 从字符串生成已编译的代码对象 |
+
+在接下来的各节中，你将学习这些函数的基础知识。你将从使用 `eval()` 函数求值 Python 表达式开始。
+
+#### 从字符串执行表达式：eval()
+
+在 Python 中，表达式是对象和运算符的组合，它会返回一个值。你会发现有几种类型的表达式，包括数学表达式、布尔表达式、比较表达式、按位表达式等。在处理表达式时，你可以将它们作为常规 Python 代码运行。然而，如果你需要求值定义为字符串的表达式呢？
+
+例如，想想你会如何求值以下内容：
+
+```python
+"sum([2, 3, 4, 5]) / 4 + 100"
+
+```
+
+如果你想将此字符串作为表达式求值，就必须解析该字符串并想办法提取操作数和运算符。然后，你可以重构该表达式并在 Python 解释器中运行它。这个过程听起来像是一件可以快速完成的事情。然而，在实践中它可能会让人不知所措，尤其是考虑到你在实际代码中可能需要求值的各种不同表达式的数量是无限的。
+
+幸运的是，Python 提供了一个内置的 `eval()` 函数，可以帮助你求值以字符串形式提供的表达式。
+
+注意：要了解有关 `eval()` 的更多信息，请查看教程《Python eval(): Evaluate Expressions Dynamically》（Python eval()：动态求值表达式）。
+
+如果你有一个保存有效 Python 表达式的字符串，就可以以该字符串为参数调用 `eval()`。该函数将解析该字符串，将其编译为字节码，并最终将其作为正常表达式进行求值：
+
+```python
+>>> eval("sum([2, 3, 4, 5]) / 4 + 100")
+103.5
+
+```
+
+哇！真是又快又顺畅！你只需将字符串传递给 `eval()`，运行代码，就得到了表达式的结果。
+
+`eval()` 的签名大致如下：
+
+```python
+eval(expression[, globals[, locals]])
+
+```
+
+第一个参数 `expression` 保存你需要求值的表达式。其余参数都是可选的。这就是为什么它们被括在方括号中的原因。以下是这些参数及其含义的汇总：
+
+| 参数 | 描述 |
+| --- | --- |
+| `expression` | 保存有效 Python 表达式的字符串 |
+| `globals` | 保存要在对 `eval()` 的调用中使用的全局命名空间的字典 |
+| `locals` | 保存要在对 `eval()` 的调用中使用的局部命名空间的字典 |
+
+你已经见过了使用 `expression` 参数的示例，所以现在你可以专注于另外两个参数。在每个示例中，你都需要提供一个表达式。
+
+以下是使用 `globals` 参数的示例：
+
+```python
+>>> numbers = [2, 3, 4, 5]
+>>> n = len(numbers)
+>>> eval("sum(numbers) / n + 100")
+103.5
+>>> eval("sum(numbers) / n + 100", {})
+Traceback (most recent call last):
+    ...
+NameError: name 'numbers' is not defined
+>>> eval("sum(numbers) / n + 100", {"numbers": numbers, "n": n})
+103.5
+
+```
+
+默认情况下，`eval()` 可以访问全局作用域，因此你可以在传递给该函数的表达式中使用此作用域中定义的所有名称。如果你将 `globals` 设置为空字典，就会限制对全局作用域的访问，函数就会报错失败。
+
+最后，你可以像在最后一个示例中所做的那样使用显式字典，以提供在求值目标表达式时想要使用的全局变量。
+
+`locals` 参数的工作方式类似。它接收一个局部名称的字典：
+
+```python
+>>> def evaluator(expression):
+...     numbers = [2, 3, 4, 5]
+...     n = len(numbers)
+...     return eval(expression, {}, {"numbers": numbers, "n": n})
+... 
+>>> evaluator("sum(numbers) / n + 100")
+103.5
+
+```
+
+在 `evaluator()` 函数内部，你将 `numbers` 和 `n` 定义为局部变量。在对 `eval()` 的调用中，你对 `globals` 使用了一个空字典，并对 `locals` 使用了一个包含局部变量的字典。
+
+尽管 `eval()` 函数看似有用，但你在代码中使用它时必须小心。在实践中，如果你不在实际代码中使用这个工具，会更加安全。这是因为 `eval()` 具有难以规避的安全隐患。例如，如果你使用该函数来求值外部用户提供的表达式，就会使系统面临执行任意 Python 代码的风险。
+
+有关如何降低与 `eval()` 相关的安全风险的更多见解，请查看教程《Python eval(): Evaluate Expressions Dynamically》（Python eval()：动态求值表达式）中的“Minimizing the Security Issues of eval()”（最小化 eval() 的安全问题）部分。
+
+#### 从字符串运行代码：exec() 与 compile()
+
+`eval()` 函数很有用，但它是设计用来求值表达式的。有时，你可能想要运行以字符串形式提供的更复杂的代码片段。例如，你可能想要运行循环、条件语句、复合语句，甚至是整个脚本。在这种情况下，你可以使用内置的 `exec()` 和 `compile()` 函数。
+
+注意：要了解有关 `exec()` 的更多信息，请查看教程《Python’s exec(): Execute Dynamically Generated Code》（Python 的 exec()：执行动态生成的代码）。
+
+以下是 `exec()` 函数的签名：
+
+```python
+exec(code [, globals [, locals]])
+
+```
+
+`code` 参数可以是包含有效 Python 代码的字符串。它也可以是一个已编译的代码对象，你可以使用 `compile()` 函数创建该对象。稍后你将学习 `compile()`。现在，你将使用字符串来提供 `code` 参数。
+
+如果 `code` 以字符串形式提供，则 `exec()` 会将其解析为一系列 Python 语句。然后，它将代码编译为字节码，并最终执行代码，除非在解析或编译步骤中发生语法错误。
+
+请考虑以下示例：
+
+文件名：
+`calculations.py`
+
+```python
+>>> functions = [
+...     "def add(a, b): return a + b",
+...     "def subtract(a, b): return a - b",
+...     "def multiply(a, b): return a * b",
+...     "def divide(a, b): return a / b",
+... ]
+>>> for function in functions:
+...     exec(function)
+... 
+
+```
+
+在这个例子中，你定义了一个字符串列表。每个字符串保存用于基本算术运算的 Python 函数。然后，你开始遍历该列表。使用 `exec()`，你执行了定义这些函数的字符串。这一步将每个函数引入到了当前的全局作用域中。现在，你可以像使用普通函数一样使用它们了：
+
+```python
+>>> add(1, 2)
+3
+>>> subtract(3, 2)
+1
+>>> multiply(2, 3)
+6
+>>> divide(6, 3)
+2.0
+
+```
+
+这些算术函数现在在你的全局作用域中可用，因此你可以使用它们来进行计算。
+
+与 `eval()` 一样，`exec()` 接收 `globals` 和 `locals` 参数，它们同样是可选的。这些参数在两个函数中具有相似的含义，因此你可以将其作为练习进行尝试。
+
+注意：`exec()` 函数同样具有安全隐患。要了解有关它们的更多信息，请查看教程《Python’s exec(): Execute Dynamically Generated Code》（Python 的 exec()：执行动态生成的代码）中的“Uncovering and Minimizing the Security Risks Behind exec()”（揭开并最小化 exec() 背后的安全风险）部分。
+
+当你拥有一个包含将多次复用的代码的字符串时，可以使用 `compile()` 函数将代码编译一次并在任何地方使用它。这种做法将使你的代码更高效、更快速，因为编译步骤只运行一次。
+
+`compile()` 的签名大致如下：
+
+```python
+compile(source, filename, mode, flags=0, dont_inherit=False, optimize=-1)
+
+```
+
+这个签名稍微有些复杂，因为它有几个你需要理解的参数。以下是各参数及其含义的汇总：
+
+| 参数 | 描述 |
+| --- | --- |
+| `source` | 保存你需要编译为字节码的代码 |
+| `filename` | 保存读取代码的文件名 |
+| `mode` | 指定必须编译哪种类型的代码 |
+| `flags` 和 `dont_inherit` | 控制应激活哪些编译器选项以及应允许哪些 future 特性 |
+| `optimize` | 指定编译的优化级别 |
+
+要从字符串对象读取，你必须将 `filename` 设置为 `"<string>"` 值。`mode` 参数可以取以下值之一：
+
+* 当 `source` 由单个表达式组成时为 `"eval"`
+* 当 `source` 是一系列语句时为 `"exec"`
+* 当 `source` 是单个交互式语句时为 `"single"`
+
+根据源代码以及你计划用于运行它的函数，你将选择第一个或第二个值。当你想运行类似于通常在交互式会话中运行的 `print("Hello, World!")` 语句时，`"single"` 值会派上用场。
+
+为了说明如何使用 `compile()`，请考虑以下演示示例：
+
+```python
+>>> code = """
+... result = sum(number for number in iterable if not number % 2)
+... """
+>>> compiled_code = compile(code, "<string>", "exec")
+>>> context = {"iterable": [1, 2, 3, 4]}
+>>> exec(compiled_code, context)
+>>> context["result"]
+6
+>>> context = {"iterable": [10, 40, 50, 20]}
+>>> exec(compiled_code, context)
+>>> context["result"]
+120
+
+```
+
+在这个例子中，你在一串字符串中包含了一段代码。该代码包含一个对 `sum()` 的调用，该调用包装了一个生成器表达式，该表达式接收数字的可迭代对象并返回偶数。接下来，你使用 `compile()` 函数将该字符串编译为一个准备好执行的代码对象。`context` 字典保存着一个数字的可迭代对象。
+
+你以编译后的代码和 `context` 字典作为参数调用了 `exec()`。请注意，你使用 `context` 提供了 `globals` 参数。对 `exec()` 的调用将使用你在编译代码中定义的任何名称来更新此字典。在这个具体的示例中，`context` 最终保存了带有可迭代对象中偶数之和的 `result` 变量。
+
+要访问计算出的值，你可以使用带有 `"result"` 键的 `context` 字典。在最后一个示例中，你复用了编译后的代码，以使用不同的值列表执行类似的计算。
+
+### 使用常用杂项内置函数（Using Miscellaneous Functions）
+
+Python 还提供了一些涵盖其他杂项主题的内置函数。以下是这些函数的简要总结：
+
+| 函数 | 描述 |
+| --- | --- |
+| `help()` | 调用内置的帮助系统 |
+| `hash()` | 计算对象的哈希值 |
+| `__import__()` | 由 `import` 语句在底层调用 |
+| `memoryview()` | 返回一个内存视图（memory view）对象 |
+| `breakpoint()` | 在调用处直接进入调试器 |
+
+在接下来的各节中，你将学习这些函数的基础知识，以及如何在 Python 代码或交互式会话中使用它们。首先从内置的 `help()` 函数开始。
+
+---
+
+### 访问内置帮助系统：`help()`
+
+内置的 `help()` 函数在 Python REPL 交互式会话中非常实用。该函数允许你访问内置的交互式帮助系统。其调用签名如下：
+
+```python
+help()
+help(request)
+
+```
+
+第一种签名方式会启动交互式帮助工具。第二种签名方式允许你针对特定的 Python 对象、模块、关键字或主题向帮助系统发起查询。其中的 `request` 参数既可以直接传入对象本身，也可以传入包含其名称的字符串。
+
+现在可以在终端中打开一个 Python 交互式会话，然后不带任何参数调用 `help()`。系统会呈现如下界面：
+
+```text
+>>> help()
+Welcome to Python 3.x's help utility!
+
+If this is your first time using Python, you should definitely check out
+the tutorial on the internet at https://docs.python.org/3.x/tutorial/.
+
+Enter the name of any module, keyword, or topic to get help on writing
+Python programs and using Python modules.  To quit this help utility and
+return to the interpreter, just type "quit".
+
+To get a list of available modules, keywords, symbols, or topics, type
+"modules", "keywords", "symbols", or "topics".  Each module also comes
+with a one-line summary of what it does; to list the modules whose name
+or summary contain a given string such as "spam", type "modules spam".
+
+help>
+
+```
+
+输出内容中包含欢迎信息，并建议初学者查阅 Python 官方教程。第三段和第四段则给出了帮助系统的使用说明。
+
+页面底部会停留在 `help>` 提示符处等待输入。输入 `str` 并按回车键，你将看到类似如下的内容：
+
+```text
+Help on class str in module builtins:
+
+class str(object)
+ |  str(object='') -> str
+ |  str(bytes_or_buffer[, encoding[, errors]]) -> str
+ |
+ |  Create a new string object from the given object. If encoding or
+ |  errors is specified, then the object must expose a data buffer
+ |  that will be decoded using the given encoding and error handler.
+ |  Otherwise, returns the result of object.__str__() (if defined)
+ |  or repr(object).
+ |  encoding defaults to sys.getdefaultencoding().
+ |  errors defaults to 'strict'.
+ |
+ |  Methods defined here:
+ |
+ |  __add__(self, value, /)
+ |      Return self+value.
+ |
+ |  __contains__(self, key, /)
+ |      Return key in self.
+ ...
+
+```
+
+这是 `str` 类的帮助页面。在此页面中，你可以找到该类及其用途的详细说明。按下 **Q** 键即可退出该页面并返回到帮助系统。
+
+在帮助系统中，你可以查询许多 Python 对象的文档，包括内置模块、函数、关键字等。不妨亲自上手试一试，其中包含许多有用的信息！
+
+使用 `help()` 函数还有第二种方式。首先在 `help>` 提示符下输入 **Q** 并按回车键，返回到 Python 交互式会话中。回到 REPL 后，你可以将任意 Python 对象作为参数传入 `help()`。例如，若将 `str` 类作为参数传入，它会打开与之前相同的页面：
+
+```python
+>>> help(str)
+
+```
+
+这种调用方式可以快速访问指定对象的帮助文档。你既可以直接将对象作为参数传给 `help()`，也可以将其名称作为字符串传入（例如 `help("str")`）。不过在大多数情况下，使用字符串形式的对象名更为安全：
+
+```python
+>>> help(sys)
+Traceback (most recent call last):
+    ...
+NameError: name 'sys' is not defined
+
+```
+
+在此示例中，你尝试访问 `sys` 模块的帮助页面。由于直接使用了模块名作为参数，而当前作用域中尚未导入该模块，因此会抛出 `NameError` 异常。如果使用字符串形式传入模块名称（如 `"sys"`），`help("sys")` 便可以安全运行。
+
+---
+
+### 生成哈希值：`hash()`
+
+如果你涉足数据完整性、信息安全或密码学等领域，应该对哈希码（hash code）很熟悉。哈希码是一个可用作特定数据“数字指纹”的数字。它通常比原始数据小得多，可用于校验数据完整性。
+
+要为指定对象生成哈希码，需要借助哈希函数。Python 自带了生成哈希码的内置函数，名称为 `hash()`。
+
+> **注意：** 如需深入了解哈希表，可参阅教程《Build a Hash Table in Python With TDD》（使用测试驱动开发在 Python 中构建哈希表）。
+
+`hash()` 的签名如下：
+
+```python
+hash(object)
+
+```
+
+它接收一个对象作为参数，并返回该输入对象的哈希值。返回的哈希值必须是一个整数。
+
+以下是使用 `hash()` 函数的一些示例：
+
+```python
+>>> hash(42)
+42
+>>> hash(2.7)
+1614090106449586178
+>>> hash("Hello")
+-6239611042439236057
+>>> hash(int)
+270201092
+>>> class DemoClass: pass
+...
+>>> hash(DemoClass)
+346520709
+>>> demo_instance = DemoClass()
+>>> hash(demo_instance)
+271491289
+
+```
+
+在这些示例中，`hash()` 分别用于不同的对象，包括数值、字符串、函数对象以及自定义类。在所有这些情况下，均返回了唯一的哈希码。
+
+在实际开发中，有些对象是没有哈希值的：
+
+```python
+>>> hash([1, 2, 3])
+Traceback (most recent call last):
+    ...
+TypeError: unhashable type: 'list'
+>>> hash({"one": 1, "two": 2})
+Traceback (most recent call last):
+    ...
+TypeError: unhashable type: 'dict'
+>>> hash({"red", "green", "blue"})
+Traceback (most recent call last):
+    ...
+TypeError: unhashable type: 'set'
+
+```
+
+可以看到，**可变对象在 Python 中是不可哈希的**，因为可变对象的值在其生命周期内可能会发生改变。
+
+---
+
+### 根据字符串名称导入对象：`__import__()`
+
+Python 内置的 `__import__()` 函数是一个高级工具，在日常编程中并不常用。该函数在底层由 `import` 语句调用。通常**不推荐直接使用 `__import__()**`，官方更建议使用 `importlib.import_module()`。但既然它是一个内置函数，本节仍对其基本用法作简要介绍。
+
+> **注意：** 如需深入了解 Python 的导入系统，可参阅教程《Python import: Advanced Techniques and Tips》（Python 导入：高级技巧与指南）。
+
+`__import__()` 的签名大致如下：
+
+```python
+__import__(name, globals=None, locals=None, fromlist=(), level=0)
+
+```
+
+借助该函数，你可以通过模块名来导入模块，模块名应为字符串类型。以下是该函数参数及其含义的说明：
+
+| 参数 | 描述 |
+| --- | --- |
+| `name` | 模块名称（字符串） |
+| `globals` | 表示全局命名空间的字典 |
+| `locals` | 表示局部命名空间的字典 |
+| `fromlist` | 要从模块中导入的对象或子模块列表 |
+| `level` | 正整数，表示相对于调用 `__import__()` 的模块所在目录，向上搜索的父目录层级数 |
+
+使用 `__import__()` 实现等同于 `import sys` 的效果，可以按如下方式编写：
+
+```python
+>>> sys = __import__("sys")
+>>> sys
+<module 'sys' (built-in)>
+
+```
+
+在此示例中，创建了一个 `sys` 变量，并将以 `"sys"` 为参数调用 `__import__()` 的结果赋值给它。这次调用便将 `sys` 模块成功导入到了当前的全局作用域中。
+
+---
+
+### 高效操作二进制数据：`memoryview()`
+
+内置的 `memoryview()` 函数允许你直接访问支持缓冲区协议（buffer protocol）的对象（如 `array.array`、`bytes` 和 `bytearray`）的内部数据。你可以使用该函数来处理大规模数据集或与二进制数据进行交互。其函数签名如下：
+
+```python
+memoryview(object)
+
+```
+
+传入的 `object` 参数必须支持缓冲区协议。
+
+例如，当你面对庞大的数据集且需要使用其中一部分切片时，创建副本的开销会非常高。此时可以创建一个 `memoryview` 对象，在零拷贝（zero-copy）的前提下直接访问数据。这样不仅节省内存，还能显著提高运行效率。
+
+假设图像的像素数据存储在一个 `bytearray` 中，你希望对像素值进行反转操作。为了高效完成此任务，可以使用 `memoryview()`：
+
+```python
+>>> image = bytearray([0, 127, 255, 64, 128, 192, 32, 96, 160])
+>>> mv = memoryview(image)
+>>> for i in range(len(mv)):
+...     mv[i] = 255 - mv[i]
+...
+>>> list(mv)
+[255, 128, 0, 191, 127, 63, 223, 159, 95]
+>>> list(image)
+[255, 128, 0, 191, 127, 63, 223, 159, 95]
+
+```
+
+在此示例中，你创建了一个 `memoryview` 对象来直接访问表示图像的数据。在 `for` 循环中遍历并反转了每个像素值，而这一修改会直接同步反映在原始的 `image` 数据中。
+
+---
+
+### 进入调试器：`breakpoint()`
+
+当你需要在特定执行位置检查程序的运行状态时，可以通过内置的 `breakpoint()` 函数直接切入调试器。这是一种更轻量、对钩子机制更友好的方式，让你无需手动 `import pdb` 就能开启调试会话。
+
+> **注意：** 如需深入了解 Python 代码调试，可参阅教程《Python Debugging With Pdb》（使用 Pdb 进行 Python 调试）。
+
+`breakpoint()` 的签名如下：
+
+```python
+breakpoint(*args, **kwargs)
+
+```
+
+调用 `breakpoint()` 时，Python 会检查 `sys.breakpointhook()` 函数，并启动它所指向的调试器。默认情况下，该钩子会启动一个 `pdb` 会话，并将传入的所有额外参数转发给它。
+
+下面是一个可供尝试的简单脚本：
+
+**文件名：`debug_demo.py**`
+
+```python
+def average(numbers):
+    total = sum(numbers)
+    breakpoint()
+    return total / len(numbers)
+
+print(average([10, 20, 30]))
+
+```
+
+运行该脚本时，Python 会在执行到 `breakpoint()` 处暂停，并显示 `(Pdb)` 交互提示符。此时你可以查看 `total` 变量的值、进行单步调试或退出调试会话。
+
+你还可以通过设置 `PYTHONBREAKPOINT` 环境变量来替换默认的调试器。例如，设置 `PYTHONBREAKPOINT=ipdb.set_trace` 会让 `breakpoint()` 启动更丰富的 `ipdb` 会话；而设置 `PYTHONBREAKPOINT=0` 则会完全禁用所有断点，这在生产环境执行时非常有用。
 
 
 
