@@ -2,3 +2,631 @@
 title: 生成器
 sidebar_position: 9
 ---
+
+
+## [生成器](https://realpython.com/introduction-to-python-generators/)
+
+### 使用生成器（Using Generators）
+
+生成器函数由 PEP 255 引入，是一类特殊的函数，用于返回惰性迭代器（lazy iterator）。这些对象可以像列表一样被遍历循环。然而与列表不同的是，惰性迭代器不会将内容存储在内存中。
+
+既然你已经对生成器的作用有了初步了解，你可能会好奇它们在实际中是如何运行的。让我们来看两个示例。在第一个示例中，你将从鸟瞰视角观察生成器的工作方式。随后，你将深入并更彻底地分析每个示例。
+
+#### 示例 1：读取大文件
+
+生成器的一个常见使用场景是处理数据流或大文件，例如 CSV 文件。这些文本文件使用逗号将数据分隔为多列。这种格式是共享数据的常用方式。现在，如果你想统计一个 CSV 文件中的行数该怎么做？下面的代码块展示了统计这些行的一种方式：
+
+```python
+csv_gen = csv_reader("some_csv.txt")
+row_count = 0
+for row in csv_gen:
+    row_count += 1
+print(f"Row count is {row_count}")
+
+```
+
+看这个示例，你可能会以为 `csv_gen` 是一个列表。为了填充这个列表，`csv_reader()` 打开一个文件并将其内容加载到 `csv_gen` 中。随后，程序遍历该列表，并对每一行将 `row_count` 加 1。
+
+这是一个合理的推测，但如果文件非常大，这种设计是否依然奏效？如果文件的大小超过了可用内存呢？为了解答这个问题，我们假设 `csv_reader()` 只是打开文件并将其读入一个数组中：
+
+```python
+def csv_reader(file_name):
+    file = open(file_name)
+    result = file.read().split("\n")
+    return result
+
+```
+
+该函数打开一个指定文件，并使用 `file.read()` 结合 `.split()` 将每一行作为独立元素添加到一个列表中。如果你在前面看到的行数统计代码中使用这个版本的 `csv_reader()`，你将得到以下输出：
+
+```text
+Traceback (most recent call last):
+  File "ex1_naive.py", line 22, in <module>
+    main()
+  File "ex1_naive.py", line 13, in main
+    csv_gen = csv_reader("file.txt")
+  File "ex1_naive.py", line 6, in csv_reader
+    result = file.read().split("\n")
+MemoryError
+
+```
+
+在这种情况下，`open()` 本身返回的是一个生成器对象，支持你逐行进行惰性迭代。然而，`file.read().split()` 会一次性将所有内容加载到内存中，从而导致 `MemoryError`。
+
+在发生错误之前，你可能还会注意到计算机速度变得异常缓慢，甚至可能需要使用 `KeyboardInterrupt` 强制终止程序。那么，该如何处理这些海量数据文件呢？来看看 `csv_reader()` 的全新定义：
+
+```python
+def csv_reader(file_name):
+    for row in open(file_name, "r"):
+        yield row
+
+```
+
+在这个版本中，你打开文件、遍历它，并逐行 `yield`（产出）内容。这段代码应该会产生以下输出，且不会报内存错误：
+
+```text
+Row count is 64186394
+
+```
+
+这里发生了什么？实际上，你已将 `csv_reader()` 转换成了一个生成器函数。该版本打开文件、遍历每一行，并产出每一行，而不是直接返回它。
+
+你还可以定义一个生成器表达式（也称为生成器推导式），其语法与列表推导式非常相似。通过这种方式，无需调用函数即可使用生成器：
+
+```python
+csv_gen = (row for row in open(file_name))
+
+```
+
+这是创建类似列表的 `csv_gen` 的一种更简洁的方式。稍后你将更深入地了解 Python 的 `yield` 语句。目前只需记住这一核心差异：
+
+* 使用 `yield` 会产生一个生成器对象。
+* 使用 `return` 则只会返回文件的第一行。
+
+---
+
+#### 示例 2：生成无限序列
+
+让我们换个方向，看看无限序列的生成。在 Python 中，若要获取有限序列，可以调用 `range()` 并在列表上下文中对其求值：
+
+```python
+>>> a = range(5)
+>>> list(a)
+[0, 1, 2, 3, 4]
+
+```
+
+然而，生成无限序列则需要使用生成器，因为计算机的内存是有限的：
+
+```python
+def infinite_sequence():
+    num = 0
+    while True:
+        yield num
+        num += 1
+
+```
+
+这段代码简短而优雅。首先，你初始化变量 `num` 并启动一个无限循环。接着，你立即 `yield num` 以捕获初始状态，这模拟了 `range()` 的行为。
+
+在 `yield` 之后，将 `num` 自增 1。如果用 `for` 循环来尝试运行它，你会发现它确实看起来无穷无尽：
+
+```python
+>>> for i in infinite_sequence():
+...     print(i, end=" ")
+...
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 [...] 6157818 6157819 6157820 6157821 6157822 6157823 6157824 6157825 6157826 6157827 6157828 6157829 6157830 6157831 6157832 6157833 6157834 6157835 6157836 6157837 6157838 6157839 6157840 6157841 6157842
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+KeyboardInterrupt
+
+```
+
+该程序将持续执行，直到你手动将其停止。
+
+除了使用 `for` 循环，你还可以直接在生成器对象上调用 `next()`。这在控制台中测试生成器时尤其有用：
+
+```python
+>>> gen = infinite_sequence()
+>>> next(gen)
+0
+>>> next(gen)
+1
+>>> next(gen)
+2
+>>> next(gen)
+3
+
+```
+
+在这里，你得到了一个名为 `gen` 的生成器，通过重复调用 `next()` 对其进行手动迭代。这可以作为一种绝佳的合理性检查（sanity check），以确保生成器产生了符合预期的输出。
+
+> **注意：** 当你使用 `next()` 时，Python 会在传入的参数对象上调用 `.__next__()`。这种参数化用法还支持一些特殊效果，但已经超出了本文的范围。试着修改传递给 `next()` 的参数，看看会发生什么！
+
+---
+
+#### 示例 3：检测回文数
+
+无限序列有多种用途，其中一个实际应用是构建回文检测器。回文检测器可以定位所有属于回文的字母或数字序列。回文是指正读和反读都相同的单词或数字，例如 121。首先，定义你的数字回文检测器：
+
+```python
+def is_palindrome(num):
+    # 跳过个位数输入
+    if num // 10 == 0:
+        return False
+    temp = num
+    reversed_num = 0
+
+    while temp != 0:
+        reversed_num = (reversed_num * 10) + (temp % 10)
+        temp = temp // 10
+
+    if num == reversed_num:
+        return num
+    else:
+        return False
+
+```
+
+不必过分纠结理解这段代码中的底层数学逻辑。只需注意该函数接收一个输入数字，将其反转，并检查反转后的数字是否与原数字相同。现在你可以使用无限序列生成器来获取所有数字回文的实时列表：
+
+```python
+>>> for i in infinite_sequence():
+...     pal = is_palindrome(i)
+...     if pal:
+...         print(i)
+...
+11
+22
+33
+[...]
+99799
+99899
+99999
+100001
+101101
+102201
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "<stdin>", line 5, in is_palindrome
+KeyboardInterrupt
+
+```
+
+在这种情况下，打印到控制台的数字只有那些正反读都完全相同的数值。
+
+> **注意：** 在实际生产中，你很少会自己编写无限序列生成器。`itertools` 模块通过 `itertools.count()` 提供了一个非常高效的无限序列生成器。
+
+现在你已经看过了无限序列生成器的简单用例，接下来让我们更深入地探究生成器的工作原理。
+
+### 理解生成器（Understanding Generators）
+
+到目前为止，你已经了解了创建生成器的两种主要方式：使用生成器函数和生成器表达式。你甚至可能对生成器的工作原理已经有了直观的理解。现在，让我们花一点时间把这些知识梳理得更明确一些。
+
+生成器函数看起来和运行起来都与常规函数非常相似，但有一个决定性的特征：生成器函数使用 Python 的 `yield` 关键字而不是 `return`。回顾一下你之前编写的生成器函数：
+
+```python
+def infinite_sequence():
+    num = 0
+    while True:
+        yield num
+        num += 1
+
+```
+
+除了 Python 的 `yield` 语句及其后面的代码之外，这看起来就是一个典型的函数定义。`yield` 指明了何时将值传回给调用者，但与 `return` 不同的是，你在那之后并不会退出该函数。
+
+相反，函数的内部状态会被记住。这样，当在生成器对象上调用 `next()` 时（无论是显式调用还是隐式在 `for` 循环中调用），先前产出（yielded）的变量 `num` 会递增，然后再一次被产出。由于生成器函数看起来与其他函数相似且运作方式也相近，你可以推断出，生成器表达式与 Python 中提供的其他推导式也非常相似。
+
+> **注意：** 你对 Python 的列表推导式、集合推导式和字典推导式感到生疏了吗？你可以查看《Using List Comprehensions Effectively》（高效使用列表推导式）。
+
+---
+
+### 使用生成器表达式构建生成器（Building Generators With Generator Expressions）
+
+与列表推导式类似，生成器表达式允许你仅用几行代码快速创建一个生成器对象。它们适用的场景也与列表推导式相同，但还有一个额外的好处：在进行迭代之前，你无需在内存中完整构建并保存整个对象。换句话说，使用生成器表达式时不会有内存负担。以这个将数字求平方的示例为例：
+
+```python
+>>> nums_squared_lc = [num**2 for num in range(5)]
+>>> nums_squared_gc = (num**2 for num in range(5))
+
+```
+
+`nums_squared_lc` 和 `nums_squared_gc` 看起来基本相同，但有一个关键差异。你能看出来吗？看看当你检查这些对象时会发生什么：
+
+```python
+>>> nums_squared_lc
+[0, 1, 4, 9, 16]
+>>> nums_squared_gc
+<generator object <genexpr> at 0x107fbbc78>
+
+```
+
+第一个对象使用方括号构建了一个列表，而第二个对象则使用圆括号创建了一个生成器表达式。输出证实了你创建的是一个生成器对象，它与列表截然不同。
+
+---
+
+### 生成器性能分析（Profiling Generator Performance）
+
+你之前了解到生成器是优化内存的极佳方式。虽然无限序列生成器是这种优化的一种极端示例，但让我们把刚才看到的数字平方示例扩大规模，并检查所生成对象的大小。你可以通过调用 `sys.getsizeof()` 来实现：
+
+```python
+>>> import sys
+>>> nums_squared_lc = [i ** 2 for i in range(10000)]
+>>> sys.getsizeof(nums_squared_lc)
+87624
+>>> nums_squared_gc = (i ** 2 for i in range(10000))
+>>> print(sys.getsizeof(nums_squared_gc))
+120
+
+```
+
+在这个例子中，从列表推导式得到的列表占用了 87,624 字节，而生成器对象仅占用 120 字节。这意味着该列表的大小是生成器对象的 700 多倍！
+
+不过，有一点需要牢记：如果列表的大小小于运行机器的可用内存，那么列表推导式的求值速度可能比等效的生成器表达式更快。为了探究这一点，我们对上述两个推导式的结果进行求和。你可以使用 `cProfile.run()` 生成分析报告：
+
+```text
+>>> import cProfile
+>>> cProfile.run('sum([i * 2 for i in range(10000)])')
+         5 function calls in 0.001 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001    0.001    0.001 <string>:1(<listcomp>)
+        1    0.000    0.000    0.001    0.001 <string>:1(<module>)
+        1    0.000    0.000    0.001    0.001 {built-in method builtins.exec}
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.sum}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+>>> cProfile.run('sum((i * 2 for i in range(10000)))')
+         10005 function calls in 0.003 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    10001    0.002    0.000    0.002    0.000 <string>:1(<genexpr>)
+        1    0.000    0.000    0.003    0.003 <string>:1(<module>)
+        1    0.000    0.000    0.003    0.003 {built-in method builtins.exec}
+        1    0.001    0.001    0.003    0.003 {built-in method builtins.sum}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+```
+
+在这里你可以看到，对列表推导式中的所有值求和所花费的时间，大约只有对生成器求和的三分之一。如果速度是首要考量而内存不是问题，那么列表推导式可能是更适合该任务的工具。
+
+> **注意：** 这些测量结果不仅适用于通过生成器表达式创建的对象，对于通过类似的生成器函数创建的对象同样适用，因为生成的生成器在本质上是等效的。
+
+请记住，列表推导式返回的是完整的列表，而生成器表达式返回的是生成器。无论生成器是通过函数还是表达式构建的，它们的工作机制都相同。使用表达式只是允许你在一行代码中定义简单的生成器，并在每次内部迭代的末尾隐式执行 `yield`。
+
+Python 的 `yield` 语句无疑是生成器所有功能赖以生存的核心纽带，接下来就让我们深入探讨 `yield` 在 Python 中是如何工作的。### 理解 Python 的 Yield 语句（Understanding the Python Yield Statement）
+
+总的来说，`yield` 是一个相当简单的语句。它的主要作用是以类似于 `return` 语句的方式控制生成器函数的执行流程。不过，正如前文简要提到的，Python 的 `yield` 语句其实另有玄机。
+
+当你调用生成器函数或使用生成器表达式时，会返回一个名为生成器的特殊迭代器。你可以将该生成器赋值给一个变量以便使用。当你在生成器上调用特殊方法（如 `next()`）时，函数内部的代码会执行到 `yield` 为止。
+
+当运行到 Python 的 `yield` 语句时，程序会暂停函数的执行，并将产出的值返回给调用者。（相比之下，`return` 会彻底终止函数的执行。）当函数被挂起时，该函数的状态会被完整保存下来。这包括生成器局部的所有变量绑定、指令指针、内部调用栈以及任何异常处理状态。
+
+这使得你只要调用生成器的某个方法，就能恢复函数的执行。通过这种方式，所有的函数求值都会从紧跟在 `yield` 之后的位置继续进行。你可以通过使用多个 Python `yield` 语句来观察其实际效果：
+
+```python
+>>> def multi_yield():
+...     yield_str = "This will print the first string"
+...     yield yield_str
+...     yield_str = "This will print the second string"
+...     yield yield_str
+...
+>>> multi_obj = multi_yield()
+>>> print(next(multi_obj))
+This will print the first string
+>>> print(next(multi_obj))
+This will print the second string
+>>> print(next(multi_obj))
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+
+```
+
+若想一步一步观察这种“挂起与恢复”的循环过程，可以在下方选择一个生成器并点击 `next()`。请注意执行在何处暂停，以及局部状态是如何在两次调用之间保留下来的。
+
+仔细观察最后一次对 `next()` 的调用。你可以看到执行报错并打印了回溯追踪（traceback）。这是因为生成器与所有迭代器一样，都是会被耗尽的。除非你的生成器是无限的，否则你只能对它遍历一次。一旦所有值都完成求值，迭代就会终止，`for` 循环也会退出。如果你使用的是 `next()`，则会收到一个显式的 `StopIteration` 异常。
+
+> **注意：** `StopIteration` 是一种正常的异常，抛出它是为了发出迭代器结束的信号。例如，`for` 循环就是围绕 `StopIteration` 构建的。你甚至可以使用 `while` 循环来实现属于你自己的 `for` 循环：
+> ```python
+> >>> letters = ["a", "b", "c", "y"]
+> >>> it = iter(letters)
+> >>> while True:
+> ...     try:
+> ...         letter = next(it)
+> ...     except StopIteration:
+> ...         break
+> ...     print(letter)
+> ...
+> a
+> b
+> c
+> y
+> 
+> ```
+> 
+> 
+
+你可以在 Python 官方异常文档中阅读更多关于 `StopIteration` 的内容。如需了解更多关于迭代的通用知识，请参阅《Python “for” Loops (Definite Iteration)》（Python “for” 循环（确定性迭代））以及《Python “while” Loops (Indefinite Iteration)》（Python “while” 循环（非确定性迭代））。
+
+`yield` 可以以多种方式用来控制生成器的执行流程。多个 Python `yield` 语句的使用方式，完全取决于你的创造力。
+
+### 使用生成器的高级方法（Using Advanced Generator Methods）
+
+你已经了解了生成器最常见的用法与构造方式，但还有一些技巧需要探讨。除了 `yield` 之外，生成器对象还可以使用以下方法：
+
+* `.send()`
+* `.throw()`
+* `.close()`
+
+#### 如何使用 `.send()`
+
+在接下来的部分中，你将构建一个运用这三种方法的程序。该程序将像之前一样打印数字回文，但会有一些调整。在遇到回文时，新程序会增加一位数，并从那里开始寻找下一个回文。你还将使用 `.throw()` 处理异常，并在达到给定的位数后使用 `.close()` 停止生成器。首先，让我们回顾一下回文检测器的代码：
+
+```python
+def is_palindrome(num):
+    # 跳过个位数输入
+    if num // 10 == 0:
+        return False
+    temp = num
+    reversed_num = 0
+
+    while temp != 0:
+        reversed_num = (reversed_num * 10) + (temp % 10)
+        temp = temp // 10
+
+    if num == reversed_num:
+        return True
+    else:
+        return False
+
+```
+
+这与你之前看到的代码相同，只是现在程序严格返回 `True` 或 `False`。你还需要修改最初的无限序列生成器，如下所示：
+
+```python
+def infinite_palindromes():
+    num = 0
+    while True:
+        if is_palindrome(num):
+            i = (yield num)
+            if i is not None:
+                num = i
+        num += 1
+
+```
+
+这里有很多变动！首先映入眼帘的是第 5 行的 `i = (yield num)`。虽然你之前学到 `yield` 是一个语句，但这并不是全部真相。
+
+从 Python 2.5 开始（该版本引入了你现在正在学习的这些方法），`yield` 变成了一个表达式，而不再仅仅是一个语句。当然，你仍然可以将其用作语句。但现在，你也可以像上面的代码块中那样使用它，其中 `i` 获取产出表达式的值。这允许你对产出的值进行操作。更重要的是，它允许你向生成器 `.send()`（发送）一个值。当执行在 `yield` 之后恢复时，`i` 将获取发送过来的值。
+
+你还会检查 `i` 是否不为 `None`，这会在生成器对象上调用 `next()` 时发生。（当你使用 `for` 循环进行迭代时也会发生这种情况。）如果 `i` 有值，那么你用新值更新 `num`。但无论 `i` 是否包含值，你随后都会将 `num` 递增并再次开始循环。
+
+现在，看一下主函数代码，它将带有更高一位数的最小数字发送回生成器。例如，如果回文数是 121，那么它将 `.send()` 1000：
+
+```python
+pal_gen = infinite_palindromes()
+for i in pal_gen:
+    digits = len(str(i))
+    pal_gen.send(10 ** (digits))
+
+```
+
+通过这段代码，你创建了生成器对象并对其进行迭代。程序仅在找到回文时才产出一个值。它使用 `len()` 确定该回文中的位数。接着，它将 `10 ** digits` 发送给生成器。这会将执行带回生成器逻辑中，并将 `10 ** digits` 赋值给 `i`。由于 `i` 现在有了值，程序会更新 `num`、执行递增，并再次检查回文。
+
+一旦代码找到并产出另一个回文，你将通过 `for` 循环进行迭代。这与使用 `next()` 迭代相同。生成器同样从第 5 行的 `i = (yield num)` 处恢复执行。然而，现在 `i` 为 `None`，因为你没有显式发送值。
+
+你在这里创建的是一个协程（coroutine），即一个可以向其中传递数据的生成器函数。这对于构建数据管道非常有用，但正如你很快就会看到的，构建管道并不一定非要使用它们。（如果你想更深入研究，那么这门关于协程与并发的课程是现有的最详尽教程之一。）
+
+现在你已经了解了 `.send()`，让我们来看看 `.throw()`。
+
+---
+
+#### 如何使用 `.throw()`
+
+`.throw()` 允许你在生成器内部引发异常。在下面的示例中，你在第 6 行抛出异常。一旦 `digits` 达到 5，此代码将抛出 `ValueError`：
+
+```python
+pal_gen = infinite_palindromes()
+for i in pal_gen:
+    print(i)
+    digits = len(str(i))
+    if digits == 5:
+        pal_gen.throw(ValueError("We don't like large palindromes"))
+    pal_gen.send(10 ** (digits))
+
+```
+
+这与前面的代码相同，但现在你会检查 `digits` 是否等于 5。如果是，你将 `.throw()` 一个 `ValueError`。为了确认这按预期工作，请看代码的输出：
+
+```text
+11
+111
+1111
+10101
+Traceback (most recent call last):
+  File "advanced_gen.py", line 47, in <module>
+    main()
+  File "advanced_gen.py", line 41, in main
+    pal_gen.throw(ValueError("We don't like large palindromes"))
+  File "advanced_gen.py", line 26, in infinite_palindromes
+    i = (yield num)
+ValueError: We don't like large palindromes
+
+```
+
+`.throw()` 在你需要捕获异常的任何场景下都非常有用。在这个示例中，你使用 `.throw()` 控制了何时停止遍历生成器。你可以使用 `.close()` 更优雅地完成此操作。
+
+---
+
+#### 如何使用 `.close()`
+
+顾名思义，`.close()` 允许你停止一个生成器。在控制无限序列生成器时，这尤其方便。让我们通过将 `.throw()` 更改为 `.close()` 来更新上述代码以停止迭代：
+
+```python
+pal_gen = infinite_palindromes()
+for i in pal_gen:
+    print(i)
+    digits = len(str(i))
+    if digits == 5:
+        pal_gen.close()
+    pal_gen.send(10 ** (digits))
+
+```
+
+在第 6 行中，你使用的是 `.close()`，而不是调用 `.throw()`。使用 `.close()` 的优势在于它会引发 `StopIteration`，这是一种用于指示有限迭代器结束的异常：
+
+```text
+11
+111
+1111
+10101
+Traceback (most recent call last):
+  File "advanced_gen.py", line 46, in <module>
+    main()
+  File "advanced_gen.py", line 42, in main
+    pal_gen.send(10 ** (digits))
+StopIteration
+
+```
+
+现在你已经对生成器附带的这些特殊方法有了更多了解，接下来让我们探讨如何使用生成器来构建数据管道（data pipelines）。
+
+### 使用生成器构建数据管道（Creating Data Pipelines With Generators）
+
+数据管道允许你将代码串联起来，以处理大型数据集或数据流，而不会撑爆机器的内存。假设你有一个大型 CSV 文件，前几行内容如下：
+
+```csv
+permalink,company,numEmps,category,city,state,fundedDate,raisedAmt,raisedCurrency,round
+digg,Digg,60,web,San Francisco,CA,1-Dec-06,8500000,USD,b
+digg,Digg,60,web,San Francisco,CA,1-Oct-05,2800000,USD,a
+facebook,Facebook,450,web,Palo Alto,CA,1-Sep-04,500000,USD,angel
+facebook,Facebook,450,web,Palo Alto,CA,1-May-05,12700000,USD,a
+photobucket,Photobucket,60,web,Palo Alto,CA,1-Mar-05,3000000,USD,a
+
+```
+
+此示例摘自 TechCrunch 美国大陆数据集（TechCrunch Continental USA set），该数据集记录了美国各类初创公司的融资轮次和融资金额。点击下方链接下载数据集：
+
+> **下载数据集：** 点击此处下载本教程中用于学习 Python 生成器和 `yield` 的数据集。
+
+现在是用 Python 进行处理的时候了！为了演示如何利用生成器构建管道，你将对该文件进行分析，以计算数据集中所有 A 轮融资的总额与平均值。
+
+我们来构思一个处理策略：
+
+1. 读取文件的每一行。
+2. 将每一行分割为一个值列表。
+3. 提取列名。
+4. 使用列名和值列表构建字典。
+5. 过滤掉你不感兴趣的融资轮次。
+6. 计算你感兴趣的轮次的总值和平均值。
+
+通常你可以使用像 `pandas` 这样的第三方包来完成此操作，但仅靠几个生成器同样能够实现该功能。首先，使用生成器表达式读取文件中的每一行：
+
+```python
+file_name = "techcrunch.csv"
+lines = (line for line in open(file_name))
+
+```
+
+接着，结合上一个表达式，再使用一个生成器表达式将每一行分割为一个列表：
+
+```python
+list_line = (s.rstrip().split(",") for s in lines)
+
+```
+
+在这里，你创建了生成器 `list_line`，它会遍历第一个生成器 `lines`。这是设计生成器管道时的一种常用模式。接下来，从 `techcrunch.csv` 中提取列名。由于列名往往构成 CSV 文件的第一行，你可以通过一次简短的 `next()` 调用来获取：
+
+```python
+cols = next(list_line)
+
+```
+
+这次对 `next()` 的调用使 `list_line` 生成器上的迭代器推进了一次。将它们整合在一起，代码大致如下：
+
+```python
+file_name = "techcrunch.csv"
+lines = (line for line in open(file_name))
+list_line = (s.rstrip().split(",") for s in lines)
+cols = next(list_line)
+
+```
+
+总结一下：首先，创建一个生成器表达式 `lines` 来逐行产出文件内容。接着，在另一个名为 `list_line` 的生成器表达式定义中遍历该生成器，把每一行转换为一个值列表。然后，使用 `next()` 仅推进一次 `list_line` 的迭代，从而获取 CSV 文件的列名列表。
+
+> **注意：** 小心行末的换行符！这段代码在 `list_line` 生成器表达式中利用了 `.rstrip()`，以确保去除 CSV 文件中可能存在的尾随换行符。
+
+为了便于对数据进行过滤和运算，你将创建以 CSV 列名为键的字典：
+
+```python
+company_dicts = (dict(zip(cols, data)) for data in list_line)
+
+```
+
+这个生成器表达式遍历由 `list_line` 产生的值列表，然后使用 `zip()` 和 `dict()` 如上所述创建字典。现在，使用第四个生成器过滤出你所需的融资轮次，并提取 `raisedAmt`：
+
+```python
+funding = (
+    int(company_dict["raisedAmt"])
+    for company_dict in company_dicts
+    if company_dict["round"] == "a"
+)
+
+```
+
+在这段代码片段中，你的生成器表达式遍历 `company_dicts` 的结果，并获取任何 `round` 键为 `"a"` 的 `company_dict` 中的 `raisedAmt`。
+
+请记住，生成器表达式并不会一次性遍历所有这些数据。事实上，在你真正使用 `for` 循环或可作用于可迭代对象的函数（如 `sum()`）之前，它根本不会执行任何迭代。现在，调用 `sum()` 来触发生成器的遍历：
+
+```python
+total_series_a = sum(funding)
+
+```
+
+将所有部分整合后，完整的脚本如下：
+
+```python
+file_name = "techcrunch.csv"
+lines = (line for line in open(file_name))
+list_line = (s.rstrip().split(",") for s in lines)
+cols = next(list_line)
+company_dicts = (dict(zip(cols, data)) for data in list_line)
+funding = (
+    int(company_dict["raisedAmt"])
+    for company_dict in company_dicts
+    if company_dict["round"] == "a"
+)
+total_series_a = sum(funding)
+print(f"Total series A fundraising: ${total_series_a}")
+
+```
+
+该脚本将你构建的每一个生成器组合在一起，协同作为一个大型数据管道运行。逐行拆解如下：
+
+* **第 2 行**：读入文件的每一行。
+* **第 3 行**：将每一行拆分为多个值，并放入列表中。
+* **第 4 行**：使用 `next()` 将列名存储在一个列表中。
+* **第 5 行**：创建字典，并通过 `zip()` 调用将它们结合：
+* 键为来自第 4 行的列名 `cols`。
+* 值为来自第 3 行创建的列表形式的数据行。
+
+
+* **第 6 行**：获取每家公司的 A 轮融资金额，同时过滤掉任何其他轮次的金额。
+* **第 11 行**：通过调用 `sum()` 开始迭代过程，计算 CSV 中所有 A 轮融资的总金额。
+
+当在 `techcrunch.csv` 上运行这段代码时，你应该会得到 A 轮融资筹集总额为 **$4,380,015,000**。
+
+> **注意：** 本教程中开发的 CSV 文件处理方法对于理解如何使用生成器和 Python 的 `yield` 语句非常重要。但在 Python 中实际处理 CSV 文件时，应优先使用 Python 标准库内置的 `csv` 模块。该模块解析逗号分隔文件的能力更鲁棒，并且拥有经过优化的处理方法。
+
+若想进一步探索，试着计算 A 轮融资中每家公司的平均筹资额。这稍微有点难度，这里提供几个提示：
+
+* 生成器在完全遍历后会被耗尽。
+* 你仍然需要用到 `sum()` 函数。
+
+
