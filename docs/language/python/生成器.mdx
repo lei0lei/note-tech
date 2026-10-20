@@ -6,7 +6,7 @@ sidebar_position: 9
 
 ## [生成器](https://realpython.com/introduction-to-python-generators/)
 
-### 使用生成器（Using Generators）
+### 使用生成器
 
 生成器函数由 PEP 255 引入，是一类特殊的函数，用于返回惰性迭代器（lazy iterator）。这些对象可以像列表一样被遍历循环。然而与列表不同的是，惰性迭代器不会将内容存储在内存中。
 
@@ -199,7 +199,7 @@ KeyboardInterrupt
 
 现在你已经看过了无限序列生成器的简单用例，接下来让我们更深入地探究生成器的工作原理。
 
-### 理解生成器（Understanding Generators）
+### 理解生成器
 
 到目前为止，你已经了解了创建生成器的两种主要方式：使用生成器函数和生成器表达式。你甚至可能对生成器的工作原理已经有了直观的理解。现在，让我们花一点时间把这些知识梳理得更明确一些。
 
@@ -218,11 +218,9 @@ def infinite_sequence():
 
 相反，函数的内部状态会被记住。这样，当在生成器对象上调用 `next()` 时（无论是显式调用还是隐式在 `for` 循环中调用），先前产出（yielded）的变量 `num` 会递增，然后再一次被产出。由于生成器函数看起来与其他函数相似且运作方式也相近，你可以推断出，生成器表达式与 Python 中提供的其他推导式也非常相似。
 
-> **注意：** 你对 Python 的列表推导式、集合推导式和字典推导式感到生疏了吗？你可以查看《Using List Comprehensions Effectively》（高效使用列表推导式）。
-
 ---
 
-### 使用生成器表达式构建生成器（Building Generators With Generator Expressions）
+### 使用生成器表达式构建生成器
 
 与列表推导式类似，生成器表达式允许你仅用几行代码快速创建一个生成器对象。它们适用的场景也与列表推导式相同，但还有一个额外的好处：在进行迭代之前，你无需在内存中完整构建并保存整个对象。换句话说，使用生成器表达式时不会有内存负担。以这个将数字求平方的示例为例：
 
@@ -246,7 +244,7 @@ def infinite_sequence():
 
 ---
 
-### 生成器性能分析（Profiling Generator Performance）
+### 生成器性能分析
 
 你之前了解到生成器是优化内存的极佳方式。虽然无限序列生成器是这种优化的一种极端示例，但让我们把刚才看到的数字平方示例扩大规模，并检查所生成对象的大小。你可以通过调用 `sys.getsizeof()` 来实现：
 
@@ -299,7 +297,9 @@ def infinite_sequence():
 
 请记住，列表推导式返回的是完整的列表，而生成器表达式返回的是生成器。无论生成器是通过函数还是表达式构建的，它们的工作机制都相同。使用表达式只是允许你在一行代码中定义简单的生成器，并在每次内部迭代的末尾隐式执行 `yield`。
 
-Python 的 `yield` 语句无疑是生成器所有功能赖以生存的核心纽带，接下来就让我们深入探讨 `yield` 在 Python 中是如何工作的。### 理解 Python 的 Yield 语句（Understanding the Python Yield Statement）
+Python 的 `yield` 语句无疑是生成器所有功能赖以生存的核心纽带，接下来就让我们深入探讨 `yield` 在 Python 中是如何工作的。
+
+### 理解 Python 的 Yield 语句
 
 总的来说，`yield` 是一个相当简单的语句。它的主要作用是以类似于 `return` 语句的方式控制生成器函数的执行流程。不过，正如前文简要提到的，Python 的 `yield` 语句其实另有玄机。
 
@@ -328,7 +328,6 @@ StopIteration
 
 ```
 
-若想一步一步观察这种“挂起与恢复”的循环过程，可以在下方选择一个生成器并点击 `next()`。请注意执行在何处暂停，以及局部状态是如何在两次调用之间保留下来的。
 
 仔细观察最后一次对 `next()` 的调用。你可以看到执行报错并打印了回溯追踪（traceback）。这是因为生成器与所有迭代器一样，都是会被耗尽的。除非你的生成器是无限的，否则你只能对它遍历一次。一旦所有值都完成求值，迭代就会终止，`for` 循环也会退出。如果你使用的是 `next()`，则会收到一个显式的 `StopIteration` 异常。
 
@@ -352,11 +351,10 @@ StopIteration
 > 
 > 
 
-你可以在 Python 官方异常文档中阅读更多关于 `StopIteration` 的内容。如需了解更多关于迭代的通用知识，请参阅《Python “for” Loops (Definite Iteration)》（Python “for” 循环（确定性迭代））以及《Python “while” Loops (Indefinite Iteration)》（Python “while” 循环（非确定性迭代））。
 
 `yield` 可以以多种方式用来控制生成器的执行流程。多个 Python `yield` 语句的使用方式，完全取决于你的创造力。
 
-### 使用生成器的高级方法（Using Advanced Generator Methods）
+### 使用生成器的高级方法
 
 你已经了解了生成器最常见的用法与构造方式，但还有一些技巧需要探讨。除了 `yield` 之外，生成器对象还可以使用以下方法：
 
@@ -497,7 +495,7 @@ StopIteration
 
 现在你已经对生成器附带的这些特殊方法有了更多了解，接下来让我们探讨如何使用生成器来构建数据管道（data pipelines）。
 
-### 使用生成器构建数据管道（Creating Data Pipelines With Generators）
+### 使用生成器构建数据管道
 
 数据管道允许你将代码串联起来，以处理大型数据集或数据流，而不会撑爆机器的内存。假设你有一个大型 CSV 文件，前几行内容如下：
 
@@ -512,8 +510,6 @@ photobucket,Photobucket,60,web,Palo Alto,CA,1-Mar-05,3000000,USD,a
 ```
 
 此示例摘自 TechCrunch 美国大陆数据集（TechCrunch Continental USA set），该数据集记录了美国各类初创公司的融资轮次和融资金额。点击下方链接下载数据集：
-
-> **下载数据集：** 点击此处下载本教程中用于学习 Python 生成器和 `yield` 的数据集。
 
 现在是用 Python 进行处理的时候了！为了演示如何利用生成器构建管道，你将对该文件进行分析，以计算数据集中所有 A 轮融资的总额与平均值。
 
