@@ -24,7 +24,7 @@ sidebar_position: 12
 
 这意味着函数可以像 `str`、`int`、`float`、`list` 等任何其他对象一样被传递和作为参数使用。来看下面这三个函数：
 
-**文件名：`greeters.py**`
+**文件名：`greeters.py`**
 
 ```python
 def say_hello(name):
@@ -54,4 +54,588 @@ def greet_bob(greeter_func):
 
 这是一个非常重要的区别，也是理解函数作为一等对象如何运作的关键所在：不带括号的函数名是对函数的引用，而带有末尾括号的函数名则是调用该函数并获取其返回值。
 
----
+## 内部函数
+
+在 Python 中，你可以在函数内部定义其他函数，这种函数被称为内部函数。下面是一个包含两个内部函数的示例：
+
+**文件名：`inner_functions.py`**
+
+```python
+def parent():
+    print("Printing from parent()")
+
+    def first_child():
+        print("Printing from first_child()")
+
+    def second_child():
+        print("Printing from second_child()")
+
+    second_child()
+    first_child()
+
+```
+
+当你调用 `parent()` 函数时会发生什么？花一分钟思考一下，然后在交互模式下运行 `inner_functions.py` 试一试。输出如下：
+
+```python
+>>> parent()
+Printing from parent()
+Printing from second_child()
+Printing from first_child()
+
+```
+
+注意，内部函数的定义顺序无关紧要。与其他函数一样，只有在内部函数被执行时，打印操作才会发生。
+
+此外，在父函数被调用之前，内部函数甚至尚未被定义。它们的作用域仅限于 `parent()` 内部，这意味着它们仅作为局部变量存在于 `parent()` 函数内。如果尝试直接调用 `first_child()`，你将得到一个错误：
+
+```python
+>>> first_child()
+Traceback (most recent call last):
+  ...
+NameError: name 'first_child' is not defined
+
+```
+
+每当你调用 `parent()` 时，内部函数 `first_child()` 和 `second_child()` 也会被调用。但由于其局部作用域的限制，它们在 `parent()` 函数外部是无法访问的。
+
+## 函数作为返回值
+
+Python 还允许你从函数中返回另一个函数。在接下来的示例中，我们重写 `parent()` 函数以返回其中一个内部函数：
+
+**文件名：`inner_functions.py`**
+
+```python
+def parent(num):
+    def first_child():
+        return "Hi, I'm Elias"
+
+    def second_child():
+        return "Call me Ester"
+
+    if num == 1:
+        return first_child
+    else:
+        return second_child
+
+```
+
+请注意，在返回 `first_child` 时并没有带括号。回顾一下之前的知识，这意味着你返回的是对函数 `first_child` 的引用。相比之下，带括号的 `first_child()` 则表示执行该函数后的返回值。在下面的示例中可以看到这种效果：
+
+```python
+>>> first = parent(1)
+>>> second = parent(2)
+>>> first
+<function parent.<locals>.first_child at 0x7f599f1e2e18>
+>>> second
+<function parent.<locals>.second_child at 0x7f599dad5268>
+
+```
+
+这段看似神秘的输出表明：变量 `first` 指向了 `parent()` 内部的局部函数 `first_child()`，而 `second` 则指向了 `second_child()`。
+
+尽管你无法直接访问它们所指向的函数，但现在你可以像使用普通函数一样去使用 `first` 和 `second`：
+
+```python
+>>> first()
+"Hi, I'm Elias"
+>>> second()
+'Call me Ester'
+
+```
+
+你能够认出这些返回值正是你在 `parent()` 内部定义的那些内部函数的输出。
+
+最后请注意，在之前的例子中，你是在父函数内部执行了内部函数（例如 `first_child()`）；而在最后一个例子中，你在返回内部函数（例如 `first_child`）时并没有加括号。通过这种方式，你获取到了每个函数的引用，以便在将来需要时再进行调用。
+
+## Python 中的简单装饰器
+
+现在你已经了解了函数在 Python 中与其他对象毫无二致，可以进一步来见识一下 Python 装饰器这一“神奇之物”了。我们先从一个例子开始：
+
+**文件名：`hello_decorator.py`**
+
+```python
+def decorator(func):
+    def wrapper():
+        print("Something is happening before the function is called.")
+        func()
+        print("Something is happening after the function is called.")
+    return wrapper
+
+def say_whee():
+    print("Whee!")
+
+say_whee = decorator(say_whee)
+
+```
+
+在这里，你定义了两个常规函数 `decorator()` 和 `say_whee()`，以及一个内部函数 `wrapper()`。接着，你通过将 `decorator()` 应用于原始的 `say_whee()`，重新定义了 `say_whee()`。
+
+你能猜出调用 `say_whee()` 时会发生什么吗？在交互式解释器（REPL）中试一下。除了使用 `-i` 参数运行文件外，你也可以手动导入该函数：
+
+```python
+>>> from hello_decorator import say_whee
+>>> say_whee()
+Something is happening before the function is called.
+Whee!
+Something is happening after the function is called.
+
+```
+
+要理解这里究竟发生了什么，可以回顾之前的几个例子——这里综合运用了你前面学到的所有知识点。
+
+所谓的“装饰”发生在下面这行代码中：
+
+```python
+say_whee = decorator(say_whee)
+
+```
+
+实际上，`say_whee` 这个名字现在指向了内部函数 `wrapper()`。记住，当你调用 `decorator(say_whee)` 时，它返回的是作为函数对象的 `wrapper`：
+
+```python
+>>> say_whee
+<function decorator.<locals>.wrapper at 0x7f3c5dfd42f0>
+
+```
+
+然而，`wrapper()` 内部以形参 `func` 的形式保留了对原始 `say_whee()` 的引用，并在两次 `print()` 调用之间执行了该函数。
+
+简而言之，**装饰器就是对一个函数进行包装，以此来修改它的行为。**
+
+为了动态观察这两个阶段的完整流程，你可以逐步浏览下面的组件：第一个标签页展示了 Python 执行装饰语句 `say_whee = decorator(say_whee)` 时的过程；第二个标签页展示了随后你调用 `say_whee()` 时所发生的事情。
+
+在继续之前，我们来看第二个例子。由于 `wrapper()` 本身就是一个普通的 Python 函数，因此装饰器修改函数行为的方式可以是动态变化的。为了不打扰邻居，下面的示例只会在白天运行被装饰的代码：
+
+**文件名：`quiet_night.py`**
+
+```python
+from datetime import datetime
+
+def not_during_the_night(func):
+    def wrapper():
+        if 7 <= datetime.now().hour < 22:
+            func()
+        else:
+            pass  # 嘘，邻居们已经睡了
+    return wrapper
+
+def say_whee():
+    print("Whee!")
+
+say_whee = not_during_the_night(say_whee)
+
+```
+
+如果你在就寝时间之后尝试调用 `say_whee()`，什么都不会发生：
+
+```python
+>>> from quiet_night import say_whee
+>>> say_whee()
+
+```
+
+此时，`say_whee()` 没有输出任何内容。这是因为 `if` 条件判断未通过，所以包装函数 `wrapper` 没有调用 `func()`（即原本的 `say_whee()`）。
+
+
+## 添加语法糖
+
+回顾一下你在 `hello_decorator.py` 中编写的代码。之前装饰 `say_whee()` 的方式显得有些笨拙：首先，你不得不在代码中重复输入三次 `say_whee` 这个名字；其次，装饰代码被隐藏在了函数定义的下方。
+
+作为替代方案，Python 允许你使用 `@` 符号以一种更简洁的方式使用装饰器，这种写法有时也被称为“馅饼语法”（pie syntax）。下面的示例与第一个装饰器示例实现的功能完全一致：
+
+**文件名：`hello_decorator.py`**
+
+```python
+def decorator(func):
+    def wrapper():
+        print("Something is happening before the function is called.")
+        func()
+        print("Something is happening after the function is called.")
+    return wrapper
+
+@decorator
+def say_whee():
+    print("Whee!")
+
+```
+
+因此，`@decorator` 只是 `say_whee = decorator(say_whee)` 的一种简短写法，它是你向函数应用装饰器的标准方式。
+
+
+## 装饰带有参数的函数
+
+假设你有一个接收参数的函数，你还能对它应用装饰器吗？动手试一下：
+
+```python
+>>> from decorators import do_twice
+>>> @do_twice
+... def greet(name):
+...     print(f"Hello {name}")
+... 
+
+```
+
+现在你把 `@do_twice` 应用到了需要接收 `name` 参数的 `greet()` 函数上。不幸的是，调用该函数会引发错误：
+
+```python
+>>> greet(name="World")
+Traceback (most recent call last):
+  ...
+TypeError: do_twice.<locals>.wrapper_do_twice() got an unexpected keyword argument 'name'
+
+```
+
+问题出在内部函数 `wrapper_do_twice()` 本身不接收任何参数，但你却向它传递了 `name="World"`。你或许可以通过让 `wrapper_do_twice()` 接收一个参数来修复它，但这样一来，它就无法再适用于之前创建的无参函数 `say_whee()` 了。
+
+解决方案是在内部包装函数中使用 `*args` 和 `**kwargs`。这样，它就能接收任意数量的位置参数和关键字参数。将 `decorators.py` 改写如下：
+
+**文件名：`decorators.py`**
+
+```python
+def do_twice(func):
+    def wrapper_do_twice(*args, **kwargs):
+        func(*args, **kwargs)
+        func(*args, **kwargs)
+    return wrapper_do_twice
+
+```
+
+现在内部函数 `wrapper_do_twice()` 可以接收任意数量的参数，并将它们原样传递给被装饰的函数。此时，`say_whee()` 和 `greet()` 都可以正常工作了。打开一个全新的 REPL 进行测试：
+
+```python
+>>> from decorators import do_twice
+>>> @do_twice
+... def say_whee():
+...     print("Whee!")
+... 
+>>> say_whee()
+Whee!
+Whee!
+>>> @do_twice
+... def greet(name):
+...     print(f"Hello {name}")
+... 
+>>> greet("World")
+Hello World
+Hello World
+
+```
+
+你使用了同一个 `@do_twice` 装饰器装饰了两个截然不同的函数。这展示了装饰器的强大之处：它们可以为许多不同的函数赋予通用且可复用的行为。
+
+
+## 从被装饰的函数中返回值
+
+被装饰函数的返回值会怎样呢？其实这取决于装饰器自身如何处理。假设你像下面这样装饰一个简单的函数：
+
+```python
+>>> from decorators import do_twice
+>>> @do_twice
+... def return_greeting(name):
+...     print("Creating greeting")
+...     return f"Hi {name}"
+... 
+
+```
+
+试着调用它：
+
+```python
+>>> hi_adam = return_greeting("Adam")
+Creating greeting
+Creating greeting
+>>> print(hi_adam)
+None
+
+```
+
+糟糕，你的装饰器把函数的返回值“吃”掉了。
+
+因为 `wrapper_do_twice()` 并没有显式地返回任何值，所以调用 `return_greeting("Adam")` 最终返回了 `None`。
+
+为了解决这个问题，你需要确保包装函数能够返回被装饰函数的返回值。修改你的 `decorators.py` 文件：
+
+**文件名：`decorators.py**`
+
+```python
+def do_twice(func):
+    def wrapper_do_twice(*args, **kwargs):
+        func(*args, **kwargs)
+        return func(*args, **kwargs)
+    return wrapper_do_twice
+
+```
+
+现在你返回了被装饰函数最后一次调用的返回值。再次查看刚才的示例：
+
+```python
+>>> from decorators import do_twice
+>>> @do_twice
+... def return_greeting(name):
+...     print("Creating greeting")
+...     return f"Hi {name}"
+... 
+>>> return_greeting("Adam")
+Creating greeting
+Creating greeting
+'Hi Adam'
+
+```
+
+这次，`return_greeting()` 成功返回了问候语 `'Hi Adam'`。
+
+## 找回自我
+
+在 Python 中工作时（尤其是在交互式终端中），一个极大的便利就是它强大的自省（introspection）能力。自省是指对象在运行时获知自身属性的能力。例如，一个函数知道自己的名称以及文档字符串（docstring）：
+
+```python
+>>> print
+<built-in function print>
+>>> print.__name__
+'print'
+>>> help(print)
+Help on built-in function print in module builtins:
+
+print(...)
+    <完整的帮助信息>
+
+```
+
+当你查看 `print()` 时，可以看到它的名称和帮助文档。自省机制对你自己定义的函数同样有效：
+
+```python
+>>> say_whee
+<function do_twice.<locals>.wrapper_do_twice at 0x7f43700e52f0>
+>>> say_whee.__name__
+'wrapper_do_twice'
+>>> help(say_whee)
+Help on function wrapper_do_twice in module decorators:
+
+wrapper_do_twice(*args, **kwargs)
+
+```
+
+然而，在被装饰之后，`say_whee()` 对自己的身份感到十分困惑。它现在报告自己是 `do_twice()` 装饰器内部的 `wrapper_do_twice()` 内部函数。虽然技术上确实如此，但这并不是一个很有用的信息。
+
+为了修复这个问题，装饰器应当使用 `@functools.wraps` 装饰器，它会保留原始函数的相关元信息。再次更新 `decorators.py`：
+
+**文件名：`decorators.py**`
+
+```python
+import functools
+
+def do_twice(func):
+    @functools.wraps(func)
+    def wrapper_do_twice(*args, **kwargs):
+        func(*args, **kwargs)
+        return func(*args, **kwargs)
+    return wrapper_do_twice
+
+```
+
+你不需要对被装饰的 `say_whee()` 函数做任何修改，但你需要重启 REPL 来查看改动效果：
+
+```python
+>>> from decorators import do_twice
+>>> @do_twice
+... def say_whee():
+...     print("Whee!")
+... 
+>>> say_whee
+<function say_whee at 0x7ff79a60f2f0>
+>>> say_whee.__name__
+'say_whee'
+>>> help(say_whee)
+Help on function say_whee in module __main__:
+
+say_whee()
+
+```
+
+这样就好多了！现在 `say_whee()` 在被装饰之后依然能“认出自己”。
+
+> **注意：** `@functools.wraps` 装饰器内部使用 `functools.update_wrapper()` 来更新用于自省的特殊属性，例如 `__name__` 和 `__doc__`。
+
+现在你已经掌握了创建装饰器的基本方法。不过，`@do_twice` 并不是一个非常实用的装饰器，它的应用场景并不多。在接下来的小节中，你将实现几个更贴近实战的装饰器，它们将综合运用你目前学到的知识，并且可以直接应用到你自己的代码中。
+
+## 几个实际应用示例
+
+现在我们来看几个更实用的装饰器示例。你会发现它们基本都遵循前面所学的通用模式：
+
+```python
+import functools
+
+def decorator(func):
+    @functools.wraps(func)
+    def wrapper_decorator(*args, **kwargs):
+        # 在目标函数调用前执行某些操作
+        value = func(*args, **kwargs)
+        # 在目标函数调用后执行某些操作
+        return value
+    return wrapper_decorator
+
+```
+
+这个模板是构建更复杂装饰器的通用样板代码（boilerplate）。
+
+我们将继续把编写的装饰器保存在 `decorators.py` 文件中。
+
+> **获取代码：** 点击此处下载免费示例代码，了解如何创建和使用 Python 装饰器。
+
+## 函数耗时统计
+
+首先我们来创建一个 `@timer` 装饰器。它会测量函数的执行时间，并将耗时打印到控制台。代码如下：
+
+**文件名：`decorators.py`**
+
+```python
+import functools
+import time
+# ...
+
+def timer(func):
+    """打印被装饰函数的运行时间"""
+    @functools.wraps(func)
+    def wrapper_timer(*args, **kwargs):
+        start_time = time.perf_counter()
+        value = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        run_time = end_time - start_time
+        print(f"Finished {func.__name__}() in {run_time:.4f} secs")
+        return value
+    return wrapper_timer
+
+```
+
+这个装饰器的工作原理是：在第 10 行记录函数开始运行前的时间戳，并在第 12 行记录函数执行完毕后的时间戳。两者的差值即为函数的运行时间，计算于第 13 行。这里使用了 `time.perf_counter()`，它非常适合用来测量时间间隔。
+
+接下来，添加一个耗时函数 `waste_some_time()` 作为示例，用于测试 `@timer`。下面是一些耗时测试结果：
+
+```python
+>>> from decorators import timer
+>>> @timer
+... def waste_some_time(num_times):
+...     for _ in range(num_times):
+...         sum([number**2 for number in range(10_000)])
+... 
+>>> waste_some_time(1)
+Finished waste_some_time() in 0.0010 secs
+>>> waste_some_time(999)
+Finished waste_some_time() in 0.3260 secs
+
+```
+
+你可以亲自运行一下这段代码。逐行阅读 `@timer` 的定义，确保理解它的运作机制。如果一时没有完全消化也不用担心，装饰器属于进阶概念，不妨先放一放，或者在纸上画出程序的调用执行流程图。
+
+> **注意：** 如果你只是想大致了解函数的运行耗时，`@timer` 装饰器非常方便。但如果需要对代码进行更精准的性能分析与基准测试，应改用标准库中的 `timeit` 模块。它会临时关闭垃圾回收机制，并通过多次循环测试来消除短暂函数调用中的系统噪音干扰。
+> 如果你对深入学习函数耗时测量感兴趣，可以参考文章《Python 计时器函数：监控代码的 3 种方法》（Python Timer Functions: Three Ways to Monitor Your Code）。
+
+## 代码调试
+
+下面的 `@debug` 装饰器会在每次调用函数时，打印出传入该函数的实参以及最终的返回值：
+
+**文件名：`decorators.py**`
+
+```python
+import functools
+# ...
+
+def debug(func):
+    """打印函数签名和返回值"""
+    @functools.wraps(func)
+    def wrapper_debug(*args, **kwargs):
+        args_repr = [repr(a) for a in args]
+        kwargs_repr = [f"{k}={repr(v)}" for k, v in kwargs.items()]
+        signature = ", ".join(args_repr + kwargs_repr)
+        print(f"Calling {func.__name__}({signature})")
+        value = func(*args, **kwargs)
+        print(f"{func.__name__}() returned {repr(value)}")
+        return value
+    return wrapper_debug
+
+```
+
+函数调用签名的拼接逻辑如下：
+
+* **第 9 行：** 构造位置参数列表。使用 `repr()` 生成每个参数清晰、规范的字符串表示。
+* **第 10 行：** 构造关键字参数列表。使用 f-string 将每个参数格式化为 `key=value` 的形式，同样利用 `repr()` 呈现具体的值。
+* **第 11 行：** 将位置参数列表与关键字参数列表合并，用逗号连接成一个完整的函数签名字符串。
+* **第 14 行：** 在函数执行完成后打印其返回值。
+
+现在我们通过将装饰器应用到一个包含一个位置参数和一个关键字参数的简单函数上，看看它的实际运行效果：
+
+```python
+>>> from decorators import debug
+>>> @debug
+... def make_greeting(name, age=None):
+...     if age is None:
+...         return f"Howdy {name}!"
+...     else:
+...         return f"Whoa {name}! {age} already, you're growing up!"
+... 
+
+```
+
+注意观察 `@debug` 装饰器是如何输出 `make_greeting()` 函数的签名与返回值的：
+
+```python
+>>> make_greeting("Benjamin")
+Calling make_greeting('Benjamin')
+make_greeting() returned 'Howdy Benjamin!'
+'Howdy Benjamin!'
+>>> make_greeting("Juan", age=114)
+Calling make_greeting('Juan', age=114)
+make_greeting() returned "Whoa Juan! 114 already, you're growing up!"
+"Whoa Juan! 114 already, you're growing up!"
+>>> make_greeting(name="Maria", age=116)
+Calling make_greeting(name='Maria', age=116)
+make_greeting() returned "Whoa Maria! 116 already, you're growing up!"
+"Whoa Maria! 116 already, you're growing up!"
+
+```
+
+这个例子看起来可能用处不大，因为 `@debug` 只是重复输出了你显式传入的内容。但当它被应用到那些你不会直接手动调用、而是在底层被频繁触发的辅助函数时，它的威力就会显现出来。
+
+下面的例子计算数学常数 $e$ 的近似值：
+
+**文件名：`calculate_e.py**`
+
+```python
+import math
+from decorators import debug
+
+math.factorial = debug(math.factorial)
+
+def approximate_e(terms=18):
+    return sum(1 / math.factorial(n) for n in range(terms))
+
+```
+
+这里展示了如何将装饰器应用到一个已经定义好的现有函数上。在第 4 行，我们装饰了来自 `math` 标准库的 `factorial()`（阶乘）函数。此时无法使用 `@` 馅饼语法，但依然可以通过手动赋值的方式应用装饰器。对 $e$ 的近似计算基于以下级数展开：
+
+$$e = \sum_{n=0}^{\infty} \frac{1}{n!} = \frac{1}{0!} + \frac{1}{1!} + \frac{1}{2!} + \frac{1}{3!} + \cdots$$
+
+当调用 `approximate_e()` 函数时，你可以直观看到 `@debug` 装饰器的工作过程：
+
+```python
+>>> from calculate_e import approximate_e
+>>> approximate_e(terms=5)
+Calling factorial(0)
+factorial() returned 1
+Calling factorial(1)
+factorial() returned 1
+Calling factorial(2)
+factorial() returned 2
+Calling factorial(3)
+factorial() returned 6
+Calling factorial(4)
+factorial() returned 24
+2.7083333333333335
+
+```
+
+在这个例子中，仅仅累加了 5 项，就得到了与真实值 $e \approx 2.718281828$ 相当接近的近似结果。
+
+
+
