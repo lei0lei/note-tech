@@ -19,4 +19,39 @@ sidebar_position: 12
 ```
 通常情况下，Python 中的函数除了将输入转化为输出之外，还可能产生**副作用（side effects）**。`print()` 函数就是一个典型的例子：它返回 `None`，同时伴随向控制台输出内容的副作用。不过，在学习和理解装饰器时，只需将函数看作是“把给定的参数转化为返回值”的工具就足够了。
 
+## 一等对象
+在函数式编程中，你几乎完全与没有副作用的纯函数打交道。尽管 Python 并不是一门纯粹的函数式语言，但它支持许多函数式编程的概念，包括将函数视为一等对象。
 
+这意味着函数可以像 `str`、`int`、`float`、`list` 等任何其他对象一样被传递和作为参数使用。来看下面这三个函数：
+
+**文件名：`greeters.py**`
+
+```python
+def say_hello(name):
+    return f"Hello {name}"
+
+def be_awesome(name):
+    return f"Yo {name}, together we're the awesomest!"
+
+def greet_bob(greeter_func):
+    return greeter_func("Bob")
+
+```
+
+在这里，`say_hello()` 和 `be_awesome()` 是常规函数，它们接收一个字符串形式的 `name` 参数。而 `greet_bob()` 函数则需要一个函数作为参数。例如，你可以将 `say_hello` 或 `be_awesome` 函数传递给它。
+
+为了测试这些函数，你可以在交互模式下运行代码。使用 `-i` 参数即可实现这一点。例如，如果你的代码保存在名为 `greeters.py` 的文件中，运行 `python -i greeters.py`：
+
+```python
+>>> greet_bob(say_hello)
+'Hello Bob'
+>>> greet_bob(be_awesome)
+"Yo Bob, together we're the awesomest!"
+
+```
+
+需要注意的是，`greet_bob(say_hello)` 涉及到了两个函数：`greet_bob()` 和 `say_hello`，但引用它们的方式不同。`say_hello` 函数没有带括号，这意味着传递的仅仅是对该函数的引用，该函数本身并未被执行。相反，`greet_bob()` 带有括号，因此它会像往常一样被调用。
+
+这是一个非常重要的区别，也是理解函数作为一等对象如何运作的关键所在：不带括号的函数名是对函数的引用，而带有末尾括号的函数名则是调用该函数并获取其返回值。
+
+---
