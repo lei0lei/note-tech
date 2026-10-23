@@ -635,5 +635,1074 @@ factorial() returned 24
 
 在这个例子中，仅仅累加了 5 项，就得到了与真实值 $e \approx 2.718281828$ 相当接近的近似结果。
 
+## 降低代码执行速率
+
+在本节中，你将创建一个能让代码降速运行的装饰器。这听起来可能没什么实际用途——为什么会有人想要放慢 Python 代码的运行速度呢？
+
+最常见的场景通常是**速率限制（rate-limiting）**，比如某个函数需要持续轮询并检查某个资源（例如网页）是否发生了变动。下面这个 `@slow_down` 装饰器会在调用被装饰的函数之前休眠 1 秒钟：
+
+**文件名：`decorators.py`**
+
+```python
+import functools
+import time
+# ...
+
+def slow_down(func):
+    """在调用函数前休眠 1 秒"""
+    @functools.wraps(func)
+    def wrapper_slow_down(*args, **kwargs):
+        time.sleep(1)
+        return func(*args, **kwargs)
+    return wrapper_slow_down
+
+```
+
+在 `@slow_down` 中，你调用了 `time.sleep()` 让代码在执行目标函数前暂停片刻。为了观察 `@slow_down` 装饰器的运作效果，我们创建一个 `countdown()`（倒计时）函数。建议你亲自运行这个示例，直观感受降速的效果：
+
+```python
+>>> from decorators import slow_down
+>>> @slow_down
+... def countdown(from_number):
+...     if from_number < 1:
+...         print("Liftoff!")
+...     else:
+...         print(from_number)
+...         countdown(from_number - 1)
+... 
+>>> countdown(3)
+3
+2
+1
+Liftoff!
+
+```
+
+在 `countdown()` 中，函数会检查 `from_number` 是否小于 1。如果是，则打印 `Liftoff!`（发射！）；如果不是，则打印当前数字并继续倒数。
+
+> **注意：** `countdown()` 是一个递归函数（recursive function），即一个调用自身的函数。如果你想深入了解 Python 中的递归函数，可以参考《Python 中的递归思维》（Thinking Recursively in Python）。
+
+这里的 `@slow_down` 装饰器固定休眠 1 秒。稍后你将学到如何通过向装饰器传递参数来动态控制休眠时长。
+
+## 注册插件
+
+装饰器并不一定非要包装它们所修饰的函数。它们也可以仅仅用来登记该函数的存在，然后原封不动地返回该函数。利用这一特性，你可以构建轻量级的插件架构：
+
+**文件名：`decorators.py`**
+
+```python
+# ...
+PLUGINS = dict()
+
+def register(func):
+    """将函数注册为插件"""
+    PLUGINS[func.__name__] = func
+    return func
+
+```
+
+`@register` 装饰器仅仅将目标函数的引用保存到全局字典 `PLUGINS` 中。请注意，本例中并不需要编写内部函数，也无需使用 `@functools.wraps`，因为你原样返回了未被修改的原始函数。
+
+现在你可以像下面这样注册函数：
+
+```python
+>>> from decorators import register, PLUGINS
+>>> @register
+... def say_hello(name):
+...     return f"Hello {name}"
+... 
+>>> @register
+... def be_awesome(name):
+...     return f"Yo {name}, together we're the awesomest!"
+... 
+
+```
+
+此时查看 `PLUGINS` 字典，可以看到它已经包含了各个被注册为插件的函数对象的引用：
+
+```python
+>>> PLUGINS
+{'say_hello': <function say_hello at 0x7f768eae6730>, 'be_awesome': <function be_awesome at 0x7f768eae67b8>}
+
+```
+
+由于 Python 是在**定义函数时**立即执行装饰器的，因此 `say_hello()` 和 `be_awesome()` 会立刻完成注册。随后你可以通过 `PLUGINS` 来调用这些函数：
+
+```python
+>>> import random
+>>> def randomly_greet(name):
+...     greeter, greeter_func = random.choice(list(PLUGINS.items()))
+...     print(f"Using {greeter!r}")
+...     return greeter_func(name)
+... 
+>>> randomly_greet("Alice")
+Using 'say_hello'
+'Hello Alice'
+
+```
+
+`randomly_greet()` 函数会随机挑选一个已注册的函数来执行。在 f-string 中使用的 `!r` 转换标志，其效果等同于显式调用 `repr(greeter)`。
+
+这种轻量插件架构的核心优势在于：**你无需手动维护现存插件的清单**。这份清单是在插件自我注册的过程中动态构建的。这使得添加新插件变得极其轻松——只需定义函数并给它加上 `@register` 装饰器即可。
+
+如果你对 Python 中的 `globals()` 有所了解，可能会发现这与插件架构的工作方式有异曲同工之妙。通过 `globals()`，你可以访问当前作用域内的所有全局变量，其中也包括你定义的插件：
+
+```python
+>>> globals()
+{..., # 省略许多未展示的变量
+ 'say_hello': <function say_hello at 0x7f768eae6730>, 
+ 'be_awesome': <function be_awesome at 0x7f768eae67b8>, 
+ 'randomly_greet': <function randomly_greet at 0x7f768eae6840>}
+
+```
+
+而使用 `@register` 装饰器，你可以建立属于自己的专属函数集合，相当于从庞杂的 `globals()` 中精准挑选出你真正关心的目标函数。
+
+## 用户身份验证
+
+在进入更高级的装饰器之前，最后一个示例常见于 Web 框架开发中。在这个例子中，你将使用 Flask 搭建一个 `/secret` 页面，该页面仅对已登录或经过身份验证的用户可见：
+
+**文件名：`secret_app.py`**
+
+```python
+import functools
+from flask import Flask, g, request, redirect, url_for
+
+app = Flask(__name__)
+
+def login_required(func):
+    """在继续操作前确保用户已登录"""
+    @functools.wraps(func)
+    def wrapper_login_required(*args, **kwargs):
+        if g.user is None:
+            return redirect(url_for("login", next=request.url))
+        return func(*args, **kwargs)
+    return wrapper_login_required
+
+@app.route("/secret")
+@login_required
+def secret():
+    ...
+
+```
+
+虽然这个例子展示了如何在 Web 框架中添加身份验证逻辑，但通常情况下你不应该自己编写这类装饰器。对于 Flask 而言，建议使用 `Flask-Login` 扩展，它能提供更完善的安全性与更丰富的功能。
+
+
+## 高级装饰器
+
+到目前为止，你已经见识了如何创建简单的装饰器，并对装饰器的本质及运作机制有了相当深入的理解。你可以随时暂停学习，花点时间练习一下前面学到的所有内容。
+
+在本教程的第二部分，你将探索更为高级的特性，包括如何做到以下几点：
+
+* 将装饰器应用于类（Class）
+* 在单个函数上堆叠多个装饰器
+* 创建带有参数的装饰器
+* 创建可选接收参数的装饰器
+* 定义有状态（stateful）的装饰器
+* 定义作为装饰器使用的类
+
+准备好深入探索了吗？让我们开始吧！
+
+
+
+## 装饰类
+
+在类上使用装饰器有两种不同的方式。第一种方式与你在函数上的用法非常相似：**装饰类中的方法**。这也是当年 Python 引入装饰器语法的重要动机之一。
+
+一些最常用的装饰器甚至直接内置于 Python 中，包括 `@classmethod`、`@staticmethod` 以及 `@property`。`@classmethod` 和 `@staticmethod` 用于在类的命名空间内定义与该类的特定实例不绑定的方法；`@property` 则用于为类属性自定义 Getter 和 Setter。展开下方折叠框可查看使用这些装饰器的示例：
+
+接下来，定义一个类，并使用前面编写的 `@debug` 和 `@timer` 装饰器来修饰其中的部分方法：
+
+**文件名：`class_decorators.py`**
+
+```python
+from decorators import debug, timer
+
+class TimeWaster:
+    @debug
+    def __init__(self, max_num):
+        self.max_num = max_num
+
+    @timer
+    def waste_time(self, num_times):
+        for _ in range(num_times):
+            sum([number**2 for number in range(self.max_num)])
+
+```
+
+使用这个类，你可以看到装饰器的实际效果：
+
+```python
+>>> from class_decorators import TimeWaster
+>>> tw = TimeWaster(1000)
+Calling __init__(<class_decorators.TimeWaster object at 0x7efccce03908>, 1000)
+__init__() returned None
+>>> tw.waste_time(999)
+Finished waste_time() in 0.3376 secs
+
+```
+
+当你创建 `TimeWaster` 的新实例时，Python 会在底层自动调用 `.__init__()`，正如 `@debug` 所呈现的那样。而 `@timer` 装饰器则帮助你监控了执行 `.waste_time()` 所花费的具体时间。
+
+在类上使用装饰器的第二种方式是**装饰整个类**。标准库中的 `dataclasses` 模块就采用了这种方式：
+
+```python
+>>> from dataclasses import dataclass
+>>> @dataclass
+... class PlayingCard:
+...     rank: str
+...     suit: str
+... 
+
+```
+
+该语法的含义与函数装饰器类似。在上面的示例中，你完全可以通过编写 `PlayingCard = dataclass(PlayingCard)` 来装饰这个类。
+
+类装饰器的一个常见用途是作为元类（metaclass）某些使用场景的简易替代方案。这两种方式的共同点在于：它们都是在**动态修改类的定义**。
+
+编写类装饰器与编写函数装饰器非常相似，唯一的区别在于**装饰器接收的参数是类而不是函数**。事实上，你之前看到的所有装饰器都可以直接当作类装饰器使用；但当它们作用于类而非函数时，效果可能不是你想要的。在下面的示例中，我们将 `@timer` 装饰器直接应用到了整个类上：
+
+**文件名：`class_decorators.py**`
+
+```python
+from decorators import timer
+
+@timer
+class TimeWaster:
+    def __init__(self, max_num):
+        self.max_num = max_num
+
+    def waste_time(self, num_times):
+        for _ in range(num_times):
+            sum([i**2 for i in range(self.max_num)])
+
+```
+
+装饰整个类并不会顺带装饰其中的方法。请记住，`@timer` 仅仅是 `TimeWaster = timer(TimeWaster)` 的语法糖。在这里，`@timer` 测量的仅仅是**实例化该类所花费的时间**：
+
+```python
+>>> from class_decorators import TimeWaster
+>>> tw = TimeWaster(1000)
+Finished TimeWaster() in 0.0000 secs
+>>> tw.waste_time(999)
+
+```
+
+`@timer` 的输出只在创建 `tw` 实例时显示了一次，而后续对 `.waste_time()` 的调用并没有被计时。
+
+稍后你将看到一个真正的类装饰器示例——`@singleton`（单例模式），它用于确保一个类在运行期间只能拥有一个唯一的实例。
+
+
+## 嵌套装饰器
+
+你可以通过将多个装饰器堆叠在一起，一次性向同一个函数应用多个装饰器：
+
+```python
+>>> from decorators import debug, do_twice
+>>> @debug
+... @do_twice
+... def greet(name):
+...     print(f"Hello {name}")
+... 
+
+```
+
+你可以将其理解为：装饰器是**按照自下而上的声明顺序依次嵌套执行的**。换言之，`@debug` 包装了 `@do_twice`，而 `@do_twice` 包装了 `greet()`，等价于 `debug(do_twice(greet))`：
+
+```python
+>>> greet("Yadi")
+Calling greet('Yadi')
+Hello Yadi
+Hello Yadi
+greet() returned None
+
+```
+
+问候语因为 `@do_twice` 的存在打印了两次。然而，来自 `@debug` 的调试输出只打印了一次，因为 `@debug` 是在 `@do_twice` 外层调用的。观察交换 `@debug` 和 `@do_twice` 的顺序后会有什么不同：
+
+```python
+>>> from decorators import debug, do_twice
+>>> @do_twice
+... @debug
+... def greet(name):
+...     print(f"Hello {name}")
+... 
+>>> greet("Yadi")
+Calling greet('Yadi')
+Hello Yadi
+greet() returned None
+Calling greet('Yadi')
+Hello Yadi
+greet() returned None
+
+```
+
+在这里，`@do_twice` 同样作用到了 `@debug` 上。可以看到，对 `greet()` 的两次调用都附带了完整的调试信息。
+
+
+## 定义带参数的装饰器
+
+有时，向装饰器传递参数非常实用。例如，`@do_twice` 可以扩展为一个 `@repeat(num_times)` 装饰器，执行被装饰函数的次数可以通过参数传入。
+
+如果定义好了 `@repeat`，你就可以像这样使用它：
+
+```python
+>>> from decorators import repeat
+>>> @repeat(num_times=4)
+... def greet(name):
+...     print(f"Hello {name}")
+... 
+>>> greet("World")
+Hello World
+Hello World
+Hello World
+Hello World
+
+```
+
+思考一下应该如何实现 `@repeat`。
+
+到目前为止，写在 `@` 后面的名称都指向一个可以直接接收另一个函数作为参数的函数对象。为了保持语法一致，`repeat(num_times=4)` 就必须返回一个能够充当装饰器的函数对象。幸运的是，你前面已经学过如何让函数返回另一个函数了！通常来说，基本结构如下所示：
+
+```python
+def repeat(num_times):
+    def decorator_repeat(func):
+        ...  # 创建并返回一个包装函数
+    return decorator_repeat
+
+```
+
+通常，装饰器内部会创建并返回一个包装函数，因此完整写出这个结构就相当于**在内部函数里再嵌套一层内部函数**。虽然这听起来很像编程版的《盗梦空间》，但我们马上来层层拆解它：
+
+**文件名：`decorators.py**`
+
+```python
+import functools
+# ...
+
+def repeat(num_times):
+    def decorator_repeat(func):
+        @functools.wraps(func)
+        def wrapper_repeat(*args, **kwargs):
+            for _ in range(num_times):
+                value = func(*args, **kwargs)
+            return value
+        return wrapper_repeat
+    return decorator_repeat
+
+```
+
+代码初看略显繁琐，但本质上只是把之前反复使用的标准装饰器模式放进了一个额外的 `def` 里面，用来接收并处理传给装饰器的参数。首先看最内层的函数：
+
+```python
+def wrapper_repeat(*args, **kwargs):
+    for _ in range(num_times):
+        value = func(*args, **kwargs)
+    return value
+
+```
+
+这个 `wrapper_repeat()` 函数接收任意实参，并返回被装饰函数 `func()` 的计算结果。该包装函数还包含一个循环，用于将目标函数调用 `num_times` 次。这与之前见过的包装函数没有任何区别，唯一的不同是它使用了必须由外部提供的 `num_times` 参数。
+
+往外走一层，就是装饰器函数本身：
+
+```python
+def decorator_repeat(func):
+    @functools.wraps(func)
+    def wrapper_repeat(*args, **kwargs):
+        ...
+    return wrapper_repeat
+
+```
+
+同样，`decorator_repeat()` 与你之前编写的装饰器函数一模一样，只是换了个名字。这是因为我们把最基础的名称——`repeat()`——留给了供用户直接调用的最外层函数。
+
+正如之前所示，最外层函数返回对这个装饰器函数的引用：
+
+```python
+def repeat(num_times):
+    def decorator_repeat(func):
+        ...
+    return decorator_repeat
+
+```
+
+在 `repeat()` 函数内部有几个微妙的细节正在发生：
+
+* 将 `decorator_repeat()` 定义为内部函数，意味着 `repeat()` 会返回一个函数对象 `decorator_repeat`。之前你使用 `@do_twice` 时不需要加括号，而现在配置装饰器时需要加上括号，如 `@repeat()`。这是向装饰器传递参数所必需的语法形式。
+* `num_times` 参数表面上似乎没有在 `repeat()` 自身体内被直接消费，但通过传入 `num_times`，形成了一个**闭包（closure）**，`num_times` 的值会被捕获并妥善保存，直到最内层的 `wrapper_repeat()` 稍后在运行时读取它。
+
+一切就绪后，测试代码以验证运行结果是否符合预期：
+
+```python
+>>> from decorators import repeat
+>>> @repeat(num_times=4)
+... def greet(name):
+...     print(f"Hello {name}")
+... 
+>>> greet("World")
+Hello World
+Hello World
+Hello World
+Hello World
+
+```
+
+这正是我们想要实现的效果。
+
+## 创建可选参数的装饰器
+
+只要稍加留意，你就可以定义出**既能带参数使用、又能不带参数使用**的装饰器。在大多数情况下你可能并不需要它，但拥有这种灵活性总是一件好事。正如小熊维尼所言：
+
+> “两样都要——不过不用费心拿面包了，谢谢。”（出处）
+
+正如你在上一节所见，当装饰器需要接收参数时，你必须额外套一层外层函数。现在的挑战在于：你的代码需要能自动识别出用户调用装饰器时**到底带没带参数**。
+
+因为只有在不带参数调用装饰器时，被装饰的函数才会作为第一个参数直接传进来，所以被装饰的函数必须是一个**可选参数**。这意味着装饰器本身的自定义参数必须全部通过关键字指定。你可以利用特殊的星号（`*`）语法来强制实施这一规则，它表示后面的所有形参都是**仅限关键字参数（keyword-only parameters）**：
+
+```python
+def name(_func=None, *, key1=value1, key2=value2, ...):
+    def decorator_name(func):
+        ...  # 创建并返回一个包装函数
+
+    if _func is None:
+        return decorator_name
+    else:
+        return decorator_name(_func)
+
+```
+
+在这里，`_func` 参数充当了一个标记变量，用于标识装饰器在被调用时是否传入了参数：
+
+* **第 1 行：** 如果你调用 `@name` 时**不带参数**，被装饰的函数就会作为 `_func` 传入。如果你调用它时**带了参数**，那么 `_func` 将为 `None`，并且部分关键字参数的值可能会被修改为用户传入的新值。形参列表中的星号（`*`）意味着用户无法以位置参数的形式传递后续参数。
+* **第 6 行：** 对应带参数调用的情形。此时返回装饰器函数（该函数接收一个目标函数作为参数并返回包装函数）。
+* **第 8 行：** 对应不带参数调用的情形。此时立即将装饰器应用到传入的函数 `_func` 上。
+
+将这个样板模板套用到上一节的 `@repeat` 装饰器中，可以写出如下代码：
+
+**文件名：`decorators.py**`
+
+```python
+import functools
+# ...
+
+def repeat(_func=None, *, num_times=2):
+    def decorator_repeat(func):
+        @functools.wraps(func)
+        def wrapper_repeat(*args, **kwargs):
+            for _ in range(num_times):
+                value = func(*args, **kwargs)
+            return value
+        return wrapper_repeat
+
+    if _func is None:
+        return decorator_repeat
+    else:
+        return decorator_repeat(_func)
+
+```
+
+将它与最初的 `@repeat` 对比：唯一的变动就是新增了 `_func` 形参以及末尾的 `if...else` 代码块。
+
+> 经典的《Python Cookbook》第 9.6 节展示了一种使用 `functools.partial()` 实现该功能的替代方案。
+
+现在你可以将 `@repeat` 应用到不同的函数上，测试它是否能够同时支持带参和不带参调用：
+
+```python
+>>> from decorators import repeat
+>>> @repeat
+... def say_whee():
+...     print("Whee!")
+... 
+>>> @repeat(num_times=3)
+... def greet(name):
+...     print(f"Hello {name}")
+... 
+
+```
+
+回顾一下代码，`num_times` 的默认值是 2，因此不带任何参数使用 `@repeat` 就等同于之前使用的 `@do_twice`：
+
+```python
+>>> say_whee()
+Whee!
+Whee!
+>>> greet("Penny")
+Hello Penny
+Hello Penny
+Hello Penny
+
+```
+
+可以看到，`Whee!` 重复打印了两次，因为这是 `@repeat` 的默认行为；而根据参数显式指定的配置，问候语则被重复打印了三次。
+
+
+## 在装饰器中跟踪状态
+有时，让装饰器具备跟踪状态的能力会非常实用。以一个统计函数被调用次数的装饰器为例。
+
+> **注意：** 在本指南的开头，你学到了纯函数是依据给定的参数返回确定的计算结果。而**有状态装饰器（stateful decorators）**恰恰相反：它的返回值不仅取决于传入的参数，还取决于当前的内部状态。
+
+在下一节中，你将看到如何使用类来维护状态。但在一些简单的场景下，仅靠函数属性（function attributes）就能轻松搞定：
+
+**文件名：`decorators.py`**
+
+```python
+import functools
+# ...
+
+def count_calls(func):
+    @functools.wraps(func)
+    def wrapper_count_calls(*args, **kwargs):
+        wrapper_count_calls.num_calls += 1
+        print(f"Call {wrapper_count_calls.num_calls} of {func.__name__}()")
+        return func(*args, **kwargs)
+    wrapper_count_calls.num_calls = 0
+    return wrapper_count_calls
+
+```
+
+状态（即函数的调用次数）被保存在包装函数自身的属性 `.num_calls` 中。下面是它的运行效果：
+
+```python
+>>> from decorators import count_calls
+>>> @count_calls
+... def say_whee():
+...     print("Whee!")
+... 
+>>> say_whee()
+Call 1 of say_whee()
+Whee!
+>>> say_whee()
+Call 2 of say_whee()
+Whee!
+>>> say_whee.num_calls
+2
+
+```
+
+我们将 `@count_calls` 应用到了老朋友 `say_whee()` 上。每次调用该函数时，都可以看到调用计数在递增。你也可以直接手动查询它的 `.num_calls` 属性值。
+
+## 使用类作为装饰器
+
+在 Python 中维护状态最典型的方式就是使用类。在本节中，你将看到如何使用类作为装饰器，重写上一节中的 `@count_calls` 示例。
+
+回想一下，装饰器语法 `@decorator` 只是 `func = decorator(func)` 的简写形式。因此，如果 `decorator` 是一个类，它就需要在其初始化方法 `.__init__()` 中接收 `func` 作为参数。此外，该类的实例必须是**可调用的（callable）**，以便它能替代被装饰的函数。
+
+> **注意：** 截至目前，你所见到的所有装饰器都是定义为函数的。这也是你最常用的创建装饰器的方式。但是，任何**可调用表达式（callable expression）**都可以用作装饰器。
+
+为了让一个类的实例变得可调用，你需要实现特殊的 `.__call__()` 方法：
+
+```python
+>>> class Counter:
+...     def __init__(self, start=0):
+...         self.count = start
+...     def __call__(self):
+...         self.count += 1
+...         print(f"Current count is {self.count}")
+... 
+
+```
+
+每当你尝试像调用函数一样调用该类的实例时，`.__call__()` 方法就会被执行：
+
+```python
+>>> counter = Counter()
+>>> counter()
+Current count is 1
+>>> counter()
+Current count is 2
+>>> counter.count
+2
+
+```
+
+每次调用 `counter()`，随着计数的增加，内部状态都会发生改变。因此，装饰器类的典型实现通常包含 `.__init__()` 和 `.__call__()` 两个方法：
+
+**文件名：`decorators.py`**
+
+```python
+import functools
+# ...
+
+class CountCalls:
+    def __init__(self, func):
+        functools.update_wrapper(self, func)
+        self.func = func
+        self.num_calls = 0
+
+    def __call__(self, *args, **kwargs):
+        self.num_calls += 1
+        print(f"Call {self.num_calls} of {self.func.__name__}()")
+        return self.func(*args, **kwargs)
+
+```
+
+`.__init__()` 方法必须保存对目标函数的引用，并负责完成其他必要的初始化操作。`.__call__()` 方法则会在调用被装饰函数时代替其执行，其作用本质上与先前示例中的 `wrapper()` 函数相同。需要注意的是，这里需要使用 `functools.update_wrapper()` 函数，而不是 `@functools.wraps` 装饰器。
+
+这个 `@CountCalls` 装饰器的使用效果与上一节完全相同：
+
+```python
+>>> from decorators import CountCalls
+>>> @CountCalls
+... def say_whee():
+...     print("Whee!")
+... 
+>>> say_whee()
+Call 1 of say_whee()
+Whee!
+>>> say_whee()
+Call 2 of say_whee()
+Whee!
+>>> say_whee.num_calls
+2
+
+```
+
+对 `say_whee()` 的每一次调用都会被计数并输出。在下一节中，你将看到更多贴近实战的装饰器示例。
+
+## 更多实战示例
+
+一路走来，你已经彻底搞懂了如何创建各种形式的装饰器。接下来我们将进行总结，通过创建几个在实际开发中非常实用的示例，把学到的知识运用起来。
+
+### 重温降速代码
+
+如前所述，之前的 `@slow_down` 实现始终固定休眠 1 秒。现在你已经掌握了如何为装饰器添加参数，因此可以通过一个可选的 `rate` 参数来重写 `@slow_down`，用它来动态控制休眠时长：
+
+**文件名：`decorators.py**`
+
+```python
+import functools
+import time
+# ...
+
+def slow_down(_func=None, *, rate=1):
+    """在调用函数前休眠指定的秒数"""
+    def decorator_slow_down(func):
+        @functools.wraps(func)
+        def wrapper_slow_down(*args, **kwargs):
+            time.sleep(rate)
+            return func(*args, **kwargs)
+        return wrapper_slow_down
+
+    if _func is None:
+        return decorator_slow_down
+    else:
+        return decorator_slow_down(_func)
+
+```
+
+这里运用了在“创建可选参数的装饰器”一节中介绍的模板样板，使 `@slow_down` 既能带参数调用，也能不带参数直接使用。与先前相同的递归倒计时函数 `countdown()`，现在可以在每次计数之间休眠 2 秒：
+
+```python
+>>> from decorators import slow_down
+>>> @slow_down(rate=2)
+... def countdown(from_number):
+...     if from_number < 1:
+...         print("Liftoff!")
+...     else:
+...         print(from_number)
+...         countdown(from_number - 1)
+... 
+
+```
+
+和之前一样，建议你亲自运行这个示例来感受装饰器的效果：
+
+```python
+>>> countdown(3)
+3
+2
+1
+Liftoff!
+
+```
+
+倒计时的每个数字之间都会停顿 2 秒钟。
+
+
+## 创建单例模式
+
+单例（Singleton）是指仅能拥有一个实例的类。Python 中有几个你经常使用的单例对象，包括 `None`、`True` 和 `False`。正因为 `None` 是单例，你才可以使用 `is` 关键字来判断是否为 `None`，正如你在编写支持可选参数的装饰器时所做的那样：
+
+```python
+if _func is None:
+    return decorator_name
+else:
+    return decorator_name(_func)
+
+```
+
+使用 `is` 仅在两个变量指向**完全相同的同一个实例**时才返回 `True`。下面的 `@singleton` 装饰器通过将类的第一个实例保存为内部属性，从而将一个普通类转变为单例类。后续任何尝试创建新实例的操作，都只会直接返回已保存的那个实例：
+
+**文件名：`decorators.py`**
+
+```python
+import functools
+# ...
+
+def singleton(cls):
+    """将一个类转变为单例类（仅存在一个实例）"""
+    @functools.wraps(cls)
+    def wrapper_singleton(*args, **kwargs):
+        if wrapper_singleton.instance is None:
+            wrapper_singleton.instance = cls(*args, **kwargs)
+        return wrapper_singleton.instance
+    wrapper_singleton.instance = None
+    return wrapper_singleton
+
+```
+
+如你所见，这个类装饰器遵循与函数装饰器相同的模板。唯一的区别在于形参名称使用了 `cls` 而非 `func`，以明确表示它是一个类装饰器。
+
+看看它的实际运行效果：
+
+```python
+>>> from decorators import singleton
+>>> @singleton
+... class TheOne:
+...     pass
+... 
+>>> first_one = TheOne()
+>>> another_one = TheOne()
+>>> id(first_one)
+140094218762310
+>>> id(another_one)
+140094218762310
+>>> first_one is another_one
+True
+
+```
+
+通过对比两者的内存地址（对象 ID）并使用 `is` 关键字检测，可以确认 `first_one` 与 `another_one` 确实是同一个实例。
+
+> **注意：** 在 Python 中，单例类的使用频率其实不如其他语言那么高。单例的效果在 Python 中通常更推荐直接通过模块内的全局变量来实现。
+> 相比函数装饰器，类装饰器的使用频率较低。编写类装饰器时应当做好完善的文档注释，以便使用者明确知道该如何应用它们。
+
+
+## 缓存返回值
+
+装饰器能够为实现缓存（caching）**与**记忆化（memoization）提供优雅的机制。以经典的斐波那契数列递归实现为例：
+
+```python
+>>> from decorators import count_calls
+>>> @count_calls
+... def fibonacci(num):
+...     if num < 2:
+...         return num
+...     return fibonacci(num - 1) + fibonacci(num - 2)
+... 
+
+```
+
+虽然这种实现非常直观，但其运行性能极其糟糕：
+
+```python
+>>> fibonacci(10)
+<来自 count_calls 的大量输出>
+55
+>>> fibonacci.num_calls
+177
+
+```
+
+为了计算第 10 个斐波那契数，理论上只需计算它前面的那些项即可，但这套代码竟然执行了多达 177 次计算。规模扩大时情况会迅速恶化：计算 `fibonacci(20)` 需要 21,891 次运算，而计算第 30 项则需要近 270 万次计算。这是因为代码在不断重复计算那些早已算过的斐波那契数。
+
+通常的优化方案是改用 `for` 循环搭配查找表来迭代计算。不过，对计算结果进行缓存同样可以完美解决这个问题。首先向你的模块中添加一个 `@cache` 装饰器：
+
+**文件名：`decorators.py**`
+
+```python
+import functools
+# ...
+
+def cache(func):
+    """为之前的函数调用结果维护一个缓存"""
+    @functools.wraps(func)
+    def wrapper_cache(*args, **kwargs):
+        cache_key = args + tuple(kwargs.items())
+        if cache_key not in wrapper_cache.cache:
+            wrapper_cache.cache[cache_key] = func(*args, **kwargs)
+        return wrapper_cache.cache[cache_key]
+    wrapper_cache.cache = {}
+    return wrapper_cache
+
+```
+
+该缓存通过字典存储历史计算结果，充当查找表的作用。现在将其应用到 `fibonacci()` 上：
+
+```python
+>>> from decorators import cache, count_calls
+>>> @cache
+... @count_calls
+... def fibonacci(num):
+...     if num < 2:
+...         return num
+...     return fibonacci(num - 1) + fibonacci(num - 2)
+... 
+
+```
+
+这里依然配合使用了 `@count_calls` 来监控计算次数。有了缓存加持，`fibonacci()` 对每个数值只执行一次必要的计算：
+
+```python
+>>> fibonacci(10)
+Call 1 of fibonacci()
+...
+Call 11 of fibonacci()
+55
+>>> fibonacci(8)
+21
+
+```
+
+注意，在调用 `fibonacci(8)` 时，没有触发任何新的计算，因为在计算 `fibonacci(10)` 的过程中，第 8 项的数值已经被计算并缓存了。
+
+在 Python 标准库中，提供了基于最近最少使用（LRU）策略的缓存装饰器 `@functools.lru_cache`。此外，还可以使用常规缓存装饰器 `@functools.cache`。
+
+标准库中的这些装饰器比上面自己实现的更加完备。在实际项目中，应优先使用 `@functools.lru_cache` 或 `@functools.cache`，而非自行编写缓存装饰器。
+
+在接下来的示例中，我们不再直接返回结果，而是加入一个 `print()` 语句，以便直观查看何时是真正进行了数值计算、何时仅仅是从缓存中命中提取：
+
+```python
+>>> import functools
+>>> @functools.lru_cache(maxsize=4)
+... def fibonacci(num):
+...     if num < 2:
+...         value = num
+...     else:
+...         value = fibonacci(num - 1) + fibonacci(num - 2)
+...     print(f"Calculated fibonacci({num}) = {value}")
+...     return value
+... 
+
+```
+
+`maxsize` 参数指定了最多缓存多少次最近的调用。默认值为 128，但你也可以设置 `maxsize=None` 来无上限缓存所有调用结果（使用 `@functools.cache` 等同于设置 `maxsize=None`）。不过需要注意，如果你缓存了大量占用空间较大的对象，这可能会引发内存问题。
+
+你可以使用 `.cache_info()` 方法查看缓存的运行指标，并在需要时进行调优。在本例中，我们刻意使用了一个极小的 `maxsize=4`，以此观察旧元素被逐出缓存的过程：
+
+```python
+>>> fibonacci(10)
+Calculated fibonacci(1) = 1
+Calculated fibonacci(0) = 0
+Calculated fibonacci(2) = 1
+Calculated fibonacci(3) = 2
+Calculated fibonacci(4) = 3
+Calculated fibonacci(5) = 5
+Calculated fibonacci(6) = 8
+Calculated fibonacci(7) = 13
+Calculated fibonacci(8) = 21
+Calculated fibonacci(9) = 34
+Calculated fibonacci(10) = 55
+55
+>>> fibonacci(8)
+21
+>>> fibonacci(5)
+Calculated fibonacci(1) = 1
+Calculated fibonacci(0) = 0
+Calculated fibonacci(2) = 1
+Calculated fibonacci(3) = 2
+Calculated fibonacci(4) = 3
+Calculated fibonacci(5) = 5
+5
+>>> fibonacci(8)
+Calculated fibonacci(6) = 8
+Calculated fibonacci(7) = 13
+Calculated fibonacci(8) = 21
+21
+>>> fibonacci(5)
+5
+>>> fibonacci.cache_info()
+CacheInfo(hits=17, misses=20, maxsize=4, currsize=4)
+
+```
+
+在这些调用中，缓存最多同时容纳 4 项计算记录。例如，在算完 `fibonacci(10)` 之后，缓存中保留的是第 7、第 8、第 9 和第 10 项。
+
+因此，随后获取 `fibonacci(8)` 时无需任何重新计算即可命中；但紧接着请求 `fibonacci(5)` 时，由于第 5 项早已被逐出缓存，就必须从头重新计算。
+
+在绝大多数日常应用中，你无需刻意限制缓存容量，直接使用 `@functools.cache` 即可。
+
+
+
+## 为函数添加单位信息
+
+接下来的示例与之前的“注册插件”有些类似，它并不会改变被装饰函数的内部行为，而是为函数动态挂载一个 `unit`（单位）属性：
+
+**文件名：`decorators.py**`
+
+```python
+# ...
+
+def set_unit(unit):
+    """在函数上注册单位信息"""
+    def decorator_set_unit(func):
+        func.unit = unit
+        return func
+    return decorator_set_unit
+
+```
+
+下面的示例根据半径和高度（单位均为厘米）计算圆柱体的体积：
+
+```python
+>>> import math
+>>> from decorators import set_unit
+>>> @set_unit("cm^3")
+... def volume(radius, height):
+...     return math.pi * radius**2 * height
+... 
+
+```
+
+你为 `volume()` 函数附加了元信息，表明其返回结果应被解释为立方厘米（$\text{cm}^3$）。后续在需要时可以直接访问 `.unit` 函数属性：
+
+```python
+>>> volume(3, 5)
+141.3716694115407
+>>> volume.unit
+'cm^3'
+
+```
+
+注意，你也可以使用函数注解（function annotations）达到类似的目的：
+
+```python
+>>> import math
+>>> def annotated_volume(radius, height) -> "cm^3":
+...     return math.pi * radius**2 * height
+... 
+
+```
+
+不过，由于注解通常用于类型提示（type hints），将物理单位作为注解写进去容易与静态类型检查工具产生冲突，显得不够地道。
+
+当把单位信息与能够进行单位换算的库结合使用时，会变得更加强大有趣。`pint` 就是这样一个库。安装 `pint`（执行 `python -m pip install Pint`）后，你可以轻松将体积转换为立方英寸或加仑：
+
+```python
+>>> import pint
+>>> ureg = pint.UnitRegistry()
+>>> vol = volume(3, 5) * ureg(volume.unit)
+>>> vol
+<Quantity(141.371669, 'centimeter ** 3')>
+>>> vol.to("cubic inches")
+<Quantity(8.62702858, 'inch ** 3')>
+>>> vol.to("gallons").m  # 获取数值大小（Magnitude）
+0.0373464440537444
+
+```
+
+这里利用 `pint` 创建了一个兼具数值与单位的 `Quantity`（物理量）对象。调用 `.to()` 方法即可换算为其他单位。例如，示例中的圆柱体体积约为 141 立方厘米，换算后大约是 8.63 立方英寸或 0.0373 加仑。
+
+你也可以改造装饰器，让它直接返回 `pint` 的 `Quantity` 对象。这种对象是通过将数值与单位相乘生成的。在 `pint` 中，单位必须通过 `UnitRegistry` 查找。我们可以把该注册表作为装饰器本身的函数属性存储，避免污染全局命名空间：
+
+**文件名：`decorators.py`**
+
+```python
+import functools
+import pint
+# ...
+
+def use_unit(unit):
+    """让函数返回带有指定单位的 Quantity 对象"""
+    use_unit.ureg = pint.UnitRegistry()
+    def decorator_use_unit(func):
+        @functools.wraps(func)
+        def wrapper_use_unit(*args, **kwargs):
+            value = func(*args, **kwargs)
+            return value * use_unit.ureg(unit)
+        return wrapper_use_unit
+    return decorator_use_unit
+
+```
+
+有了 `@use_unit` 装饰器，单位转换变得轻而易举：
+
+```python
+>>> from decorators import use_unit
+>>> @use_unit("meters per second")
+... def average_speed(distance, duration):
+...     return distance / duration
+... 
+>>> bolt = average_speed(100, 9.58)
+>>> bolt
+<Quantity(10.4384134, 'meter / second')>
+>>> bolt.to("km per hour")
+<Quantity(37.5782881, 'kilometer / hour')>
+>>> bolt.to("mph").m  # 获取数值大小（Magnitude）
+23.350065679064745
+
+```
+
+当尤塞恩·博尔特（Usain Bolt）在 2009 年世锦赛上以 9.58 秒跑完 100 米时，他的平均速度为 10.4 米/秒。换算过来大约是每小时 37.6 公里或每小时 23.4 英里。
+
+
+## 校验 JSON 数据
+
+最后来看一个使用场景。快速浏览下面这个 Flask 路由处理函数：
+
+```python
+@app.route("/grade", methods=["POST"])
+def update_grade():
+    json_data = request.get_json()
+    if "student_id" not in json_data:
+        abort(400)
+    # 更新数据库
+    return "success!"
+
+```
+
+在这里，你确保了请求体中必须包含 `student_id` 键。虽然这种校验逻辑行之有效，但它并不真正属于业务逻辑函数本身的核心职责。此外，其他接口路由也可能需要用到完全相同的校验规则。为了遵循 DRY（Don't Repeat Yourself，不要重复自己）原则，你可以使用装饰器把不必要的校验样板代码抽离出来。下面的 `@validate_json` 装饰器即可完成这项工作：
+
+**文件名：`validate_input.py**`
+
+```python
+import functools
+from flask import abort, request
+
+def validate_json(*expected_args):
+    def decorator_validate_json(func):
+        @functools.wraps(func)
+        def wrapper_validate_json(*args, **kwargs):
+            json_object = request.get_json()
+            for expected_arg in expected_args:
+                if expected_arg not in json_object:
+                    abort(400)
+            return func(*args, **kwargs)
+        return wrapper_validate_json
+    return decorator_validate_json
+
+```
+
+上述代码中，装饰器接收一个可变参数列表，你可以根据需要传入任意多个字符串参数，每个参数代表校验 JSON 时必须存在的字段键名：
+
+* **第 4 行：** JSON 中必须包含的键名列表以参数形式传入装饰器。
+* **第 9 行：** 包装函数逐一校验 JSON 数据中是否存在每一个预期的字段键名。
+
+这样一来，路由处理函数就能专注于其真正的核心业务——更新成绩，因为它可以放心地假定传入的 JSON 数据已经完成了合法性校验：
+
+**文件名：`validate_input.py**`
+
+```python
+import functools
+from flask import Flask, request, abort
+
+app = Flask(__name__)
+# ...
+
+@app.route("/grade", methods=["POST"])
+@validate_json("student_id")
+def update_grade():
+    json_data = request.get_json()
+    # 更新数据库
+    return "success!"
+
+```
+
+通过应用 `@validate_json` 装饰器，`update_grade()` 内部的逻辑变得极其简洁明了。
+
+
+
 
 
