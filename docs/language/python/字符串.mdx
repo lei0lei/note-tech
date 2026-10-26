@@ -5,6 +5,1901 @@ sidebar_position: 2
 
 ## [字符串和字符](https://realpython.com/python-strings/)
 
+### 初识 Python 中的字符串与字符
+
+Python 提供了内置的字符串（`str`）数据类型来处理文本数据。其他编程语言（例如 Java）为单个字符提供了字符数据类型。Python 则没有这种类型。单个字符就是长度为一的字符串。
+
+在实践中，字符串是不可变的字符序列。这意味着一旦定义了一个字符串，你就无法更改它。任何修改字符串的操作都会创建一个新的字符串，而不是修改原始字符串。
+
+字符串也是一个序列，这意味着字符串中的字符具有连续的顺序。这一特性允许你使用从 0 开始的整数索引来访问字符。你将在有关字符串索引的章节中进一步学习这些概念。目前，你将先学习如何在 Python 中创建字符串。
+
+**在 Python 中创建字符串**
+
+在 Python 中有不同的方法来创建字符串。最常见的做法是使用字符串字面量（string literals）。因为字符串无处不在且有许多使用场景，所以你会发现几种不同类型的字符串字面量。它们包括标准字面量（standard literals）、原始字面量（raw literals）、格式化字面量（formatted literals），以及从 Python 3.14 开始引入的模板字面量（template literals）。
+
+此外，你可以使用内置的 `str()` 函数从其他现有对象创建新字符串。
+
+在接下来的各节中，你将学习在 Python 中创建字符串的多种方式以及何时使用它们。
+
+---
+
+### 标准字符串字面量
+
+标准字符串字面量就是用引号括起来的一段文本或一串字符序列。要创建单行字符串，你可以使用单引号（`''`）和双引号（`""`）：
+
+```python
+>>> 'A single-line string in single quotes'
+'A single-line string in single quotes'
+>>> "A single-line string in double quotes"
+'A single-line string in double quotes'
+
+```
+
+在第一个示例中，你使用单引号来界定字符串字面量。在第二个示例中，你使用双引号。
+
+> **注意：** 即使你使用双引号创建字符串对象，Python 的标准 REPL 也会使用单引号来显示它们。
+
+你可以通过使用引号且在引号之间不放置任何字符来定义空字符串：
+
+```python
+>>> ""
+''
+>>> ''
+''
+>>> len("")
+0
+
+```
+
+空字符串不包含任何字符，因此当你使用内置的 `len()` 函数并将空字符串作为参数传入时，得到的结果是 `0`。
+
+要创建多行字符串，可以使用三引号字符串。在这种情况下，单引号或双引号均可使用：
+
+```python
+>>> '''A triple-quoted string
+... spanning across multiple
+... lines using single quotes'''
+'A triple-quoted string\nspanning across multiple\nlines using single quotes'
+>>> """A triple-quoted string
+... spanning across multiple
+... lines using double quotes"""
+'A triple-quoted string\nspanning across multiple\nlines using double quotes'
+
+```
+
+三引号字符串的主要使用场景是创建多行字符串。你也可以用它们来定义单行字符串，但这种做法不太常见。
+
+三引号字符串最常见的使用场景，大概是当你需要为包、模块、函数、类以及方法提供文档字符串（docstrings）的时候。
+
+如果你想在字符串中包含引号字符，可以用另一种类型的引号来界定该字符串。例如，如果字符串包含单引号字符，你可以用双引号界定它，反之亦然：
+
+```python
+>>> "This string contains a single quote (') character"
+"This string contains a single quote (') character"
+>>> 'This string contains a double quote (") character'
+'This string contains a double quote (") character'
+
+```
+
+在第一个示例中，你的字符串将单引号作为文本的一部分包含在内。为了界定该字面量，你使用了双引号。在第二个示例中，你做了相反的操作。
+
+---
+
+### 字符串字面量中的转义序列
+
+有时，你希望 Python 对字符串中的某个字符或字符序列进行不同的解释。这可能会出于以下两种情况之一。你可能希望：
+
+1. 赋予字符特殊含义
+2. 消除字符的特殊含义
+
+为了实现这些目标，你可以将反斜杠（`\`）字符与其他字符结合使用。反斜杠与特定字符的组合被称为**转义序列（escape sequence）**。这是因为反斜杠使得其后的字符脱离（escape）了它的通常含义。
+
+例如，在由单引号界定的字符串中，你可以使用 `\'` 转义序列来转义单引号字符：
+
+```python
+>>> 'This string contains a single quote (\') character'
+"This string contains a single quote (') character"
+
+```
+
+在这个示例中，反斜杠通过消除单引号字符通常具有的含义（即界定字符串字面量）来对其进行转义。现在，Python 知道你的意图不是终止该字符串，而是嵌入单引号。
+
+下表展示了用于转义字符串字面量中字符默认含义的序列：
+
+| 字符 | 通常解释 | 转义序列 | 转义后的解释 |
+| --- | --- | --- | --- |
+| `'` | 界定字符串字面量 | `\'` | 字面单引号（`'`）字符 |
+| `"` | 界定字符串字面量 | `\"` | 字面双引号（`"`）字符 |
+| `<newline>`（换行符） | 终止输入行 | `\<newline>` | 换行符被忽略 |
+| `\` | 引入转义序列 | `\\` | 字面反斜杠（`\`）字符 |
+
+你现在已经了解了前两个转义序列的工作原理。那么，换行转义序列是如何工作的呢？通常，换行符会终止输入的物理行。要添加换行符，你只需在字符串中间按下回车键（Enter）。这将引发一个 `SyntaxError` 异常：
+
+```python
+>>> "Hello
+  File "<input>", line 1
+    "Hello
+    ^
+SyntaxError: unterminated string literal (detected at line 1)
+
+```
+
+当你在输入 `"Hello` 之后按下回车键时，会得到一个 `SyntaxError`。如果你需要将字符串拆分到多行中，可以在每个换行符之前或在按下回车键之前添加一个反斜杠：
+
+```python
+>>> "Hello\
+... , World\
+... !"
+'Hello, World!'
+
+```
+
+当你在按下回车键之前添加反斜杠时，Python 会忽略换行符，并将整个结构解释为单个物理行。
+
+有时，你需要在字符串中包含字面的反斜杠字符。如果该反斜杠后面没有跟具有特殊含义的字符，你可以直接插入它：
+
+```python
+>>> "This string contains a backslash (\) character"
+'This string contains a backslash (\\) character'
+
+```
+
+在这个示例中，反斜杠后面的字符与任何已知的转义序列都不匹配，因此 Python 会替你插入实际的反斜杠。注意生成的字符串是如何自动将反斜杠双写的。尽管这个示例可行，但最佳实践是在字符串中需要此字符时始终双写反斜杠。
+
+然而，你可能会需要在构成转义序列的字符之前紧接着包含一个反斜杠：
+
+```python
+>>> "In this string, the backslash should be at the end \"
+  File "<input>", line 1
+    "In this string, the backslash should be at the end \"
+    ^
+SyntaxError: unterminated string literal (detected at line 1); perhaps you escaped the end quote?
+
+```
+
+由于序列 `\"` 匹配了一个已知的转义序列，你的字符串会因 `SyntaxError` 而失败。为了避免这个问题，你可以双写反斜杠：
+
+```python
+>>> "In this string, the backslash should be at the end \\"
+'In this string, the backslash should be at the end \\'
+
+```
+
+在这个修改后的版本中，你双写了反斜杠以转义该字符，并防止 Python 引发错误。
+
+> **注意：** 当你使用内置的 `print()` 函数打印包含转义反斜杠的字符串时，在输出中将不会看到双反斜杠：
+> ```python
+> >>> print("In this string, the backslash should be at the end \\")
+> In this string, the backslash should be at the end \
+> 
+> ```
+> 
+> 
+> 在这个示例中，输出仅显示一个反斜杠，产生了预期的效果。
+
+到目前为止，你已经学习了如何通过转义来消除给定字符的含义。假设你需要创建一个包含制表符（tab）的字符串。某些文本编辑器可能允许你直接在代码中插入制表符。但是，出于以下几个原因，这被认为是一种不良做法：
+
+* 计算机可以区分制表符和一系列空格，但人类无法区分，因为这些字符在视觉上是无法辨别的。
+* 某些文本编辑器会通过将制表符扩展为相应数量的空格来自动消除制表符。
+* 某些 Python REPL 环境不会将制表符插入到代码中。
+
+在 Python 中，你可以使用 `\t` 转义序列来指定制表符：
+
+```python
+>>> print("Before\tAfter")
+Before    After
+
+```
+
+`\t` 转义序列改变了字母 `t` 的通常含义，使 Python 将该组合解释为制表符。
+
+以下是使 Python 对某些字符赋予特殊含义而不是按字面解释的转义序列列表：
+
+| 转义序列 | 转义后的解释 |
+| --- | --- |
+| `\a` | ASCII 响铃（BEL）字符 |
+| `\b` | ASCII 退格（BS）字符 |
+| `\f` | ASCII 换页（FF）字符 |
+| `\n` | ASCII 换行（LF）字符 |
+| `\N{<name>}` | Unicode 数据库中指定 `<name>` 的字符 |
+| `\r` | ASCII 回车（CR）字符 |
+| `\t` | ASCII 水平制表（TAB）字符 |
+| `\uxxxx` | 具有 16 位十六进制值 `xxxx` 的 Unicode 字符 |
+| `\Uxxxxxxxx` | 具有 32 位十六进制值 `xxxxxxxx` 的 Unicode 字符 |
+| `\v` | ASCII 垂直制表（VT）字符 |
+| `\ooo` | 具有八进制值 `ooo` 的字符 |
+| `\xhh` | 具有十六进制值 `hh` 的字符 |
+
+换行符（`\n`）大概是这些转义序列中最常用的一种。该序列通常用于创建跨越多行且格式美观的文本输出。
+
+以下是转义序列实际应用的一些示例：
+
+```python
+>>> # 制表符
+>>> print("a\tb")
+a    b
+>>> # 换行
+>>> print("a\nb")
+a
+b
+>>> # 八进制
+>>> print("\141")
+a
+>>> # 十六进制
+>>> print("\x61")
+a
+>>> # 按名称指定的 Unicode
+>>> print("\N{rightwards arrow}")
+→
+
+```
+
+当你需要插入无法直接通过键盘生成，或者不易读取或打印的字符时，这些转义序列非常有用。
+
+### 原始字符串字面量
+
+借助原始字符串字面量，你可以创建不转义转义序列的字符串。任何反斜杠字符都会原样保留在字符串中。
+
+要创建原始字符串，必须在字符串字面量前面加上字母 `r` 或 `R`：
+
+```python
+>>> print("Before\tAfter")  # 普通字符串
+Before    After
+>>> print(r"Before\tAfter")  # 原始字符串
+Before\tAfter
+
+```
+
+原始字符串消除了类似 `\t` 等转义序列的特殊含义，并原样展示这些字符。
+
+原始字符串通常用于创建正则表达式，因为它们允许你在不受限制的情况下使用多个可能具有特殊含义的字符。
+
+> **注意：** 要了解有关 Python 中正则表达式的更多信息，请查阅《Python 中的正则表达式》（第 1 部分和第 2 部分）教程。
+
+例如，假设你想要创建一个用于匹配电子邮件地址的正则表达式。为此，你可以像下面的代码一样，使用原始字符串来创建正则表达式：
+
+```python
+>>> import re
+>>> pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+>>> pattern
+'\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b'
+>>> regex = re.compile(pattern)
+>>> text = """
+...     Please contact us at support@example.com
+...     or sales@example.com for further information.
+... """
+>>> regex.findall(text)
+['support@example.com', 'sales@example.com']
+
+```
+
+变量 `pattern` 保存了一个用于匹配电子邮件地址的正则表达式原始字符串。请注意该字符串是如何包含数个反斜杠的，这些反斜杠均被转义并原样插入到最终的字符串中。接着，你编译该正则表达式并在一段示例文本中检查匹配项。
+
+---
+
+### 格式化字符串字面量
+
+格式化字符串字面量，简称为 f-string，允许你在字符串中插值并根据需要对它们进行格式化。
+
+要使用 f-string 字面量创建字符串，必须在字面量前面加上字母 `f` 或 `F`。F-string 允许你将值插入到字符串字面量中的替换字段里。你可以使用花括号来创建这些字段。
+
+这里有一个 f-string 字面量的快速示例：
+
+```python
+>>> name = "Jane"
+>>> f"Hello, {name}!"
+'Hello, Jane!'
+
+```
+
+在这个示例中，你使用 f-string 字面量和替换字段将变量 `name` 插值到了字符串中。
+
+你将在“进行字符串插值与格式化”（Doing String Interpolation and Formatting）一节中学习更多关于使用 f-string 进行字符串插值和格式化的内容。
+
+---
+
+### 内置 `str()` 函数
+
+你可以使用内置的 `str()` 函数来创建新字符串。然而，该函数更常见的用例是将其他数据类型转换为字符串，这也是创建新字符串的一种方式。
+
+请看以下示例：
+
+```python
+>>> str()
+''
+>>> str(42)
+'42'
+>>> str(3.14)
+'3.14'
+>>> str([1, 2, 3])
+'[1, 2, 3]'
+>>> str({"one": 1, "two": 2, "three": 3})
+"{'one': 1, 'two': 2, 'three': 3}"
+>>> str({"A", "B", "C"})
+"{'B', 'C', 'A'}"
+
+```
+
+在第一个示例中，你在不带参数的情况下调用 `str()` 函数来创建一个空字符串。随后，你使用该函数将来自不同内置类型的对象转换为字符串。
+
+**在字符串上使用运算符（Using Operators on Strings）**
+
+你还可以将一些运算符与作为操作数的字符串值一起使用。例如，`+` 和 `*` 运算符分别允许你执行字符串拼接（concatenation）和重复（repetition）。在接下来的各节中，你将学习这些运算符以及其他运算符如何与字符串协同工作。
+
+---
+
+### 拼接字符串：`+` 运算符
+
+`+` 运算符允许你拼接字符串。因此，在这种语境下，你可以称它为**拼接运算符（concatenation operator）**。拼接涉及将两个或多个字符串对象连接起来，以创建一个新的单个字符串：
+
+```python
+>>> greeting = "Hello"
+>>> name = "Pythonista"
+>>> greeting + ", " + name + "!!!"
+'Hello, Pythonista!!!'
+
+```
+
+在这个示例中，你使用加号运算符拼接了几个字符串对象。你从 `greeting` 变量开始，添加一个逗号以及一个空格。接下来，你添加 `name` 变量，最后加上一些感叹号。注意，你将保存字符串的变量与字符串字面量组合在了一起，以构建最终的字符串。
+
+> **注意：** 通常情况下，你会使用 f-string 而不是 `+` 来拼接字符串。
+
+拼接运算符还有一个用 `+=` 表示的增强赋值变体。该运算符允许你以更简短的方式实现类似 `string = string + another_string` 的操作：
+
+```python
+>>> file = "app"
+>>> file += ".py"
+>>> file
+'app.py'
+
+```
+
+在这个示例中，你逐步创建了一个文件名。你首先从没有文件扩展名的文件名开始。然后，使用增强拼接运算符将文件扩展名添加到现有文件名中。
+
+请注意，由于字符串是不可变的，增强运算符并不会改变初始字符串。相反，它会创建一个新的字符串，并将其重新赋值给变量名 `file`。
+
+---
+
+### 重复字符串：`*` 运算符
+`*` 运算符允许你将给定的字符串重复指定的次数。在这种语境下，该运算符被称为**重复运算符（repetition operator）**。其语法如下所示：
+
+```python
+new_string = string * n
+new_string = n * string
+
+```
+
+重复运算符接受两个操作数。一个操作数是你想重复的字符串，而另一个操作数是一个整数，代表你想要重复目标字符串的次数：
+
+```python
+>>> "=" * 10
+'=========='
+>>> 10 * "Hi!"
+'Hi!Hi!Hi!Hi!Hi!Hi!Hi!Hi!Hi!Hi!'
+
+```
+
+在第一个示例中，你将 `=` 字符重复了十次。在第二个示例中，你同样将文本 `Hi!` 重复了十次。请注意，操作数的顺序不会影响结果。
+
+乘数操作数 `n` 通常是一个正整数。如果它是零或负整数，结果将是一个空字符串：
+
+```python
+>>> "Hi!" * 0
+''
+>>> "Hi!" * -8
+''
+
+```
+
+在动态计算 `n` 且可能出现 `0` 或负值的情况下，你需要留意这一行为。除此之外，当你需要以表格格式向用户展示某些输出时，该运算符会非常派得上用场。
+
+例如，假设你拥有关于公司员工的以下数据：
+
+```python
+>>> data = [
+...     ["Alice", "25", "Python Developer"],
+...     ["Bob", "30", "Web Designer"],
+...     ["Charlie", "35", "Team Lead"],
+... ]
+
+```
+
+你想要创建一个函数，该函数接收这些数据，将其放入表格中并打印到屏幕上。在这种情况下，你可以编写如下函数：
+
+```python
+>>> def display_table(data, headers):
+...     max_len = max(len(header) for header in headers)
+...     print(" | ".join(header.ljust(max_len) for header in headers))
+...     sep = "-" * max_len
+...     print("-|-".join(sep for _ in headers))
+...     for row in data:
+...         print(" | ".join(header.ljust(max_len) for header in row))
+...
+
+```
+
+该函数接受员工数据和表格表头作为参数。然后，它获取表头的最大长度，使用竖线字符（`|`）作为分隔符打印表头，并将表头向左对齐。
+
+为了将表头与表格内容分隔开，你构建了一条由连字符组成的线。要创建这条线，你可以使用重复运算符，并将最大表头长度作为乘数操作数。在这里使用该运算符的效果是，你将在每个表头下方获得一条可视的分隔线，其长度始终与最长的表头字段一样长。最后，打印员工数据。
+
+以下是该函数在实践中的运行效果：
+
+```python
+>>> data = [
+...     ["Alice", "25", "Python Developer"],
+...     ["Bob", "30", "Web Designer"],
+...     ["Charlie", "35", "Team Lead"],
+... ]
+>>> headers = ["Name", "Age", "Job Title"]
+>>> display_table(data, headers)
+Name      | Age       | Job Title
+----------|-----------|----------
+Alice     | 25        | Python Developer
+Bob       | 30        | Web Designer
+Charlie   | 35        | Team Lead
+
+```
+
+同样，创建类似这样的表格是重复运算符的一个绝佳使用场景，因为它允许你动态创建分隔线。
+
+重复运算符也有一个增强赋值变体，允许你以更简短的方式实现类似 `string = string * n` 的操作：
+
+```python
+>>> sep = "-"
+>>> sep *= 10
+>>> sep
+'----------'
+
+```
+
+在这个示例中，`*=` 运算符将 `sep` 中的字符串重复了十次，并将结果重新赋值回 `sep` 变量。
+
+### 在字符串中查找子字符串：`in` 和 `not in` 运算符
+
+Python 还提供了可用于字符串的 `in` 和 `not in` 运算符。如果左侧操作数包含在右侧操作数中，则 `in` 运算符返回 `True`，否则返回 `False`。这种类型的检查被称为**成员资格测试（membership test）**。
+
+当你需要确定某个子字符串是否出现在给定的字符串中时，可以利用成员资格测试：
+
+```python
+>>> "food" in "That's food for thought."
+True
+>>> "food" in "That's good for now."
+False
+
+```
+
+在这些示例中，你检查了字符串 `"food"` 是否是右侧字符串的子字符串。
+
+
+`not in` 运算符执行相反的检查：
+
+```python
+>>> "z" not in "abc"
+True
+>>> "z" not in "xyz"
+False
+
+```
+
+使用 `not in` 运算符，你可以检查给定字符串中是否未找到某个子字符串。如果该子字符串不在目标字符串中，则得到 `True`；否则得到 `False`。
+
+### 探索用于字符串处理的内置函数
+
+Python 提供了许多内置于语言中的函数，因此这些函数始终可供你使用。以下是处理字符串时特别有用的几个函数：
+
+| 函数 | 描述 |
+| --- | --- |
+| `len()` | 返回字符串的长度 |
+| `str()` | 返回对象的面向用户的友好字符串表示 |
+| `repr()` | 返回对象的面向开发者的友好字符串表示 |
+| `format()` | 允许进行字符串格式化 |
+| `ord()` | 将字符转换为整数 |
+| `chr()` | 将整数转换为字符 |
+
+在接下来的各节中，你将学习如何使用这些函数来处理你的字符串。作为开端，你将首先学习使用 `len()` 来确定现有字符串的长度。
+
+---
+
+### 获取字符数：`len()`
+
+你在字符串上执行的一个常见操作是确定其字符数。为了完成这项任务，你可以使用内置的 `len()` 函数。
+
+
+当以字符串作为参数时，`len()` 函数会返回输入字符串的长度，即该字符串中的字符数。以下是几个关于如何使用 `len()` 的示例：
+
+```python
+>>> len("Python")
+6
+>>> len("")
+0
+
+```
+
+单词 `"Python"` 有六个字母，因此以该单词作为参数调用 `len()` 会返回 6。注意，当你使用空字符串调用 `len()` 时，它会返回 0。该函数计算的是字符串对象中的字符数，与你构建字符串的方式无关：
+
+```python
+>>> "\N{snake}"
+'🐍'
+>>> len("\N{snake}")
+1
+>>> len("🐍")
+1
+
+```
+
+你使用了 `\N` 转义序列来定义一个包含单个蛇表情符号（emoji）的字符串。尽管你在字符串字面量中输入了九个字符，但该字符串对象仅由一个 `🐍` 字符组成。并且 `len()` 报告其长度为 1。当你直接使用字面量表情符号字符创建字符串时，也会得到相同的结果。
+
+### 将对象转换为字符串：`str()` 与 `repr()`
+
+要将对象转换为其字符串表示形式，你可以使用内置的 `str()` 和 `repr()` 函数。使用 `str()` 函数，你可以将给定对象转换为其面向用户的友好表示形式。这种类型的字符串表示形式是面向最终用户的。
+
+例如，如果你将内置类型的对象传递给 `str()`，则会得到一种通常由定义当前对象的字面量所组成的字符串表示：
+
+```python
+>>> str(42)
+'42'
+>>> str(3.14)
+'3.14'
+>>> str([1, 2, 3])
+'[1, 2, 3]'
+>>> str({"one": 1, "two": 2, "three": 3})
+"{'one': 1, 'two': 2, 'three': 3}"
+>>> str({"A", "B", "C"})
+"{'B', 'C', 'A'}"
+
+```
+
+在这些示例中，输出显示了输入对象的面向用户的友好表示。这些表示与对象的字面量相吻合。
+
+你可以通过 `.__str__()` 特殊方法为自定义类提供面向用户的友好字符串表示，稍后你将学习这部分内容。
+
+同样，内置的 `repr()` 函数会为你提供当前对象面向开发者的友好表示：
+
+```python
+>>> repr(42)
+'42'
+>>> repr(3.14)
+'3.14'
+>>> repr([1, 2, 3])
+'[1, 2, 3]'
+>>> repr({"one": 1, "two": 2, "three": 3})
+"{'one': 1, 'two': 2, 'three': 3}"
+>>> repr({"A", "B", "C"})
+"{'B', 'C', 'A'}"
+
+```
+
+理想情况下，你应该能够通过复制 `repr()` 的输出来重新创建原始对象。此外，这种表示能让你了解对象是如何构建的。正是因为这两个区别，你才可以说 `repr()` 返回了当前对象面向开发者的友好字符串表示。
+
+正如你在上面的示例中看到的，对于内置数据类型，`str()` 和 `repr()` 的输出是相同的。这两个函数都将对象的字面量作为字符串返回。
+
+> **注意：** 在 `str()` 函数的底层是 `.__str__()` 特殊方法。同样，在 `repr()` 的底层是 `.__repr__()` 方法。要了解有关这些特殊方法的更多信息，请查阅《在 Python 中何时应使用 .**repr**() 与 .**str**()？》（When Should You Use .**repr**() vs .**str**() in Python?）教程。
+
+为了看清 `str()` 和 `repr()` 之间的区别，请看以下示例中的 `Person` 类：
+
+**文件名：person.py**
+
+```python
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def __repr__(self):
+        return f"{type(self).__name__}(name='{self.name}', age={self.age})"
+
+    def __str__(self):
+        return f"I'm {self.name}, and I'm {self.age} years old."
+
+```
+
+`.__repr__()` 方法为你提供了特定 `Person` 对象面向开发者的友好字符串表示。你将能够使用 `repr()` 函数的输出来重新创建该对象。相比之下，调用 `.__str__()` 所获得的字符串表示应力求对最终用户具有可读性并提供有效信息。你可以通过 `str()` 函数来访问这种表示。
+
+以下是这两个函数作用于该类的实例时的运行方式：
+
+```python
+>>> john = Person("John Doe", 35)
+>>> repr(john)
+"Person(name='John Doe', age=35)"
+>>> str(john)
+"I'm John Doe, and I'm 35 years old."
+
+```
+
+在这个示例中，你可以使用 `repr()` 的输出来重新创建存储在 `john` 中的对象。你还拥有关于如何构建这个特定对象的全部信息。与此同时，`str()` 的输出没有为你提供关于如何构建该对象的任何线索。但是，它确实为最终用户提供了有用的信息。
+
+---
+
+### 格式化字符串：`format()`
+
+你可以使用内置的 `format()` 函数来格式化字符串。该函数将输入值转换为格式化后的表示。要定义所需的格式，你可以使用格式说明符（format specifier），它应该是一个遵循字符串格式化微语言（string formatting mini-language）所定义语法的字符串。
+
+> **注意：** 要了解有关格式说明符的更多信息，请查阅《用于整洁字符串的 Python 格式化微语言》（Python's Format Mini-Language for Tidy Strings）教程。
+
+请看以下将 `format()` 函数与不同输入值及格式说明符结合使用的示例：
+
+```python
+>>> import math
+>>> from datetime import datetime
+>>> format(math.pi, ".4f")  # 保留四位小数
+'3.1416'
+>>> format(1000000, ",.2f")  # 千位分隔符
+'1,000,000.00'
+>>> format("Header", "=^30")  # 居中并填充
+'============Header============'
+>>> format(datetime.now(), "%a %b %d, %Y")  # 日期
+'Mon Jul 29, 2024'
+
+```
+
+在这些示例中，`".4f"` 说明符将输入值格式化为保留四位小数的浮点数。
+
+借助 `",.2f"` 格式说明符，你可以使用逗号作为千位分隔符并保留两位小数来格式化数字，这可能适用于货币数值的格式化。
+
+接着，你使用 `"=^30"` 说明符将字符串 `"Header"` 居中格式化为 30 个字符的宽度，并使用等号作为填充字符。最后，你使用 `"%a %b %d, %Y"` 来格式化日期。
+
+### 通过码点处理字符：`ord()` 与 `chr()`
+
+`ord()` 函数返回一个整数值，代表给定字符的 Unicode 码点（Unicode code point）。
+
+在最基础的层面上，计算机将所有信息都作为数字进行存储。为了表示字符数据，计算机使用一种转换方案，将每个字符映射到其关联的数字上，该数字即为其码点。
+
+最常用的方案是 ASCII，它涵盖了你可能最习惯处理的那些熟悉的拉丁字符。对于这些字符，`ord()` 会返回与当前字符对应的 ASCII 值：
+
+```python
+>>> ord("a")
+97
+>>> ord("#")
+35
+
+```
+
+虽然 ASCII 字符集足以表示英语，但全球范围内使用的是多种多样的自然语言，且数字媒体中也出现了无数的符号与字形。你在代码中可能需要表示的完整字符集，远远超出了拉丁字母、数字和常用符号的范畴。
+
+Unicode 是一个被广泛接受的标准，它致力于为所有平台或操作系统上的每种自然语言中的每一个可能字符提供一个数字编码。Unicode 字符集是 Python 中的标准规范。
+
+> **注意：** 欲了解更多关于 Python 中 Unicode 的信息，请参阅《Python 中的 Unicode 与字符编码：轻松入门指南》（Unicode & Character Encodings in Python: A Painless Guide）教程以及 Python 官方文档中的《Python 对 Unicode 的支持》（Python’s Unicode Support）。
+
+`ord()` 函数同样会返回 Unicode 字符的数值：
+
+```python
+>>> ord("€")
+8364
+>>> ord("∑")
+8721
+
+```
+
+在 Unicode 编码表中，字符 `"€"` 对应的码点是 8364，而字符 `"∑"` 的码点是 8721。
+
+`chr()` 函数的作用与 `ord()` 相反。它返回与给定码点关联的字符值：
+
+```python
+>>> chr(97)
+'a'
+>>> chr(35)
+'#'
+>>> chr(8364)
+'€'
+>>> chr(8721)
+'∑'
+
+```
+
+给定数值 `n`，`chr(n)` 会返回与 `n` 对应的字符。请注意，`chr()` 同样可以处理 Unicode 字符。
+
+### 字符串的索引与切片
+
+Python 的字符串是由字符组成的有序序列。正因如此，你可以利用字符对应的索引来访问字符串中的各个字符。什么是字符的索引？字符串中的每个字符都有一个指定其位置的索引。索引是从 0 开始，一直到字符串中的字符数减 1 为止的整数。
+
+你可以使用这些索引来执行两项常见操作：
+
+1. **索引（Indexing）**：指使用字符关联的索引来获取该字符。
+2. **切片（Slicing）**：允许你利用索引获取现有字符串的一部分。
+
+在接下来的各节中，你将学习如何在 Python 字符串上执行这两项操作。
+
+### 索引字符串
+
+你可以通过指定字符串对象并在其后方括号（`[]`）中填入字符的索引，来访问字符串中的各个字符。此操作被称为**索引（indexing）**。
+
+Python 中的字符串索引是基于 0（zero-based）的，这意味着字符串中的第一个字符索引为 0，下一个字符索引为 1，依此类推。最后一个字符的索引将是字符串的长度减 1。你可以通过字符的索引来访问它们：
+
+```python
+>>> s = "foobar"
+>>> s[0]
+'f'
+>>> s[1]
+'o'
+>>> s[2]
+'o'
+
+```
+
+使用索引运算符 `[index]`，你可以访问现有字符串中的单个字符。需要注意的是，尝试超出字符串末尾进行索引会导致错误：
+
+```python
+>>> len(s)
+6
+>>> s[6]
+Traceback (most recent call last):
+    ...
+IndexError: string index out of range
+
+```
+
+当你使用的索引超出了字符串字符数减 1 的范围时，就会引发 `IndexError` 异常。
+
+你也可以使用负数作为索引。如果这么做，索引将从字符串的末尾向前倒序进行。索引 `-1` 指向最后一个字符，索引 `-2` 指向倒数第二个字符，依此类推。
+
+以下是负索引的一些示例：
+
+```python
+>>> s[-1]
+'r'
+>>> s[-2]
+'a'
+>>> s[-3]
+'b'
+
+```
+
+使用负索引，你可以从字符串的末尾向前访问到开头。同样，尝试使用超出字符串开头的负数进行索引会导致错误：
+
+```python
+>>> s[-7]
+Traceback (most recent call last):
+    ...
+IndexError: string index out of range
+
+```
+
+由于字符串 `"foobar"` 只有六个字符，因此你可以使用的最后一个负索引是 `-6`，它对应于字符串中的第一个字符。
+
+简而言之，对于任何非空字符串，`s[len(s) - 1]` 和 `s[-1]` 都会返回最后一个字符。同样地，`s[0]` 和 `s[-len(s)]` 会返回第一个字符。注意，在空字符串上使用任何索引都是毫无意义的。
+
+最后，你应该牢记，由于字符串是不可变的，你不能对它们执行索引赋值操作。以下示例说明了这一事实：
+
+```python
+>>> greeting = "Hello!"
+>>> greeting[5] = "?"
+Traceback (most recent call last):
+    ...
+TypeError: 'str' object does not support item assignment
+
+```
+
+如果你尝试修改现有字符串中的某个字符，就会收到一个 `TypeError`，提示你字符串对象不支持项赋值（item assignment）。
+
+### 切片字符串
+
+Python 允许你从字符串中提取子字符串。此操作被称为**切片（slicing）**。如果 `s` 是一个字符串，那么形如 `s[m:n]` 的表达式将返回 `s` 中从索引 `m` 开始，直到但不包括索引 `n` 的部分：
+
+```python
+>>> s = "foobar"
+>>> s[2:5]
+'oba'
+
+```
+
+第一个索引设定了切片操作的起始点。第二个索引指定了结果中不包含的第一个字符——在上面的示例中为索引为 5 的字符 `"r"`。
+
+> **注意：** 字符串索引是基于 0 的。这意味着字符串中的第一个字符索引为 0。这既适用于标准索引，也适用于切片。
+
+如果省略第一个索引，切片将从字符串的开头开始：
+
+```python
+>>> s[:4]
+'foob'
+>>> s[0:4]
+'foob'
+
+```
+
+因此，像 `s[:m]` 和 `s[0:m]` 这样的切片是等价的。同样，如果像 `s[n:]` 这样省略第二个索引，切片将从第一个索引一直延伸到字符串的末尾。这是相比更为繁琐的 `s[n:len(s)]` 语法的一种极佳且简洁的替代方案：
+
+```python
+>>> s[2:]
+'obar'
+>>> s[2:len(s)]
+'obar'
+
+```
+
+当省略最后一个索引时，切片操作将延伸直至字符串末尾。
+
+对于任何字符串 `s` 和任何整数 `n`（只要满足 $n \ge 0$），`s[:n] + s[n:]` 都等于 `s`：
+
+```python
+>>> s[:4] + s[4:]
+'foobar'
+>>> s[:4] + s[4:] == s
+True
+
+```
+
+第一个切片提取了从开头开始直至索引 4（不包含该索引）的字符。第二个切片提取了从索引 4 开始直至字符串末尾的字符。因此，结果将包含与原始字符串完全相同的字符。
+
+同时省略两个索引将返回原始字符串的全部内容。它返回的不是副本，而是对原始字符串的引用：
+
+```python
+>>> t = s[:]
+>>> id(s)
+59598496
+>>> id(t)
+59598496
+>>> s is t
+True
+
+```
+
+当两个索引都省略时，你告诉 Python 想要提取一个包含整个字符串的切片。出于效率考虑，Python 返回的是对原始字符串的引用，而不是副本。你可以使用内置的 `id()` 函数来验证这一行为。
+
+如果切片中的第一个索引大于或等于第二个索引，Python 将返回一个空字符串：
+
+```python
+>>> s[2:2]
+''
+>>> s[4:2]
+''
+
+```
+
+正如你所看到的，这种行为提供了一种稍微有些隐晦的生成空字符串的方法。
+
+你也可以在切片中使用负索引。与单字符索引一样，`-1` 指向最后一个字符，`-2` 指向倒数第二个字符，依此类推。下面的图示展示了如何使用正负索引从字符串 `"foobar"` 中切片出子字符串 `"oob"`：
+
+以下是对应的 Python 代码：
+
+```python
+>>> s[-5:-2]
+'oob'
+>>> s[1:4]
+'oob'
+
+```
+
+当你需要获取以字符串最后一个字符为基准点的切片时，使用负索引进行切片尤其有用。
+
+还有一个切片语法的变体需要探讨。附加一个冒号（`:`）和第三个索引可以指定**步长（stride / step）**。该索引指示在获取切片中的每个字符后跳过多少个字符。
+
+例如，对于字符串 `"foobar"`，切片 `[0:6:2]` 从第一个字符开始，到最后一个字符结束，每隔一个字符跳过一次。这种行为在下面的图示中展现，其中绿色项是切片中包含的字符：
+
+类似地，`[1:6:2]` 指定了一个从第二个字符（即索引 1）开始，到最后一个字符结束的切片。同样，步长值 2 会每隔一个字符跳过一次：
+
+说明性的 REPL 代码如下所示：
+
+```python
+>>> s[0:6:2]
+'foa'
+>>> s[1:6:2]
+'obr'
+
+```
+
+与任何切片操作一样，第一个和第二个索引都可以省略，并分别默认为第一个字符和最后一个字符：
+
+```python
+>>> numbers = "12345" * 5
+>>> numbers
+'1234512345123451234512345'
+>>> numbers[::5]
+'11111'
+>>> numbers[4::5]
+'55555'
+
+```
+
+在第一个切片中，你省略了第一个和第二个索引，使切片从索引 0 开始并一直延伸到字符串末尾。在第二个切片中，你仅省略了第二个索引，切片同样延伸到字符串末尾。
+
+你还可以指定一个负步长值，在这种情况下，Python 会在字符串中反向步进。需要注意的是，起始索引应该大于结束索引：
+
+```python
+>>> s[5:0:-2]
+'rbo'
+
+```
+
+在上面的示例中，`[5:0:-2]` 意味着：从最后一个字符开始，以步长 2 向后步进，一直到第一个字符（但不包括该字符）。
+
+当你向后步进时，如果省略了第一个和第二个索引，默认值在直觉上是颠倒的。换句话说，起始索引默认为字符串的末尾，而结束索引默认为字符串的开头。
+
+这里有一个示例：
+
+```python
+>>> numbers[::-5]
+'55555'
+
+```
+
+使用等于 `-1` 的步长提供了一种反转字符串的常用技巧：
+
+```python
+>>> principle = "Beautiful is better than ugly."
+>>> principle[::-1]
+'.ylgu naht retteb si lufituaeB'
+
+```
+**进行字符串插值与格式化（Doing String Interpolation and Formatting）**
+
+字符串插值（String interpolation）是指通过将值插入到一个充当模板的字符串中来构建新字符串，该模板为每个要插入的值都设有替换字段。另一方面，字符串格式化（String formatting）涉及通过插值对插入到给定字符串中的值应用所需的格式。
+
+> **注意：** 要深入了解字符串插值，请查阅《Python 中的字符串插值：探索可用工具》（String Interpolation in Python: Exploring Available Tools）教程。
+> 同样，如果你想了解有关字符串格式化的更多信息，请查阅《Python 字符串格式化：可用工具及其特性》（Python String Formatting: Available Tools and Their Features）教程。
+
+在接下来的各节中，你将学习 Python 中字符串插值和格式化的基础知识。
+
+---
+
+### 使用 F-Strings
+
+你也可以使用 f-string 将值插入到字符串中并对它们进行格式化，正如你在有关 f-string 字面量的章节中简要涉及到的那样。为此，你需要使用遵循 Python 字符串格式化微语言所定义语法的格式说明符。例如，以下是如何使用货币格式展示数值：
+
+```python
+>>> income = 1234.1234
+>>> f"Income: ${income:.2f}"
+'Income: $1234.12'
+
+```
+
+在由花括号界定的替换字段内，包含有你想要插入的变量以及格式说明符——即以冒号（`:`）开头的字符串。在此示例中，格式说明符定义了一个保留两位小数的浮点数。
+
+> **注意：** 要了解更多关于使用 f-string 进行字符串插值和格式化的内容，请查阅《用于字符串插值与格式化的 Python F-String》（Python’s F-String for String Interpolation and Formatting）教程。
+
+F-string 语法简洁，在 Python 代码中非常流行。然而，它们仅适用于你希望执行急切插值（eagerly interpolation / 立即插值）的情况，因为被插入的值是在 Python 执行字符串时直接嵌入的。
+
+你不能将 f-string 用于**惰性插值（lazy interpolation）**。换句话说，对于需要可复用模板以便在代码的不同部分动态填充值的情况，你无法使用 f-string。在这种情况下，你可以使用 `str.format()` 方法。
+
+---
+
+### 使用 `.format()` 方法
+
+Python 的 `str` 类有一个名为 `.format()` 的方法，允许进行字符串插值和格式化。该方法功能非常强大。与 f-string 一样，它支持字符串格式化微语言；但与 f-string 不同的是，它同时支持急切插值和惰性插值。
+
+请看以下使用 `.format()` 创建余额报告的示例：
+
+```python
+>>> debit = 300.00
+>>> credit = 450.00
+>>> template = """
+... Account Report
+... Credit:  ${credit:.2f}
+... Debit:  -${debit:.2f}
+... ________________
+... Balance: ${balance:.2f}"""
+>>> print(
+...     template.format(
+...         credit=credit,
+...         debit=debit,
+...         balance=credit - debit,
+...     )
+... )
+Account Report
+Credit:  $450.00
+Debit:  -$300.00
+________________
+Balance: $150.00
+
+```
+
+在这个示例中，你首先定义了两个变量来保存银行账户的借方（debit）和贷方（credit）。接着，你创建了一个模板来构建展示该账户贷方、借方和余额的报告。最后，你使用所需参数调用 `.format()` 来生成报告。
+
+---
+
+### 使用模运算符（%）
+
+Python 还有另一个可用于字符串插值和格式化的工具，称为模运算符（`%`）。该运算符是 Python 提供的第一个用于字符串插值和格式化的工具。它同样允许你执行急切插值和惰性插值。
+
+> **注意：** 要了解有关用于字符串格式化和插值的模运算符的更多信息，请查阅《Python 中的模字符串格式化》（Modulo String Formatting in Python）教程。
+
+虽然你可以使用模运算符进行字符串格式化，但它的格式化能力有限，并且不支持字符串格式化微语言。
+
+以下是使用模运算符编写上一节示例代码的方式：
+
+```python
+>>> debit = 300.00
+>>> credit = 450.00
+>>> template = """
+... Account Report
+... Credit:  $%(credit).2f
+... Debit:  -$%(debit).2f
+... ________________
+... Balance: $%(balance).2f"""
+>>> print(
+...     template
+...     % {
+...         "credit": credit,
+...         "debit": debit,
+...         "balance": credit - debit,
+...     }
+... )
+Account Report
+Credit:  $450.00
+Debit:  -$300.00
+________________
+Balance: $150.00
+
+```
+
+在此版本的报告模板中，你使用了带有模运算符语法的命名占位符。为了提供要插入的值，你使用了一个字典。该运算符会利用与替换字段相匹配的键来解包该字典。
+
+
+## 探索 `str` 类方法（Exploring str Class Methods）
+
+方法是你在类内部定义的函数。与函数类似，你调用方法来执行特定任务。但与函数不同的是，你在特定对象或类上调用方法，因此它在执行期间能够了解其所属的对象。
+
+在对象上调用方法的语法如下所示：
+
+```text
+object.method([arg_0, arg_2, ..., arg_n])
+class.method([arg_0, arg_2, ..., arg_n])
+
+```
+
+这会在对象 `object` 上调用方法 `.method()`。在圆括号内部，你可以指定方法运行所需的参数，但这些参数是可选的。请注意，你既可以拥有实例方法，也可以拥有类方法。
+
+> **注意：** 在上述语法中，方括号（`[]`）内指定的参数是可选参数，方括号本身不是语法的一部分。在接下来的各节中，你将沿用这一约定。
+
+Python 的 `str` 类提供了丰富的方法集，你可以使用它们以多种不同方式格式化字符串。在下一节中，你将学习一些较常用 `str` 方法的基础知识。
+
+---
+
+### 大小便操作
+
+你在本节中将要探讨的 `str` 方法允许你对目标字符串执行大小写转换。请注意，本节中的方法仅对字母有效。非字母字符保持不变，因为它们没有大写和小写形式。
+
+> **注意：** 请记住，由于字符串是不可变的，当字符串方法对现有字符串应用更改时，它们会返回一个新的字符串对象。
+
+首先，你将从使用 `.capitalize()` 方法将某些字符串的首字母大写开始。
+
+#### `.capitalize()`
+
+`.capitalize()` 方法返回目标字符串的一个副本，其第一个字符转换为大写，其余所有字符均转换为小写：
+
+```python
+>>> "foO BaR 123 BAZ quX".capitalize()
+'Foo bar 123 baz qux'
+
+```
+
+在此示例中，目标字符串中仅第一个字母被转换为大写。其余字母均被转换为小写。
+
+#### `.lower()`
+
+`.lower()` 方法返回目标字符串的一个副本，其中所有字母字符均转换为小写：
+
+```python
+>>> "FOO Bar 123 baz qUX".lower()
+'foo bar 123 baz qux'
+
+```
+
+从该示例中你可以看到所有大写字母是如何被转换为小写的。
+
+#### `.swapcase()`
+
+`.swapcase()` 方法返回目标字符串的一个副本，其中大写字母字符转换为小写，反之亦然：
+
+```python
+>>> "FOO Bar 123 baz qUX".swapcase()
+'foo bAR 123 BAZ Qux'
+
+```
+
+在此示例中，对 `.swapcase()` 的调用将小写字母转换成了大写，并将大写字母转换成了小写。
+
+#### `.title()`
+
+`.title()` 方法返回目标字符串的一个副本，其中每个单词的首字母转换为大写，其余字母转换为小写：
+
+```python
+>>> "the sun also rises".title()
+'The Sun Also Rises'
+
+```
+
+请注意，该方法不会尝试区分重要单词和次要单词，并且无法优雅地处理撇号（省略号）、所有格或缩略词：
+
+```python
+>>> "what's happened to ted's IBM stock?".title()
+"What'S Happened To Ted'S Ibm Stock?"
+
+```
+
+`.title()` 方法将目标字符串中每个单词的首字母转换为大写。正如你所看到的，它在处理撇号和缩写词时的表现并不尽如人意！
+
+#### `.upper()`
+
+`.upper()` 方法返回目标字符串的一个副本，其中所有字母字符均转换为大写：
+
+```python
+>>> "FOO Bar 123 baz qUX".upper()
+'FOO BAR 123 BAZ QUX'
+
+```
+
+通过在字符串上调用 `.upper()`，你将获得一个所有字母都变为大写的新字符串。
+
+---
+
+### 查找与替换子字符串
+
+本节中的方法提供了在目标字符串中搜索指定子字符串的多种方式。
+
+每个方法都支持可选的 `start` 和 `end` 参数。这些参数意味着该方法的作用范围被限制在目标字符串中从索引 `start` 处的字符开始、一直到但不包括索引 `end` 处的字符的部分。如果指定了 `start` 但未指定 `end`，则该方法将应用于目标字符串中从 `start` 到字符串末尾的部分。
+
+#### `.count(sub[, start[, end]])`
+
+`.count(sub)` 方法返回子字符串 `sub` 在目标字符串中出现的非重叠次数：
+
+```python
+>>> "foo goo moo".count("oo")
+3
+
+```
+
+如果你指定了 `start` 和 `end`，计数将被限制在它们所指示的子字符串范围内的出现次数：
+
+```python
+>>> "foo goo moo".count("oo", 0, 8)
+2
+
+```
+
+在此示例中，搜索从索引 0 开始，到索引 8 结束。正因如此，最后一次出现的 `"oo"` 未被计入。
+
+#### `.find(sub[, start[, end]])`
+
+你可以使用 `.find()` 检查字符串是否包含特定子字符串。调用 `.find(sub)` 会返回在目标字符串中找到 `sub` 的最小索引：
+
+```python
+>>> "foo bar foo baz foo qux".find("foo")
+0
+
+```
+
+需要注意的是，如果在目标字符串中未找到指定的子字符串，`.find()` 会返回 -1：
+
+```python
+>>> "foo bar foo baz foo qux".find("grault")
+-1
+
+```
+
+同样，如果你指定了 `start` 和 `end`，搜索将被限制在它们指示的子字符串中：
+
+```python
+>>> "foo bar foo baz foo qux".find("foo", 4)
+8
+>>> "foo bar foo baz foo qux".find("foo", 4, 7)
+-1
+
+```
+
+借助 `start` 和 `end` 索引，你可以将搜索限制在目标字符串的一部分之内。
+
+#### `.index(sub[, start[, end]])`
+
+`.index()` 方法类似于 `.find()`，区别在于如果在目标字符串中未找到 `sub`，它会引发异常而不是返回 -1：
+
+```python
+>>> "foo bar foo baz foo qux".index("foo")
+0
+>>> "foo bar foo baz foo qux".index("grault")
+Traceback (most recent call last):
+    ...
+ValueError: substring not found
+
+```
+
+如果该子字符串存在于目标字符串中，则 `.index()` 返回该子字符串第一次出现时的起始索引。如果在目标字符串中未找到该子字符串，你将收到一个 `ValueError` 异常。
+
+#### `.rfind(sub[, start[, end]])`
+
+`.rfind(sub)` 调用返回在目标字符串中找到子字符串 `sub` 的最大索引：
+
+```python
+>>> "foo bar foo baz foo qux".rfind("foo")
+16
+
+```
+
+与 `.find()` 一样，如果未找到子字符串，`.rfind()` 返回 -1：
+
+```python
+>>> "foo bar foo baz foo qux".rfind("grault")
+-1
+
+```
+
+你可以将搜索限制在由 `start` 和 `end` 指示的子字符串中：
+
+```python
+>>> "foo bar foo baz foo qux".rfind("foo", 0, 14)
+8
+>>> "foo bar foo baz foo qux".rfind("foo", 10, 14)
+-1
+
+```
+
+同样，借助 `start` 和 `end` 索引，你可以将搜索范围限制在目标字符串的某一部分。
+
+#### `.rindex(sub[, start[, end]])`
+
+`.rindex()` 方法类似于 `.rfind()`，区别在于如果在目标字符串中未找到 `sub`，它会引发异常：
+
+```python
+>>> "foo bar foo baz foo qux".rindex("foo")
+16
+>>> "foo bar foo baz foo qux".rindex("grault")
+Traceback (most recent call last):
+    ...
+ValueError: substring not found
+
+```
+
+如果在目标字符串中未找到该子字符串，`.rindex()` 将引发 `ValueError` 异常。
+
+#### `.startswith(prefix[, start[, end]])`
+
+如果目标字符串以指定的前缀开头，则 `.startswith(prefix)` 调用返回 `True`，否则返回 `False`：
+
+```python
+>>> "foobar".startswith("foo")
+True
+>>> "foobar".startswith("bar")
+False
+
+```
+
+如果指定了 `start` 和 `end`，比对将被限制在它们指示的子字符串中：
+
+```python
+>>> "foobar".startswith("bar", 3)
+True
+>>> "foobar".startswith("bar", 3, 5)
+False
+
+```
+
+在这些示例中，你使用 `start` 和 `end` 索引将搜索限制在目标字符串的给定部分。
+
+#### `.endswith(suffix[, start[, end]])`
+
+如果目标字符串以指定的后缀结尾，则 `.endswith(suffix)` 调用返回 `True`，否则返回 `False`：
+
+```python
+>>> "foobar".endswith("bar")
+True
+>>> "foobar".endswith("foo")
+False
+>>> "foobar".endswith("oob", 0, 4)
+True
+>>> "foobar".endswith("oob", 2, 4)
+False
+
+```
+
+如果你指定了 `start` 和 `end`，比对将被限制在它们指示的子字符串中。
+
+---
+
+### 字符分类
+
+本节中的方法根据字符串所包含的字符对其进行分类。在所有情况下，这些方法都是谓词（predicates），这意味着它们根据检查的条件返回 `True` 或 `False`。
+
+#### `.isalnum()`
+
+如果目标字符串非空且其所有字符都是字母数字（即字母或数字），则 `.isalnum()` 方法返回 `True`；否则返回 `False`：
+
+```python
+>>> "abc123".isalnum()
+True
+>>> "abc$123".isalnum()
+False
+
+```
+
+在第一个示例中，你得到 `True`，因为目标字符串仅包含字母和数字。在第二个示例中，由于 `"$"` 字符的存在，你得到 `False`。
+
+#### `.isalpha()`
+
+如果目标字符串非空且其所有字符都是字母，则 `.isalpha()` 方法返回 `True`；否则返回 `False`：
+
+```python
+>>> "ABCabc".isalpha()
+True
+>>> "abc123".isalpha()
+False
+>>> "ABC abc".isalpha()
+False
+
+```
+
+`.isalpha()` 方法允许你检查给定字符串中的所有字符是否均为字母。请注意，空格不被视为字母字符，这是合理的，但如果你处理的是常规文本，可能会忽略这一点。
+
+#### `.isdigit()`
+
+你可以使用 `.isdigit()` 方法检查字符串是否仅由数字组成：
+
+```python
+>>> "123".isdigit()
+True
+>>> "123abc".isdigit()
+False
+
+```
+
+如果目标字符串非空且其所有字符都是数字，`.isdigit()` 方法返回 `True`；否则返回 `False`。
+
+#### `.isidentifier()`
+
+如果目标字符串根据语言定义是有效的 Python 标识符，则 `.isidentifier()` 方法返回 `True`；否则返回 `False`：
+
+```python
+>>> "foo32".isidentifier()
+True
+>>> "32foo".isidentifier()
+False
+>>> "foo$32".isidentifier()
+False
+
+```
+
+需要特别注意的是，对于与 Python 关键字匹配的字符串，即使它不是有效标识符，`.isidentifier()` 也会返回 `True`：
+
+```python
+>>> "and".isidentifier()
+True
+
+```
+
+你可以使用名为 `keyword` 的模块中包含的 `iskeyword()` 函数来测试字符串是否与 Python 关键字匹配。一种可行的方法如下所示：
+
+```python
+>>> from keyword import iskeyword
+>>> iskeyword("and")
+True
+
+```
+
+如果你想确保某个字符串可以用作有效的 Python 标识符，应检查 `.isidentifier()` 返回 `True` 且 `iskeyword()` 返回 `False`。
+
+#### `.islower()`
+
+如果目标字符串非空且其所有字母字符都是小写，则 `.islower()` 方法返回 `True`；否则返回 `False`：
+
+```python
+>>> "abc".islower()
+True
+>>> "abc1$d".islower()
+True
+>>> "Abc1$D".islower()
+False
+
+```
+
+请注意，在给定字符串上调用 `.islower()` 方法时，非字母字符会被忽略。
+
+#### `.isprintable()`
+
+如果目标字符串为空，或者其所有字符都是可打印字符，则 `.isprintable()` 方法返回 `True`：
+
+```python
+>>> "a\tb".isprintable()
+False
+>>> "a b".isprintable()
+True
+>>> "".isprintable()
+True
+>>> "a\nb".isprintable()
+False
+
+```
+
+如果目标字符串包含至少一个不可打印字符，你将得到 `False`。请注意，像 `\t` 和 `\n` 这样的空白字符算作不可打印字符，而 ASCII 空格字符则不算。
+
+需要注意的是，`.isprintable()` 是在目标字符串为空时返回 `True` 的两个 `.is*()` 方法之一。另一个是 `.isascii()`。
+
+#### `.isspace()`
+
+如果目标字符串非空且其所有字符都是空白字符，则 `.isspace()` 方法返回 `True`；否则返回 `False`。
+
+最常用的空白字符是空格（`" "`）、制表符（`"\t"`）和换行符（`"\n"`）：
+
+```python
+>>> " \t \n ".isspace()
+True
+>>> "   a   ".isspace()
+False
+
+```
+
+还有其他一些 ASCII 字符符合空白字符的标准，如果算上 Unicode 字符，数量还会更多：
+
+```python
+>>> "\f\u2005\r".isspace()
+True
+
+```
+
+`"\f"` 和 `"\r"` 组合是 ASCII 换页符和回车符的转义序列。`"\u2005"` 组合是 Unicode 四分之一全角空格（four-per-em space）的转义序列。
+
+#### `.istitle()`
+
+如果目标字符串非空，每个单词的首个字母字符为大写，且每个单词中的所有其他字母字符均为小写，则 `.istitle()` 方法返回 `True`；否则返回 `False`：
+
+```python
+>>> "This Is A Title".istitle()
+True
+>>> "This is a title".istitle()
+False
+>>> "Give Me The #$#@ Ball!".istitle()
+True
+
+```
+
+如果字符串像调用 `.title()` 所产生的结果那样采用了首字母大写的标题格式，该方法返回 `True`；否则返回 `False`。
+
+#### `.isupper()`
+
+如果目标字符串非空且其所有字母字符都是大写，则 `.isupper()` 方法返回 `True`；否则返回 `False`：
+
+```python
+>>> "ABC".isupper()
+True
+>>> "ABC1$D".isupper()
+True
+>>> "Abc1$D".isupper()
+False
+
+```
+
+同样，在给定的字符串对象上调用 `.isupper()` 方法时，Python 会忽略非字母字符。
+
+---
+
+### 格式化字符串
+
+本节中的方法允许你以多种不同方式修改或增强字符串的格式。你将首先学习如何在给定的空间内居中对齐字符串。
+
+#### `.center(width[, fill])`
+
+`.center(width)` 调用返回一个由目标字符串居中于宽度为 `width` 个字符的字段中构成的字符串。默认情况下，填充字符为 ASCII 空格字符：
+
+```python
+>>> "foo".center(10)
+'   foo    '
+
+```
+
+如果指定了可选的 `fill` 参数，它将用作填充字符：
+
+```python
+>>> "bar".center(10, "-")
+'---bar----'
+>>> "foo".center(2)
+'foo'
+
+```
+
+请注意，如果目标字符串的长度等于或大于 `width`，则会原样返回。
+
+#### `.expandtabs(tabsize=8)`
+
+`.expandtabs()` 方法将目标字符串中找到的每个制表符（`"\t"`）替换为空格。默认情况下，假定每个制表符对应 8 个字符来进行空格填充：
+
+```python
+>>> "a\tb\tc".expandtabs()
+'a       b       c'
+>>> "aaa\tbbb\tc".expandtabs()
+'aaa     bbb     c'
+>>> "a\tb\tc".expandtabs(4)
+'a   b   c'
+>>> "aaa\tbbb\tc".expandtabs(tabsize=4)
+'aaa bbb c'
+
+```
+
+在最后一个示例中，你使用了 `tabsize` 参数，这是一个用于指定替换制表符大小的可选参数。
+
+#### `.ljust(width[, fill])`
+
+`.ljust(width)` 调用返回一个由目标字符串在宽度为 `width` 个字符的字段中左对齐构成的字符串。默认情况下，填充字符为 ASCII 空格字符：
+
+```python
+>>> "foo".ljust(10)
+'foo       '
+
+```
+
+如果指定了可选的 `fill` 参数，它将用作填充字符：
+
+```python
+>>> "foo".ljust(10, "-")
+'foo-------'
+>>> "foo".ljust(2)
+'foo'
+
+```
+
+如果目标字符串的长度等于或大于 `width`，则会原样返回。
+
+#### `.rjust(width[, fill])`
+
+`.rjust(width)` 调用返回一个由目标字符串在宽度为 `width` 个字符的字段中右对齐构成的字符串。默认情况下，填充字符为 ASCII 空格字符：
+
+```python
+>>> "foo".rjust(10)
+'       foo'
+
+```
+
+如果指定了可选的 `fill` 参数，它将用作填充字符：
+
+```python
+>>> "foo".rjust(10, "-")
+'-------foo'
+
+```
+
+如果目标字符串的长度等于或大于 `width`，则会原样返回：
+
+```python
+>>> "foo".rjust(2)
+'foo'
+
+```
+
+当目标字符串的长度等于或大于 `width` 时，`.rjust()` 将没有空间来对齐文本，因此你将获得原始字符串。
+
+#### `.removeprefix(prefix)`
+
+`.removeprefix()` 方法返回从开头移除了 `prefix` 的目标字符串的副本：
+
+```python
+>>> "http://python.org".removeprefix("http://")
+'python.org'
+>>> "http://python.org".removeprefix("python")
+'http://python.org'
+
+```
+
+如果目标字符串恰好以该子字符串开头，则会移除该前缀。如果原始字符串不是以 `prefix` 开头，则字符串会原样返回。
+
+#### `.removesuffix(suffix)`
+
+`.removesuffix()` 方法返回从末尾移除了 `suffix` 的目标字符串的副本：
+
+```python
+>>> "http://python.org".removesuffix(".org")
+'http://python'
+>>> "http://python.org".removesuffix("python")
+'http://python.org'
+
+```
+
+如果目标字符串恰好以该子字符串结尾，则会移除该后缀。如果原始字符串不是以 `suffix` 结尾，则字符串会原样返回。`.removeprefix()` 和 `.removesuffix()` 方法是在 Python 3.9 中引入的。
+
+#### `.lstrip([chars])`
+
+`.lstrip()` 方法返回目标字符串的一个副本，其中左端的所有空白字符均被移除：
+
+```python
+>>> "   foo bar baz   ".lstrip()
+'foo bar baz   '
+>>> "\t\nfoo\t\nbar\t\nbaz".lstrip()
+'foo\t\nbar\t\nbaz'
+
+```
+
+如果你指定了可选的 `chars` 参数，它是一个指定要移除的字符集的字符串：
+
+```python
+>>> "http://realpython.com".lstrip("/:htp")
+'realpython.com'
+
+```
+
+在此示例中，你使用 `.lstrip()` 方法并传入 `"/:htp"` 字符作为参数，从输入的 URL 中移除了 `http://` 前缀。
+
+需要注意的是，本次对 `.lstrip()` 的调用之所以有效，仅因为该 URL 不是以任何目标字符开头的：
+
+```python
+>>> "http://python.org".lstrip("/:htp")
+'ython.org'
+
+```
+
+在此示例中，结果是不正确的，因为该 URL 以 `p` 开头，而 `p` 包含在你要移除的字母集合中。你应该改用 `.removeprefix()`。
+
+#### `.rstrip([chars])`
+
+不带参数的 `.rstrip()` 方法返回目标字符串的一个副本，其中右端的所有空白字符均被移除：
+
+```python
+>>> "   foo bar baz   ".rstrip()
+'   foo bar baz'
+>>> "foo\t\nbar\t\nbaz\t\n".rstrip()
+'foo\t\nbar\t\nbaz'
+
+```
+
+如果你指定了可选的 `chars` 参数，它应该是一个指定要移除字符集的字符串：
+
+```python
+>>> "foo.$$$;".rstrip(";$.")
+'foo'
+
+```
+
+通过为 `chars` 提供字符串值，你可以控制要从目标字符串右侧移除的字符集合。
+
+> **注意：** 要了解有关 `.rstrip()` 和 `.lstrip()` 的更多信息，请查阅《如何从 Python 字符串中去除字符》（How to Strip Characters From a Python String）教程。
+
+#### `.strip([chars])`
+
+`.strip()` 方法等效于先后调用 `.lstrip()` 和 `.rstrip()`。在不带 `chars` 参数的情况下，它一次性移除开头和结尾的空白字符：
+
+```python
+>>> "   foo bar baz   ".strip()
+'foo bar baz'
+
+```
+
+与 `.lstrip()` 和 `.rstrip()` 一样，可选的 `chars` 参数指定了要移除的字符集：
+
+```python
+>>> "https://realpython.com".strip("htps:/")
+'realpython.com'
+
+```
+
+同样，借助 `chars`，你可以控制想要从原始字符串中移除的字符，默认情况下为空白字符。
+
+#### `.replace(old, new[, count])`
+
+要替换字符串中的子字符串，你可以使用 `.replace()` 方法。该方法返回目标字符串的一个副本，其中所有出现的 `old` 子字符串都被替换为 `new`：
+
+```python
+>>> "foo bar foo baz foo qux".replace("foo", "grault")
+'grault bar grault baz grault qux'
+
+```
+
+如果指定了可选的 `count` 参数，则最多从目标字符串的左端开始执行 `count` 次替换：
+
+```python
+>>> "foo bar foo baz foo qux".replace("foo", "grault", 2)
+'grault bar grault baz foo qux'
+
+```
+
+`count` 参数允许你指定要在原始字符串中执行多少次替换。
+
+#### `.zfill(width)`
+
+`.zfill(width)` 调用返回目标字符串的一个副本，左侧填充零以达到指定的 `width` 宽度：
+
+```python
+>>> "42".zfill(5)
+'00042'
+
+```
+
+如果目标字符串包含前导正负号，则在插入零之后，该符号仍会保留在结果字符串的最左端：
+
+```python
+>>> "+42".zfill(8)
+'+0000042'
+>>> "-42".zfill(8)
+'-0000042'
+
+```
+
+如果目标字符串的长度等于或大于 `width`，则会原样返回：
+
+```python
+>>> "-42".zfill(2)
+'-42'
+
+```
+
+对于非数值的字符串，Python 仍会对其进行零填充：
+
+```python
+>>> "foo".zfill(6)
+'000foo'
+
+```
+
+`.zfill()` 方法在表示数值时非常有用。但是，它也适用于文本字符串。
+
+---
+
+### 连接与拆分字符串
+
+你在本节中将要探讨的方法允许你通过将对象连接在一起构成字符串，或者通过将字符串拆分成小块，在字符串和某些复合数据类型之间进行转换。
+
+这些方法对可迭代对象（iterables，即对象的集合）进行操作或返回可迭代对象。例如，这些方法中有许多会返回一个列表或元组。
+
+#### `.join(iterable)`
+
+`.join()` 方法接受一个由字符串对象组成的可迭代对象，并返回通过目标字符串作为分隔符将输入可迭代对象中的各对象拼接而成的字符串。
+
+> **注意：** 要了解有关字符串拼接的更多信息，请查阅《拆分、拼接与连接字符串》（Splitting, Concatenating, and Joining Strings）教程。
+
+请注意，`.join()` 是在充当输入可迭代对象中各项之间分隔符的字符串上调用的，而输入的该可迭代对象必须包含字符串对象。
+
+在以下示例中，分隔符是一个由逗号和空格组成的字符串。输入的可迭代对象是一个由字符串值组成的列表：
+
+```python
+>>> ", ".join(["foo", "bar", "baz", "qux"])
+'foo, bar, baz, qux'
+
+```
+
+本次调用 `.join()` 的结果是一个由逗号分隔的字符串对象构成的单字符串。
+
+同样，输入的可迭代对象必须包含字符串对象。否则，你将收到一个错误：
+
+```python
+>>> "---".join(["foo", 23, "bar"])
+Traceback (most recent call last):
+    ...
+TypeError: sequence item 1: expected str instance, int found
+
+```
+
+该示例之所以失败，是因为输入可迭代对象中的第二个对象不是字符串对象，而是一个整数。
+
+当你的可迭代对象包含非字符串值时，可以在将它们传递给 `.join()` 之前使用 `str()` 函数进行转换。请看以下示例：
+
+```python
+>>> numbers = [1, 2, 3]
+>>> "->".join(str(number) for number in numbers)
+'1->2->3'
+
+```
+
+在此示例中，你在将 `numbers` 中的值传递给 `.join()` 之前，使用 `str()` 函数将它们转换为字符串。为了进行转换，你使用了一个生成器表达式。
+
+#### `.partition(sep)`
+
+`.partition(sep)` 调用在字符串 `sep` 首次出现的位置拆分目标字符串。返回值是一个包含三个对象的元组：
+
+1. 目标字符串中位于 `sep` 之前的部分
+2. `sep` 对象本身
+3. 目标字符串中位于 `sep` 之后的部分
+
+以下是几个 `.partition()` 实际应用的示例：
+
+```python
+>>> "foo.bar".partition(".")
+('foo', '.', 'bar')
+>>> "foo@@bar@@baz".partition("@@")
+('foo', '@@', 'bar@@baz')
+>>> "foo.bar@@".partition("@@")
+('foo.bar', '@@', '')
+>>> "foo.bar".partition("@@")
+('foo.bar', '', '')
+
+```
+
+请注意，如果字符串以目标 `sep` 结尾，则元组中的最后一项为空字符串。同样，如果在目标字符串中未找到 `sep`，则返回的元组包含原字符串以及紧随其后的两个空字符串，正如你在最后一个示例中所看到的。
+
+#### `.rpartition(sep)`
+
+`.rpartition(sep)` 调用的工作方式类似于 `.partition(sep)`，不同之处在于目标字符串是在最后一次出现 `sep` 的位置进行拆分，而不是在第一次出现的位置：
+
+```python
+>>> "foo@@bar@@baz".partition("@@")
+('foo', '@@', 'bar@@baz')
+>>> "foo@@bar@@baz".rpartition("@@")
+('foo@@bar', '@@', 'baz')
+
+```
+
+在这种情况下，字符串拆分是从目标字符串的右侧开始进行的。
+
+#### `.split(sep=None, maxsplit=-1)`
+
+在不带参数的情况下，`.split()` 会根据任意连续的空白字符将目标字符串拆分为子字符串，并将这些子字符串作为列表返回：
+
+```python
+>>> "foo bar baz qux".split()
+['foo', 'bar', 'baz', 'qux']
+>>> "foo\n\tbar   baz\r\fqux".split()
+['foo', 'bar', 'baz', 'qux']
+
+```
+
+如果指定了 `sep` 参数，它将用作拆分的分隔符：
+
+```python
+>>> "foo.bar.baz.qux".split(".")
+['foo', 'bar', 'baz', 'qux']
+
+```
+
+当显式给出 `sep` 作为分隔符时，目标字符串中连续出现的分隔符将被视为界定了空字符串：
+
+```python
+>>> "foo...bar".split(".")
+['foo', '', '', 'bar']
+
+```
+
+但是，连续的空白字符会被合并为单个分隔符，并且生成的列表永远不会包含空字符串：
+
+```python
+>>> "foo\t\t\tbar".split()
+['foo', 'bar']
+
+```
+
+如果指定了可选参数 `maxsplit`，则最多从目标字符串的左端开始执行指定次数的拆分：
+
+```python
+>>> "foo.bar.baz.qux".split(".", 1)
+['foo', 'bar.baz.qux']
+
+```
+
+在此示例中，`.split()` 仅从目标字符串的左端开始执行了一次拆分。
+
+#### `.rsplit(sep=None, maxsplit=-1)`
+
+`.rsplit()` 方法的行为类似于 `.split()`，区别在于如果指定了 `maxsplit`，拆分次数将从目标字符串的右端而非左端开始计算：
+
+```python
+>>> "foo.bar.baz.qux".rsplit(".", 1)
+['foo.bar.baz', 'qux']
+
+```
+
+如果未指定 `maxsplit`，那么 `.split()` 和 `.rsplit()` 的结果是没有区别的。
+
+#### `.splitlines([keepends])`
+
+`.splitlines()` 方法将目标字符串按行拆分，并在列表中返回各行。以下转义序列可以作为行边界：
+
+| 序列 | 描述 |
+| --- | --- |
+| `\n` | 换行（Newline） |
+| `\r` | 回车（Carriage return） |
+| `\r\n` | 回车 + 换行（Carriage return + line feed） |
+| `\v` 或 `\x0b` | 行制表符（Line tabulation） |
+| `\f` 或 `\x0c` | 换页符（Form feed） |
+| `\x1c` | 文件分隔符（File separator） |
+| `\x1d` | 组分隔符（Group separator） |
+| `\x1e` | 记录分隔符（Record separator） |
+| `\x85` | 下一行 / C1 控制码（Next line） |
+| `\u2028` | Unicode 行分隔符（Unicode line separator） |
+| `\u2029` | Unicode 段落分隔符（Unicode paragraph separator） |
+
+以下是使用几种不同行分隔符的示例：
+
+```python
+>>> "foo\nbar\r\nbaz\fqux\u2028quux".splitlines()
+['foo', 'bar', 'baz', 'qux', 'quux']
+
+```
+
+如果目标字符串中存在连续的行边界字符，它们将被视为界定了空行，并在结果列表中显示为空字符串：
+
+```python
+>>> "foo\f\f\fbar".splitlines()
+['foo', '', '', 'bar']
+>>> "foo\nbar\nbaz\nqux".splitlines(True)
+['foo\n', 'bar\n', 'baz\n', 'qux']
+
+```
+
+请注意，如果将可选的 `keepends` 参数设置为 `True`，行边界符将保留在结果字符串中。
+
+
+
 
 
 
@@ -34,9 +1929,1206 @@ sidebar_position: 2
 
 ## [T-Strings](https://realpython.com/python-t-strings/)
 
+在编程中，创建一个可以用特定值动态填充的字符串模板是一个常见需求。字符串模板是一种包含占位符的字符串——即代表变量值的特殊标记——你可以在运行时动态替换它们。
+
+你通常会使用模板来生成文本或结构化内容，方法是用实际数据填充这些占位符。在 Python 3.14 之前，该语言提供了几种工具，允许你在字符串中插入和格式化值：
+
+- 字符串格式化操作符（%）
+
+- str.format()
+
+- f-strings（格式化字符串字面量）
+
+- string.Template
+
+- format()
+
+- string.Formatter.parse()
+
+你可以使用所有这些工具来创建和处理字符串模板。当然，它们各自都有其独特的优缺点。
+
+#### 字符串格式化操作符（%）
+
+字符串格式化操作符（%）受 C 语言 `printf()` 语法的启发，是 Python 中最古老的字符串格式化与插值工具。下面是一个关于如何使用该操作符创建和处理模板的简单示例：
+
+```python
+>>> city = "Vancouver"
+>>> temperature = 52
+>>> template = "The temperature in %s is %d F."
+>>> template % (city, temperature)
+'The temperature in Vancouver is 52 F.'
+
+```
+
+在此示例中，你有两个包含数据的变量。第一个包含一个字符串，第二个保存一个整数值。接着，你使用 `%s` 和 `%d` 语法定义了一个字符串模板，用以指定占位符或替换字段。其中 `s` 意味着第一个字段必须用字符串填充，而 `d` 则表示该字段接受十进制整数值。这些被称为转换类型（conversion types）。
+
+最后，你使用 `%` 操作符将变量的内容动态插值到模板中，从而构建出一个新的字符串。
+
+该操作符还允许你对输入值应用格式化规则。例如，以下是如何格式化货币值的方法：
+
+```python
+>>> template = "$%.2f"
+>>> template % 2456.5673
+'$2456.57'
+
+```
+
+在此示例中，模板包含一个字面量美元符号（`$`），用以表示格式化后的值代表美元金额。该 `$` 字符本身并不是格式化语法的一部分，而是输出内容的一部分。
+
+接着，你有一个以字符串格式化操作符（`%`）开头、后跟字符串 `".2f"` 的替换字段。该字符串是一个格式规范说明符（format specifier），用于将任何输入的数字格式化为保留两位小数的浮点数值。
+
+**注意：** 要了解有关格式化字符串的更多信息，请查看以下教程：
+
+* [A Guide to Modern Python String Formatting Tools](https://realpython.com/python-formatted-output/)
+* [Python String Formatting: Available Tools and Their Features](https://realpython.com/python-string-formatting/)
+* [Python’s Format Mini-Language for Tidy Strings](https://realpython.com/python-format-mini-language/)
+* [Modulo String Formatting in Python](https://realpython.com/python-modulo-string-formatting/)
+
+你可以通过直接传递值，使用 `%` 操作符进行内联字符串格式化。这种方法将模板和数据合并为单一步骤，但之后你无法复用该模板：
+
+```python
+>>> "$%.2f" % 2456.5673
+'$2456.57'
+
+```
+
+当你遇到复杂的模板时，字符串格式化操作符的语法可能会变得冗长且难以阅读：
+
+```python
+>>> debit = 300.00
+>>> credit = 450.00
+>>> "Debit: $%.2f, Credit: $%.2f, Balance: $%.2f" % (
+...     debit,
+...     credit,
+...     credit - debit
+... )
+'Debit: $300.00, Credit: $450.00, Balance: $150.00'
+
+```
+
+总体而言，该操作符适用于简短的模板。然而，随着模板长度和复杂度的增加，`%` 操作符可能会导致格式化错误并降低代码的可读性，尤其是在你使用许多变量的情况下。
+
+---
+
+#### `str.format()` 方法
+
+接下来是 `str.format()` 方法。它同样可以进行字符串插值和格式化。当你需要创建和处理字符串模板时，该方法非常灵活且强大。以下是上述示例之一的重新实现版本：
+
+```python
+>>> name = "Pythonista"
+>>> day = "Friday"
+>>> template = "Hello, {0}! Today is {1}."
+>>> template.format(name, day)
+'Hello, Pythonista! Today is Friday.'
+>>> template = "${value:.2f}"
+>>> template.format(value=2456.5673)
+'$2456.57'
+
+```
+
+同样，你拥有包含替换字段的字符串模板。这一次，你使用一对花括号来定义替换字段。你可以在花括号内使用整数索引来指定插入顺序，或者使用命名命名字段。请注意，`.format()` 方法也支持格式规范说明符。
+
+**注意：** 要了解有关 `.format()` 方法的更多信息，请查看以下教程：
+
+* [String Interpolation in Python: Exploring Available Tools](https://realpython.com/python-string-interpolation/)
+* [Python String Formatting: Available Tools and Their Features](https://realpython.com/python-string-formatting/)
+
+你也可以直接使用 `.format()` 方法将值插值到字符串中，而无需将字符串保存为可复用模板的中间步骤：
+
+```python
+>>> "${value:.2f}".format(value=2456.5673)
+'$2456.57'
+
+```
+
+`.format()` 方法通常具有较好的灵活性和可读性。它支持字符串格式化微语言，使其成为处理字符串模板的强大工具。然而，它可能略显繁琐。这正是 f-strings（格式化字符串字面量）登场的契机。
+
+#### f-string 字面量（F-String Literals）
+
+自 Python 3.6 以来，f-string（格式化字符串字面量 formatted string literals 的简称）就成为了在字符串中格式化与插值变量最简洁且最具表现力的方式：
+
+```python
+>>> name = "Pythonista"
+>>> day = "Friday"
+>>> f"Hello, {name}! Today is {day}."
+'Hello, Pythonista! Today is Friday.'
+>>> value = 2456.5673
+>>> f"${value:.2f}"
+'$2456.57'
+
+```
+
+f-string 字面量以 `f` 或 `F` 开头。它们可以包含替换字段，允许你直接在其中插入对象或表达式。其语法简洁且易读，并且支持借助格式化微语言的格式规范说明符。
+
+**注意：** 要了解关于 f-string 的更多内容，请查阅[Python’s F-String for String Interpolation and Formatting](https://realpython.com/python-f-strings/)。
+
+Python 在运行字符串字面量时会急切求值（eagerly evaluate）f-string。如果对不受信任的输入使用 f-string 时不够谨慎，可能会引入与执行任意代码相关的安全隐患。
+
+---
+
+#### `string.Template` 类
+
+Python 标准库在 `string` 模块中提供了 `Template` 类。该类通过使用 `$placeholder` 语法提供了一种安全的模板机制。它非常适合那些希望避免意外执行代码的场景，例如处理用户生成的内容：
+
+```python
+>>> from string import Template
+>>> template = Template("Hello, $name! Today is $day.")
+>>> template.substitute(name="Pythonista", day="Friday")
+'Hello, Pythonista! Today is Friday.'
+
+```
+
+`Template` 类之所以安全，是因为它避免了代码执行，从而非常适合用于快速的文本替换。然而，该类的功能较为有限，更重要的是，它不支持表达式或格式化。
+
+---
+
+#### 内置 `format()` 函数
+
+内置的 `format()` 函数允许你使用格式规范说明符对单个值进行格式化：
+
+```python
+>>> value = 2456.5673
+>>> format(value, ".2f")
+'2456.57'
+
+```
+
+正如本例所示，该函数允许你使用诸如 `.2f` 这类格式规范说明符来格式化特定的值。
+
+---
+
+#### `string.Formatter.parse()` 方法
+
+`string.Formatter.parse()` 方法是一个更底层的工具，可用于将格式化字符串分解为其各个组成部分：
+
+```python
+>>> from string import Formatter
+>>> template = "The temperature in {city!r} is {temperature:.2f} F."
+>>> for text, field, format_spec, conversion in Formatter().parse(template):
+...     print(f"{text=}, {field=}, {format_spec=}, {conversion=}")
+... 
+text='The temperature in ', field='city', format_spec='', conversion='r'
+text=' is ', field='temperature', format_spec='.2f', conversion=None
+text=' F.', field=None, format_spec=None, conversion=None
+
+```
+
+在此示例中，你可以识别出模板的每个部分，包括静态文本、字段、格式规范说明符以及转换标志。当你构建自定义格式化逻辑、解析器或模板工具时，这款字符串格式化工具尤为实用。
+
+Python 3.14 带来了又一个全新的字符串处理工具：由 PEP 750 引入的模板字符串（template strings，或称 t-strings）。顾名思义，t-string 专为模板设计，并在很大程度上借鉴了 f-string 背后的诸多设计理念。在下一节中，你将了解到 t-string 的工作机制及其与 f-string 的区别。
+
+### 了解 Python T-String
+
+T-string 是 f-string 的一种泛化形式。t-string 字面量以 `t` 或 `T` 开头，用于替代 f-string 中所使用的 `f` 或 `F` 前缀：
+
+```python
+>>> name = "Pythonista"
+>>> day = "Friday"
+>>> t"Hello, {name}! Today is {day}."
+Template(
+    strings=('Hello, ', '! Today is ', '.'),
+    interpolations=(
+        Interpolation('Pythonista', 'name', None, ''),
+        Interpolation('Friday', 'day', None, '')
+    )
+)
+
+```
+
+Python 并不会直接将该字面量求值为字符串，而是将 t-string 字面量求值为一个 `Template` 实例。该类允许你在字符串与输入值合并生成最终字符串之前，直接访问它们。
+
+正如你所见，与 f-string 不同的是，t-string 提供了一种在将输入值组合成最终字符串之前对其进行拦截和转换的方式。这一特性使其在应对 SQL 注入攻击和跨站脚本（XSS）漏洞等安全风险时尤为有用——而这些问题在 f-string 中往往容易出现。
+
+t-string 拦截输入值的能力使其成为应对各种字符串处理任务的强大工具。你可以将它们作为构建自定义字符串处理工作流的基础。t-string 的一些常见用例包括：
+
+* 清理与转义 SQL 查询（Sanitizing SQL queries）
+* 转义 HTML 代码（Escaping HTML code）
+* 生成动态日志消息（Generating dynamic logging messages）
+
+这些只是 t-string 有望在不久的将来大放异彩的少数几个领域。随着时间的推移，Python 社区可能会发掘出更多富有创意且有价值的用法。
+
+**注意：** PEP 750 仅定义了 t-string 字面量的语法，允许开发者创建模板字符串。然而，它并没有提供用于处理它们的模板处理器（template processors）。这意味着像你这样的开发者将需要使用第三方处理器，或者自行构建。在本教程中，你将学习创建自定义模板处理器的基础知识。
+
+最后，由于 t-string 沿用了大家所熟知的 f-string 语法和规则，对这两项 Python 特性进行简要对比，将有助于你更快、更有效地掌握 t-string。
+
+### 对比 T-Strings 和 F-Strings
+
+Python 的 t-strings 与 f-strings 非常相似。首先，它们在创建字面量时大多共享相同的语法。唯一的区别在于 t-strings 使用 `t` 或 `T` 作为前缀，而 f-strings 使用 `f` 或 `F`——这也是它们各自名称的由来。
+
+其余语法完全相同。两者对于单行字面量都可以使用单引号或双引号。三引号字面量同样可以使用单引号或双引号：
+
+```python
+>>> name = "Pythonista"
+>>> t'Hi, {name}! I use single quotes.'
+Template(
+    strings=('Hi, ', '! I use single quotes.'),
+    interpolations=(
+        Interpolation('Pythonista', 'name', None, ''),
+    ))
+>>> t"Hi, {name}! I use double quotes."
+Template(
+    strings=('Hi, ', '! I use double quotes.'),
+    interpolations=(
+        Interpolation('Pythonista', 'name', None, ''),
+    ))
+>>> t"""Hi, {name}! This one spans across
+... two lines using a triple-quoted literal."""
+Template(
+    strings=(
+        'Hi,',
+        '! This one spans across\ntwo lines using a triple-quoted literal.'
+    ),
+    interpolations=(
+        Interpolation('Pythonista', 'name', None, ''),
+    ))
+
+```
+
+你可以尝试使用单引号创建三引号的 t-string，你会发现它的运行效果符合预期。
+
+当涉及占位符或替换字段时，t-strings 中的语法与 f-strings 完全相同。它们支持值、变量、函数调用以及任何其他 Python 表达式或对象，同时也支持格式规范说明符（format specifiers）。
+
+无论是在 f-strings 还是 t-strings 中，Python 都会在运行时求值包含在花括号（`{}`）内的值或表达式。如果你引用了一个未定义的变量，那么当 Python 尝试在字符串中进行插值时，就会引发错误：
+
+```python
+>>> f"And, the number is {number}"
+Traceback (most recent call last):
+    ...
+NameError: name 'number' is not defined
+>>> t"And, the number is {number}"
+Traceback (most recent call last):
+    ...
+NameError: name 'number' is not defined
+>>> number = 42
+>>> f"And, the number is {number}"
+'And, the number is 42'
+>>> t"And, the number is {number}"
+Template(
+    strings=('And, the number is ', ''),
+    interpolations=(
+        Interpolation(42, 'number', None, ''),
+    ))
+
+```
+
+在这个示例中，前两次尝试定义 f-string 和 t-string 都失败了，因为当时变量 `number` 尚未定义。而在你定义了该变量之后，两个字面量都可以正常工作。
+
+简而言之，模板字符串与 f-strings 一样，都是自左向右及早求值（eagerly evaluated）的。这意味着当模板字符串执行时，Python 会立即对输入的值或表达式进行求值。在本教程的后半部分，你将学习如何实现 t-strings 的惰性求值（lazy evaluation）。
+
+下表对 f-strings 和 t-strings 进行了快速对比：
+
+| 方面 | F-strings | T-strings |
+| --- | --- | --- |
+| **字面量前缀** | `f` 或 `F` | `t` 或 `T` |
+| **引号形式** | 单引号、双引号或三引号 | 单引号、双引号或三引号 |
+| **替换字段** | 支持（`{}`） | 支持（`{}`） |
+| **输入值的求值时机** | 及早求值（运行时） | 及早求值（运行时） |
+| **访问输入值** | 否 | 是 |
+| **安全性** | 对于不受信任的输入不安全，因为可能会执行任意代码 | 对于不受信任的输入更安全，因为可以使用自定义模板处理代码来控制行为 |
+| **生成对象** | `str` 对象 | `Template` 对象 |
+| **常见使用场景** | 快速字符串格式化、将表达式插值到字符串中 | 高级模板处理、输入验证、安全替换 |
+
+这两项 Python 特性之间的根本区别在于：虽然 f-strings 会立即完成表达式的求值与拼接，但 t-strings 提供了一种干净的方式，可以在将输入值组合成最终字符串或对象之前对其进行拦截和转换。这一能力正是由其生成的 `Template` 类所赋予的。
 
 
+### 探索 `Template` 类
 
+在前面的章节中，你已经看到当 Python 对一个 t-string 字面量求值时，它会返回一个 `Template` 实例。这是 Python 3.14 中的一个新类。它位于 `string` 包下的 `templatelib` 模块中：
+
+```python
+>>> from string.templatelib import Template
+>>> dir(Template)
+[
+   '__add__',
+   '__class__',
+   ...,
+   'interpolations',
+   'strings',
+   'values'
+]
+
+```
+
+当你以 `Template` 作为参数调用内置的 `dir()` 函数时，会得到该类中定义的方法和属性列表。在输出的末尾，你会发现三个属性。以下是每个属性功能的简要说明：
+
+* `.interpolations`：包含一个由 `Interpolation` 对象组成的元组，每个对象代表一个特定替换字段的内容
+* `.strings`：包含一个由该 t-string 的静态字符串组件组成的元组
+* `.values`：包含一个由输入值组成的元组
+
+下面是一个演示前两个属性内容的快速示例：
+
+```python
+>>> t"Hello, {input("Enter your name: ")} 👋 Welcome back!"
+Enter your name: Alice
+Template(
+    strings=('Hello, ', ' 👋 Welcome back!'),
+    interpolations=(
+        Interpolation('Alice', 'input("Enter your name: ")', None, ''),
+    )
+)
+
+```
+
+在此示例中，该 t-string 具有两个静态字符串组件和一个插值项。静态字符串的数量将始终等于插值项的数量加一。如果你创建了一个包含一个或多个替换字段、但没有显式静态字符串的 t-string，则 `.strings` 属性将包含作为字段之间边界的空字符串：
+
+```python
+>>> t"{1}".strings
+('', '')
+>>> t"{1}{2}".strings
+('', '', '')
+>>> t"{1}{2}{3}".strings
+('', '', '', '')
+
+```
+
+在这些示例中，你可以看到 Python 是如何使用空字符串来表示字段之间的边界的。
+
+**注意：** 如果需要，你也可以直接实例化 `Template` 类：
+
+```python
+>>> from string.templatelib import Interpolation, Template
+>>> Template(
+...     "str1", Interpolation("value1", ""),
+...     "str2", Interpolation("value2", ""),
+...     "str3", Interpolation("value3", ""),
+...     "str4",
+... )
+Template(
+    strings=('str1', 'str2', 'str3', 'str4'),
+    interpolations=(
+        Interpolation('value1', '', None, ''),
+        Interpolation('value2', '', None, ''),
+        Interpolation('value3', '', None, '')
+    )
+)
+
+```
+
+尽管可以如本例所示直接使用 `Template`，但创建 t-string 最便捷的方式依然是使用字面量语法。
+
+与任何属性一样，你可以在 `Template` 实例上使用点号表示法（dot notation）来访问 `.strings`、`.interpolations` 和 `.values`：
+
+```python
+>>> name = "Pythonista"
+>>> site = "realpython.com"
+>>> template = t"Hello, {name}! Welcome to {site}!"
+>>> template.strings
+('Hello, ', '! Welcome to ', '!')
+>>> template.interpolations
+(
+    Interpolation('Pythonista', 'name', None, ''),
+    Interpolation('realpython.com', 'site', None, '')
+)
+>>> template.values
+('Pythonista', 'realpython.com')
+
+```
+
+这三个属性赋予了你对 t-string 组成部分的完整访问权限，使你能够编写代码来安全地处理它们。在大多数情况下，你的重点会放在处理和转换这些插值项上。因此，在接下来的章节中，你将更深入地了解 `Interpolation` 类及其特性。
+
+最后，`Template` 的这些属性都是只读的：
+
+```python
+>>> template.strings = ("Hello, ", "World!")
+Traceback (most recent call last):
+    ...
+AttributeError: readonly attribute
+
+```
+
+例如，当你试图给 `.strings` 属性赋予新值时，会收到一个 `AttributeError` 异常，因为它是只读属性。
+
+### 理解 `Interpolation` 类
+
+`Interpolation` 类表示具体占位符或替换字段的内容。与 `Template` 一样，它也是一个位于 `string.templatelib` 模块中的新类：
+
+```python
+>>> from string.templatelib import Interpolation
+>>> dir(Interpolation)
+[
+    '__class__',
+    '__delattr__',
+    ...,
+    'conversion',
+    'expression',
+    'format_spec',
+    'value'
+]
+
+```
+
+在 `dir()` 函数输出的末尾，你可以看到 `Interpolation` 类的四个核心属性。以下按逻辑顺序对它们进行简要概述：
+
+* `.expression`：保存输入的表达式。
+* `.conversion`：默认为 `None`，可以保存 `'s'`、`'r'` 或 `'a'`，分别对应管理不同字符串表示形式的 `!s`、`!r` 或 `!a` 标志。
+* `.format_spec`：可选属性，保存添加到替换字段末尾的格式化字符串（例如 `"^10.2f"`），用于指定要应用于输入值的格式。
+* `.value`：保存对插值表达式求值后得到的值（未应用任何格式化或转换）。
+
+同样，所有这些属性都是只读的，因此你无法直接修改它们的内容。在接下来的小节中，你将更详细地探索这些属性，首先从 `.expression` 属性开始。
+
+---
+
+#### `.expression` 属性
+
+表达式是值、变量、操作符和函数调用的组合，你可以对其求值以生成具体的值或对象。你在 Python 代码中会频繁使用表达式，它们在字符串插值中也十分常见。
+
+与 f-string 类似，t-string 允许你在给定的替换字段中插入任何 Python 表达式。你可以使用从简单的变量表达式，到组合了多个操作符和对象的复杂表达式在内的任何内容。
+
+当 Python 执行 t-string 字面量时，它会将你放置在替换字段中的表达式存储在 `.expression` 属性中（该属性为元组的一部分），以防止你直接修改该表达式。
+
+下面是一个展示该属性如何工作的简单示例：
+
+```python
+>>> a, b = 4, 2
+>>> t"Is a divisible by b? {b != 0 and a % b == 0}"
+Template(
+    strings=('Is a divisible by b? ', ''),
+    interpolations=(
+        Interpolation(
+            True,
+            'b != 0 and a % b == 0',
+            None,
+            ''
+        ),
+    ))
+
+```
+
+在此示例中，你在替换字段中插入了一个布尔表达式。该表达式检查第一个输入的数字 `a` 是否能被第二个数字 `b` 整除。它首先检查 `b` 是否不等于 0，以避免除零错误。
+
+仔细观察高亮行可以发现，该表达式以字符串形式存储在 `Interpolation` 实例中。Python 会对该表达式求值并将结果存储在 `.value` 属性中，接下来我们就会介绍该属性。
+
+---
+
+#### `.value` 属性
+
+当 Python 对表达式求值时，会生成具体的值或对象——即该表达式的计算结果。在概念上，该值可以替代上下文中的表达式。T-string 是及早求值（eagerly evaluated）的，这意味着任何输入的表达式都会被立即计算。随后，计算得到的值会被存储在 `.value` 属性中：
+
+```python
+>>> width = 10
+>>> height = 20
+>>> t"The rectangle's area is: {width * height} cm²"
+Template(
+    strings=("The rectangle's area is: ", ' cm²'),
+    interpolations=(
+        Interpolation(
+            200,
+            'width * height',
+            None,
+            ''
+        ),
+    ))
+
+```
+
+在此示例中，高亮行中的数字 `200` 是将表达式 `width * height` 分别代入值 `10` 和 `20` 求值后得到的结果。
+
+---
+
+#### `.conversion` 属性
+
+在 f-string 中，Python 支持三个转换标志：`"!s"`、`"!r"` 和 `"!a"`，它们允许你决定在插值对象时使用哪种字符串表示形式。如果你在 f-string 中指定了转换标志，表达式的求值结果就会被转换为指定的字符串表示形式。
+
+在底层实现上，`"!s"` 转换标志会对结果调用内置的 `str()` 函数，`"!r"` 调用 `repr()`，而 `"!a"` 则调用 `ascii()`。
+
+当你提供这些转换标志时，模板处理代码可以对其进行处理。这些标志被方便地存储在 `.conversion` 属性中：
+
+```python
+>>> template = t"{42!r}"
+>>> template
+Template(
+    strings=('', ''),
+    interpolations=(
+        Interpolation(
+            42,
+            '42',
+            'r',
+            ''
+        ),
+    ))
+
+```
+
+在此示例中，你使用了 `"!r"` 标志。`.conversion` 属性保存了字母 `"r"`，你可以通过索引和点号表示法来访问它：
+
+```python
+>>> template.interpolations[0].conversion
+'r'
+
+```
+
+`.interpolations` 属性是一个元组，因此你可以使用索引来访问单独的插值对象。获取到所需的插值对象后，即可使用点号表示法访问其 `.conversion` 属性。
+
+PEP 750 在讨论该属性时提到：
+
+> 尚不清楚它是否能为模板字符串带来超出自定义格式规范说明符所能提供的显著价值或灵活性。（来源）
+
+因此，`Interpolation` 类中的 `.conversion` 属性主要是为了保持与 f-string 的兼容性，并为将来的扩展预留空间。它是可选的，并且在大多数情况下其值都为 `None`。
+
+
+#### `.format_spec` 属性
+
+就像 f-string 一样，t-string 也支持格式规范说明符（format specifiers）。当你在给定的替换字段中提供格式规范说明符字符串时，该字符串会存储在对应 `Interpolation` 对象的 `.format_spec` 属性中：
+
+```python
+>>> t"Balance: {1234.5678:.2f}"
+Template(
+    strings=('Balance: ', ''),
+    interpolations=(
+        Interpolation(
+            1234.5678,
+            '1234.5678',
+            None,
+            '.2f'
+        ),
+    )
+)
+
+```
+
+第二个高亮行展示了格式规范说明符。需要注意的是，t-string 并不会将该格式应用到存储在此插值项 `.value` 属性中的输入值上（如第一个高亮行所示）。
+
+最后，格式规范说明符自身也可以包含替换字段，从而使你能够动态构建它们：
+
+```python
+>>> precision = 2
+>>> t"Balance: {1234.5678:.{precision}f}"
+Template(
+    strings=('Balance: ', ''),
+    interpolations=(
+        Interpolation(
+            1234.5678,
+            '1234.5678',
+            None,
+            '.2f'
+        ),
+    )
+)
+
+```
+
+在此示例中，生成的结果相同。但这里的精度是通过在格式规范说明符定义中添加替换字段来动态提供的。请注意，这个替换字段并不会向生成的模板中添加新的插值项——它仅对插入的表达式进行求值。
+
+---
+
+### 处理 T-String
+
+到目前为止，你已经深入了解了 Python 的 t-string 及其组成部分。在实践中，最重要的并不是 t-string 特性本身，而是你与 Python 社区为了安全处理模板而编写的代码。t-string 只是冰山一角，真正的工作现在才刚开始。
+
+在接下来的小节中，你将学习一些基础的编程技巧，用于以高效且 Pythonic 的方式处理 t-string。
+
+---
+
+#### 模板元素（Template Items）
+
+t-string 是可迭代对象，而迭代是处理它们的主要方式。当你使用 `for` 循环遍历 t-string 时，你可以直接访问模板的各个组成部分。换句话说，你将一次性遍历静态字符串与插值项：
+
+```python
+>>> name = "Pythonista"
+>>> site = "realpython.com"
+>>> template = t"Hello, {name}! Welcome to {site}!"
+>>> for i, item in enumerate(template, 1):
+...     print(f"{i}. {item!r}")
+... 
+1. 'Hello, '
+2. Interpolation('Pythonista', 'name', None, '')
+3. '! Welcome to '
+4. Interpolation('realpython.com', 'site', None, '')
+5. '!'
+
+```
+
+在此示例中，你按照模板组件在 t-string 字面量中出现的相同顺序遍历了它们。如果你想同时处理这两种类型的组件，可以使用以下迭代技巧：
+
+```python
+for item in template:
+    if isinstance(item, str):
+        # 在此处处理字符串...
+    else:
+        # 在此处处理插值项...
+
+```
+
+在这个循环中，你使用内置的 `isinstance()` 函数来检查当前元素是否为字符串。如果是，则可以处理该字符串；否则，它就是一个插值项，你可以编写代码来对其进行处理。
+
+需要注意的是，如果 `template` 是一个常规字符串（常规字符串同样是可迭代的），该技巧可能会引发问题。因此，在某些情况下，你必须先检查是否正在遍历 `Template` 实例，通过条件判断执行处理逻辑以确保正确性。
+
+**注意：** 要了解关于条件语句的更多内容，请查阅《Python 中的条件语句》（*Conditional Statements in Python*）。
+
+如果你想了解更多关于 `isinstance()` 的用法，请查阅《Python 中的 isinstance() 有什么作用？》（*What Does isinstance() Do in Python?*）。
+
+下面是一个使用上述技巧生成银行账户简要报告的函数示例：
+
+```python
+>>> from string.templatelib import Template
+>>> def build_report(template):
+...     if not isinstance(template, Template):
+...         raise TypeError("t-string expected")
+...     parts = ["Account Report:\n"]
+...     for item in template:
+...         if isinstance(item, str):
+...             parts.append(item.strip(", ").upper())
+...         else:
+...             parts.append(f"> ${item.value:{item.format_spec}}")
+...         parts.append("\n")
+...     return "".join(parts)
+... 
+>>> debit = 300.4344
+>>> credit = 450.5676
+>>> balance = credit - debit
+>>> template = (
+...     t"Credit: {credit:.2f}, "
+...     t"Debit: {debit:.2f}, "
+...     t"Balance: {balance:.2f}"
+... )
+>>> report = build_report(template)
+>>> print(report)
+Account Report:
+CREDIT:
+> $450.57
+DEBIT:
+> $300.43
+BALANCE:
+> $150.13
+
+```
+
+在此示例中，你通过去除不需要的字符并将剩余字符转为大写来处理字符串组件。对于插值项，你创建了一个 f-string，其中包含提供的值并保留原格式规范说明符。作为练习，你可以编写另一个函数，使用相同的模板生成不同样式的报告。
+
+你还可以使用结构化模式匹配（structural pattern matching）来替代条件判断。下面是一个快速示例：
+
+```python
+from string.templatelib import Interpolation
+
+for item in template:
+    match item:
+        case str() as s:
+            # 在此处处理字符串...
+        case Interpolation() as interpolation:
+            # 在此处处理插值项...
+
+```
+
+使用 `match ... case` 结构遍历模板并处理其组成部分，对于许多模板处理函数来说是一种非常便捷的策略。
+
+**注意：** 要了解关于 `match ... case` 的更多内容，请查阅《Python 中的结构化模式匹配》（*Structural Pattern Matching in Python*）教程。
+
+以下是使用模式匹配重新实现的上述示例：
+
+```python
+>>> from string.templatelib import Interpolation
+>>> def build_report(template):
+...     parts = ["Account Report:\n"]
+...     for item in template:
+...         match item:
+...             case str(text):
+...                 parts.append(text.strip(", ").upper())
+...             case Interpolation(value, _, _, format_spec):
+...                 parts.append(f"> ${value:{format_spec}}")
+...         parts.append("\n")
+...     return "".join(parts)
+... 
+>>> report = build_report(template)
+>>> print(report)
+Account Report:
+CREDIT:
+> $450.57
+DEBIT:
+> $300.43
+BALANCE:
+> $150.13
+
+```
+
+这个新实现的 `build_report()` 与之前的版本效果完全相同。因此，这两种技巧都是有效且极具价值的。
+
+#### 插值项的值（Interpolation Values）
+
+你还可以使用 `.values` 属性遍历当前插值项中的值或对象，如下所示：
+
+```python
+for value in template.values:
+    # 在此处处理值
+
+```
+
+下面是一个展示该技巧工作原理的示例：
+
+```python
+>>> name = "Pythonista"
+>>> site = "realpython.com"
+>>> template = t"Hello, {name}! Welcome to {site}!"
+>>> for value in template.values:
+...    print(value)
+... 
+Pythonista
+realpython.com
+
+```
+
+同样，这种方法有助于你检查给定模板中的当前值。在此基础上，你可以对这些值进行转换，进而更新原始模板或构建新模板。
+
+---
+
+### 理解 T-String 的其他特性
+
+Python 的 t-string 还提供了一些附加特性，使其更加强大和灵活。这些特性允许你将较小的部分组合成复杂的字符串、明确你的输入表达式，以及控制转义序列的处理方式。
+
+在接下来的小节中，你将探索 t-string 的三项具体功能：拼接（concatenation）、自文档化 t-string（self-documented t-strings）以及原始 t-string（raw t-strings）。
+
+---
+
+#### 拼接（Concatenation）
+
+与普通字符串一样，你可以使用 `+` 操作符拼接多个 t-string，以构建更复杂的模板。当你希望将长模板拆分到多行，或将较小的模板组合成较大的模板时，该特性非常实用。
+
+你可以拼接两个 `Template` 实例来创建一个新模板：
+
+```python
+>>> first = "John"
+>>> second = "Doe"
+>>> t"{first} " + t"{second}"
+Template(
+    strings=('', ' ', ''),
+    interpolations=(
+        Interpolation('John', 'first', None, ''),
+        Interpolation('Doe', 'second', None, '')
+    )
+)
+
+```
+
+当你使用 `+` 操作符拼接两个 t-string 时，会得到一个新的 t-string。拼接操作允许你以高可读性的方式复用模板并构建更大的模板。
+
+你也可以将 t-string 与普通字符串进行拼接：
+
+```python
+>>> name = "John"
+>>> t"{name} " + "Doe"
+Template(
+    strings=('', ' Doe'),
+    interpolations=(
+        Interpolation('John', 'name', None, ''),
+    )
+)
+
+```
+
+当你将 t-string 与普通字符串拼接时，生成的结果同样是一个新的 t-string。当你需要修改模板的静态字符串部分时，该特性非常有用。
+
+最后，与普通字符串相同，t-string 也支持隐式拼接（implicit concatenation）：
+
+```python
+>>> t"{first} " t"{second}"
+Template(
+    strings=('', ' ', ''),
+    interpolations=(
+        Interpolation('John', 'first', None, ''),
+        Interpolation('Doe', 'second', None, '')
+    )
+)
+
+```
+
+在此示例中，你省略了拼接操作符。你只需将模板紧挨着放置在一起，Python 就会自动将它们拼接起来。
+
+#### 自文档化 T-Strings（Self-Documented T-Strings）
+
+t-string 支持自文档化语法 `{value = }`。Python 将该语法视为 `value = {value!r}`。例如，考虑以下简单的演示模板：
+
+```python
+>>> x = 42
+>>> y = 21
+>>> t"Values: {x = }, {y = }"
+Template(
+    strings=('Values: x = ', ', y = ', ''),
+    interpolations=(
+        Interpolation(42, 'x', 'r', ''),
+        Interpolation(21, 'y', 'r', '')
+    )
+)
+
+```
+
+查看这些插值项时，你会注意到 `.conversion` 属性中保存了 `"r"`。这是使用该语法的唯一可见效果，它与 f-string 中的自文档化表达式行为保持一致。
+
+---
+
+#### 原始 T-Strings（Raw T-Strings）
+
+与普通原始字符串（raw strings）一样，原始 t-string 可以阻止 Python 解释如 `\n`、`\t` 或 `\u` 等转义序列。当处理正则表达式、文件路径或其他希望将反斜杠视为字面量字符的字符串时，这一点尤为有用。
+
+你可以通过在字符串前同时加上 `r` 和 `t` 前缀（顺序不限）来创建原始 t-string：
+
+```python
+>>> path = r"C:\Users\Alice"
+>>> regex = r"\d+"
+>>> rt"Path: {path}, Pattern: {regex}"
+Template(
+    strings=('Path: ', ', Pattern: ', ''),
+    interpolations=(
+        Interpolation('C:\\Users\\Alice', 'path', None, ''),
+        Interpolation('\\d+', 'regex', None, '')
+    )
+)
+>>> tr"Path: {path}, Pattern: {regex}"
+Template(
+    strings=('Path: ', ', Pattern: ', ''),
+    interpolations=(
+        Interpolation('C:\\Users\\Alice', 'path', None, ''),
+        Interpolation('\\d+', 'regex', None, '')
+    )
+)
+
+```
+
+该特性允许你的模板包含字面量反斜杠，而不会触发非预期的转义序列行为。
+
+---
+
+#### 嵌套 T-Strings（Nested T-Strings）
+
+你还可以通过替换字段将一个 t-string 嵌入到另一个 t-string 中。下面是一个演示其工作原理的简单示例：
+
+```python
+>>> value = 42
+>>> t"A t-string that embeds another {t"{value}"}"
+Template(
+    strings=('A t-string that embeds another ', ''),
+    interpolations=(
+        Interpolation(
+            Template(
+                strings=('', ''),
+                interpolations=(
+                    Interpolation(42, 'value', None, ''),
+                )
+            ),
+            't"{value}"',
+            None,
+            ''
+        ),
+    )
+)
+
+```
+
+在此示例中，输入的表达式本身就是一个 t-string。正如预期，高亮的插值项值是一个 `Template` 实例，随后的表达式是一个包含该 t-string 字面量的字符串。
+
+### 探索使用 T-Strings 的高级技巧
+
+Python 的 t-strings 开创了超越简单替换的高级可能性。通过将 t-strings 与其他编程技术相结合，你可以为项目创建出更高效、更灵活且更具可维护性的模板。
+
+在本节中，你将探索有关惰性求值（lazy evaluation）、异步求值（asynchronous evaluation）和模板复用（template reuse）的一些技巧。在大型应用程序中，这些技术有助于应对延迟计算、I/O 密集型任务以及动态字符串生成等复杂场景。
+
+---
+
+#### 惰性求值与模板复用
+
+在 t-strings 中，Python 会在创建模板时及早（eagerly）计算占位符内的表达式。然而，在某些场景下——例如日志记录、缓存或条件渲染——你可能需要将表达式的求值推迟到真正需要它们的时候。这正是惰性求值发挥作用的地方。
+
+**注意：** 要深入了解惰性求值，请查阅《Python 中的惰性求值是什么？》（*What’s Lazy Evaluation in Python?*）。
+
+你可以通过将模板包裹在一个函数中来实现惰性求值：
+
+```python
+>>> def lazy_greeting_template(name, day):
+...     return t"Hello, {name}! Today is {day}."
+... 
+>>> template = lazy_greeting_template("Pythonista", "realpython.com")
+>>> template
+Template(
+    strings=('Hello, ', '! Today is ', '.'),
+    interpolations=(
+        Interpolation('Pythonista', 'name', None, ''),
+        Interpolation('realpython.com', 'day', None, '')
+    )
+)
+
+```
+
+这种技巧允许你将输入表达式的求值延迟到显式调用该外层函数时，这对于性能敏感的使用场景非常有帮助。
+
+将模板嵌入函数中同样适用于创建可复用的模板。这有助于遵循 DRY（Don’t Repeat Yourself，不要重复自己）原则，并保持代码的可维护性。
+
+**模板转普通字符串（Template to String Conversion）**
+
+如果你需要将 t-string 直接转换为普通字符串，你可以编写一个如下所示的转换函数：
+
+```python
+>>> from string.templatelib import Template
+>>> def to_string(template):
+...     if not isinstance(template, Template):
+...         raise TypeError("t-string expected")
+...     
+...     def convert(value, conversion):
+...         func = {
+...             "a": ascii, "r": repr, "s": str
+...         }.get(conversion, lambda x: x)
+...         return func(value)
+...     
+...     parts = []
+...     for item in template:
+...         if isinstance(item, str):
+...             parts.append(item)
+...         else:
+...             value = format(
+...                 convert(item.value, item.conversion),
+...                 item.format_spec
+...             )
+...             parts.append(value)
+...     return "".join(parts)
+... 
+>>> price = 234.8765
+>>> to_string(t"The price is ${price:.2f}")
+'The price is $234.88'
+>>> header = "Report"
+>>> to_string(t"{header:=^20}")
+'=======Report======='
+
+```
+
+`to_string()` 函数接收一个 t-string 作为参数，并通过遍历模板组成部分来构建一个普通字符串。内部辅助函数 `convert()` 将转换标志（`a`、`r`、`s`）映射到对应的 Python 内置函数 `ascii()`、`repr()` 或 `str()`，从而提供适当的转换控制。
+
+接着，你使用内置的 `format()` 函数来应用任何额外的格式规范说明符。最后，使用 `.join()` 方法将各部分合并为最终的字符串。
+
+---
+
+#### 异步求值（Asynchronous Evaluation）
+
+在 Python 程序中，特别是涉及输入/输出（I/O）任务的程序中，你可能希望将 t-string 的处理集成到异步编程工作流中。
+
+与 f-string 一样，你可以在 t-string 的插值项中使用 `await` 关键字：
+
+```python
+>>> import asyncio
+>>> async def main():
+...     greeting = await greeting_template()
+...     print(greeting)
+... 
+>>> async def greeting_template():
+...     return t"Hello, {await get_name()}!"
+... 
+>>> async def get_name():
+...     # 模拟异步操作
+...     await asyncio.sleep(0.5)
+...     return "Pythonista"
+... 
+>>> asyncio.run(main())
+Template(
+    strings=('Hello, ', '!'),
+    interpolations=(
+        Interpolation('Pythonista', 'await get_name()', None, ''),
+    )
+)
+
+```
+
+在此示例中，你在 t-string 内部使用了一个异步表达式。函数 `get_name()` 在返回字符串 `"Pythonista"` 之前，使用 `asyncio.sleep()` 函数模拟了一个异步操作。
+
+在 `greeting_template()` 函数中，你通过在替换字段中嵌入 `await get_name()` 表达式来异步构建 t-string。当你 `await greeting_template()` 时，便会获得该 t-string。
+
+该技术允许你直接在 t-string 的占位符内部执行异步操作，从而能够通过动态、非阻塞的操作来生成格式化字符串。
+
+### 编写 T-String 处理器（Writing T-String Handlers）
+
+编写处理逻辑是使用 t-string 中最关键的部分。与现有的模板处理方案不同，t-string 沿用了广为人知的 f-string 语法和规则，这极大地方便了将其整合进现有的模板生态中。
+
+借助 t-string，你可以编写模板系统来防范 SQL 注入、改进日志消息、处理 HTML 模板、实现文本国际化等。在接下来的小节中，你将通过编写一些基础示例，了解如何在这些场景中使用 t-string。
+
+---
+
+#### 防范 SQL 注入（Sanitizing SQL Queries）
+
+在处理 SQL 查询时，直接插值来自不受信任源的输入可能会让你的代码面临 SQL 注入攻击的风险。例如，假设有以下函数，它使用 f-string 并插值用户输入来返回一条 SQL 查询：
+
+```python
+>>> def select_student_info(username):
+...     return f"SELECT * FROM students WHERE name = '{username}'"
+... 
+>>> select_student_info("jane")
+"SELECT * FROM students WHERE name = 'jane'"
+
+```
+
+这个函数看起来运行良好。它使用 f-string 构建了一条 SQL 查询语句。然而，该函数并不安全。举例来说，假设恶意用户提供了以下用户名：
+
+```python
+>>> username = "'; DROP TABLE students;--"
+
+```
+
+如果你用这个用户名调用 `select_student_info()`，会得到什么结果？如下所示：
+
+```python
+>>> select_student_info(username)
+"SELECT * FROM students WHERE name = ''; DROP TABLE students;--'"
+
+```
+
+如果在数据库上执行此查询，会导致以下后果：
+
+* `SELECT * FROM students WHERE name = '';`：开启了一条查询学生姓名的 SQL 语句。用户输入中的单引号过早闭合了字符串字面量，末尾的分号则结束了第一条查询。
+* `DROP TABLE students;`：这是第二条破坏性 SQL 命令，它会直接删除整个 `students` 表。
+* `--`：是 SQL 注释标记，通知数据库忽略该行的其余部分。这确保了后续残留的任何 SQL 代码都被视为注释，从而防止语法错误破坏注入执行。
+
+显而易见，此类查询会造成实质性的破坏。在没有进行妥善验证或清理转义的情况下，应始终避免使用不受信任的输入直接拼接构建 SQL 查询。
+
+**注意：** 要了解有关 SQL 注入攻击及防范措施的更多信息，请查阅教程《使用 Python 防范 SQL 注入攻击》（*Preventing SQL Injection Attacks With Python*）。
+
+你可以利用 t-string 让上述示例中的代码更加安全。具体做法如下：
+
+```python
+>>> from string.templatelib import Template
+>>> def sanitized_sql(template):
+...     if not isinstance(template, Template):
+...         raise TypeError("t-string expected")
+...     parts = []
+...     params = []
+...     
+...     for item in template:
+...         if isinstance(item, str):
+...             parts.append(item)
+...         else:
+...             parts.append("?")
+...             params.append(item.value)
+...     
+...     query = "".join(parts)
+...     return query, tuple(params)
+... 
+>>> username = "'; DROP TABLE students;--"
+>>> template = t"SELECT * FROM students WHERE name = {username}"
+>>> query, params = sanitized_sql(template)
+>>> print("Sanitized SQL Query:", query)
+Sanitized SQL Query: SELECT * FROM students WHERE name = ?
+>>> print("Parameters:", params)
+Parameters: ("'; DROP TABLE students;--",)
+
+```
+
+在此示例中，你通过将 SQL 结构与用户提供的数据分离开来，利用 t-string 安全地构建了 SQL 查询。
+
+`sanitized_sql()` 函数接收一个 t-string 模板作为参数，并遍历其各个组成部分。如果某一项是普通的 SQL 字符串，则直接添加到查询中；如果它是像用户名这样的输入值，函数就会将其替换为 `?` 占位符，并将实际的值存储在独立的列表中。这确保了用户输入被严格当作数据对待，而不是作为 SQL 执行代码。
+
+**注意：** 处理 t-string 的结果并不一定非要是 `str` 对象。它可以是任何类型的对象，甚至是自定义类型。在上面的示例中，返回的结果是一个元组（tuple）。
+
+最终生成的查询 `"SELECT * FROM students WHERE name = ?"` 是安全的，对应的 `params` 元组则保存了用户的输入。通过将查询结构与参数分离开来，你可以安全地配合数据库游标的 `.execute()` 方法使用，从而杜绝 SQL 注入攻击。
+
+#### HTML 转义（Escaping HTML）
+
+在借助模板构建 HTML 代码时，开发者可能会忘记对来自不受信任源的输入（如用户输入）进行转义。恶意攻击者可以利用这一不良实践向网页中注入客户端脚本，利用所谓的跨站脚本（XSS）漏洞展开攻击。
+
+考虑以下示例：
+
+```python
+>>> def generate_html(username):
+...     return f"<p>Hello, {username}!</p>"
+... 
+>>> generate_html("Pythonista")
+'<p>Hello, Pythonista!</p>'
+
+```
+
+同样，这个函数可以正常工作，但它并不安全。有人只需稍微调整一下输入内容，就能造成破坏。这里有一个简单的示例：
+
+```python
+>>> username = "<script>alert('Hacked!')</script>"
+>>> generate_html(username)
+"<p>Hello, <script>alert('Hacked!')</script>!</p>"
+
+```
+
+攻击者可以利用输入途径向你的应用程序中注入有害的 HTML 代码。在此示例中，它只是一个弹出警报消息的基础脚本，但它也可以是任何恶意内容。你该如何防范这类攻击呢？通常情况下，你必须对任何可能来自不受信任源的 HTML 代码进行转义，比如本例中的用户输入。
+
+t-strings 再次为 HTML 清理提供了强有力的工具。以下是一个简短示例，展示了如何使用 t-strings 让代码更加安全：
+
+```python
+>>> import html
+>>> from string.templatelib import Template
+>>> def generate_safe_html(template):
+...     if not isinstance(template, Template):
+...         raise TypeError("t-string expected")
+...     parts = []
+...     for item in template:
+...         if isinstance(item, str):
+...             parts.append(item)
+...         else:
+...             parts.append(html.escape(item.value))
+...     return "".join(parts)
+... 
+>>> username = "<script>alert('Hacked!')</script>"
+>>> template = t"<p>Hello, {username}!</p>"
+>>> generate_safe_html(template)
+'<p>Hello, &lt;script&gt;alert(&#x27;Hacked!&#x27;)&lt;/script&gt;!</p>'
+
+```
+
+你的 `generate_safe_html()` 函数接收一个 HTML 模板作为参数，并遍历其组成部分，对所有输入的 HTML 代码进行转义。为此，你使用了标准库 `html` 模块中的 `escape()` 函数。
+
+---
+
+#### 结构化日志（Structured Logging）
+
+日志记录是指记录程序执行信息（如事件和错误）的实践。该实践有助于你对应用程序的长期行为进行监控、调试、故障排查和分析。
+
+在 Python 中，你通常使用 `logging` 模块来进行日志记录，该模块允许你输出不同严重级别（包括 INFO、WARNING 和 ERROR）的日志消息。
+
+**注意：** 要了解有关日志记录的更多信息，请查看以下教程：
+
+* 《Python 中的日志记录》（*Logging in Python*）
+* 《Python 日志记录：源码漫游》（*Python Logging: A Stroll Through the Source Code*）
+* 《如何使用 Loguru 实现更简单的 Python 日志记录》（*How to Use Loguru for Simpler Python Logging*）
+
+日志记录的一个重要部分是创建具有描述性且结构良好的日志消息。尽管这些消息通常由人工阅读，但在许多情况下，它们也会被代码解析和分析。因此，它们需要遵循通用或统一的结构化格式。这就是所谓的结构化日志。
+
+Python 的 t-strings 为实现结构化日志引入了一种强大的方式。请参考下面的 `TemplateMessage` 类：
+
+```python
+import json
+import logging
+from string.templatelib import Template
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+class TemplateMessage:
+    def __init__(self, template):
+        if not isinstance(template, Template):
+            raise TypeError("t-string expected")
+        self.template = template
+
+    @property
+    def message(self):
+        parts = []
+        for item in self.template:
+            if isinstance(item, str):
+                parts.append(item)
+            else:
+                parts.append(str(item.value))
+        return "".join(parts)
+
+    @property
+    def values_dict(self):
+        values = {}
+        for item in self.template:
+            if not isinstance(item, str):
+                values[item.expression] = item.value
+        return values
+
+    def __str__(self):
+        return f"{self.message} >>> {json.dumps(self.values_dict)}"
+
+action, amount, item = "refund", 7, "keyboard"
+msg_template = TemplateMessage(t"Process {action}: {amount:.2f} {item}")
+logging.info(msg_template)
+
+```
+
+在此示例中，你定义了一个结构化日志系统，使用 t-strings 安全地生成动态日志消息。
+
+`TemplateMessage` 的初始化方法接收一个模板作为参数，并将其保存在名为 `.template` 的实例属性中。在 `.message` 属性中，你从当前模板创建一条日志消息。与往常一样，你遍历模板各部分，对输入值执行相应的转换。接下来，在 `values_dict` 属性中，你从模板的插值项中创建一个字典。
+
+`.__str__()` 特殊方法在构建实际日志消息时起着至关重要的作用。为了构建此消息，你使用了当前消息和值字典。你按原样插入消息，并将值字典转换为 JSON 内容。
+
+在日志消息中包含此 JSON 内容使你能够构建自动化系统来解析和处理日志文件，从而帮助你分析代码的当前行为。
 
 
 
