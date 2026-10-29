@@ -1024,7 +1024,7 @@ Balance: $150.00
 在此版本的报告模板中，你使用了带有模运算符语法的命名占位符。为了提供要插入的值，你使用了一个字典。该运算符会利用与替换字段相匹配的键来解包该字典。
 
 
-## 探索 `str` 类方法（Exploring str Class Methods）
+## 探索 `str` 类方法
 
 方法是你在类内部定义的函数。与函数类似，你调用方法来执行特定任务。但与函数不同的是，你在特定对象或类上调用方法，因此它在执行期间能够了解其所属的对象。
 
@@ -1044,7 +1044,7 @@ Python 的 `str` 类提供了丰富的方法集，你可以使用它们以多种
 
 ---
 
-### 大小便操作
+### 大小写操作
 
 你在本节中将要探讨的 `str` 方法允许你对目标字符串执行大小写转换。请注意，本节中的方法仅对字母有效。非字母字符保持不变，因为它们没有大写和小写形式。
 
@@ -1899,32 +1899,4360 @@ TypeError: sequence item 1: expected str instance, int found
 请注意，如果将可选的 `keepends` 参数设置为 `True`，行边界符将保留在结果字符串中。
 
 
-
-
-
-
 ## [raw string](https://realpython.com/python-raw-strings/)
+如果你曾见过带有小写字母 `r` 或大写字母 `R` 前缀的标准字符串字面量，那么你实际上就已经接触过 Python 原始字符串（raw string）了：
 
+```python
+>>> r"This is a raw string"
+'This is a raw string'
+
+```
+
+尽管原始字符串看起来以及表现起来与普通的字符串字面量基本一致，但在 Python 如何解释其中的某些字符方面，存在着一个重要的差异——这也是你将在本教程中探索的内容。
+
+需要注意的是，最终生成的字符串对象并没有什么特别之处。无论你在声明字面量值时是否使用前缀，你最终得到的始终都是一个普通的 Python `str` 对象。
+
+此外，在 Python 字符串字面量中，你触手可及、可以使用（有时甚至可以混用）的其他前缀还包括：
+
+* `b`：字节字面量（Bytes literal）
+* `f`：格式化字符串字面量（Formatted string literal）
+* `u`：传统的 Unicode 字符串字面量（PEP 414）
+
+在这些前缀中，你可能最熟悉的是 f-string，它允许你在字符串字面量内部对表达式求值。原始字符串虽然不像 f-string 那样常用，但它们也有其独特的用途，能够提升代码的可读性。
+
+在学习一门新的编程语言时，创建字符串往往是你最早掌握的技能之一。《Python Basics》一书及相关学习路径在一开始就涵盖了这一主题。在 Python 中，你可以通过单引号（`'`）或双引号（`"`）界定文本，从而在源代码中定义字符串字面量：
+
+```python
+>>> david = 'She said "I love you" to me.'
+>>> alice = "Oh, that's wonderful to hear!"
+
+```
+
+拥有这样的选择有助于避免在文本本身包含这些定界字符（`'` 或 `"`）时引发语法错误。例如，如果需要在字符串中表示一个撇号（单引号），你可以用双引号包裹文本。或者，你也可以使用多行字符串来在文本中混合使用这两种定界符。
+
+你可以使用三引号（`'''` 或 `"""`）来声明多行字符串字面量，以容纳较长的文本段落，比如《Python之禅》的节选：
+
+```python
+>>> poem = """... Beautiful is better than ugly.
+... Explicit is better than implicit.
+... Simple is better than complex.
+... Complex is better than complicated.
+... """
+
+```
+
+多行字符串字面量还可以作为文档字符串（docstrings），这是 Python 中一种非常实用的代码文档形式。文档字符串中甚至还可以包含被称为 doctest 的基础测试用例。
+
+无论你选择哪种定界符类型，你始终都可以为字符串字面量添加前缀。只需确保前缀字母与起始引号之间**没有空格**即可。
+
+当你使用字母 `r` 作为前缀时，就会将相应的字符串字面量转换为对应的原始字符串。那么，Python 的原始字符串究竟是什么呢？
+
+### 简而言之：Python 原始字符串会忽略转义字符序列
+
+在某些情况下，通过原始字符串字面量定义字符串所得到的结果，与在 Python 中使用标准字符串字面量完全相同：
+
+```python
+>>> r"I love you" == "I love you"
+True
+
+```
+
+在这里，两个字面量表示的都是包含相同值的字符串对象：即文本 `I love you`。尽管第一个字面量带有前缀，但它对结果没有任何影响，因此两个字符串比较后判定相等。
+
+为了观察 Python 中原始字符串字面量与标准字符串字面量之间的真正差异，请看另一个以字符串形式表示日期的示例：
+
+```python
+>>> r"10\25\1991" == "10\25\1991"
+False
+
+```
+
+这一次，尽管两个字符串字面量在视觉上看起来很相似，比较结果却为 `False`。与之前不同的是，生成的字符串对象所包含的字符序列不再相同。原始字符串的前缀（`r`）改变了字面量内部以反斜杠（`\`）开头的特殊字符序列的含义。
+
+> **注意：** 要理解 Python 是如何解释上述字符串的，请前往本教程的最后一节，届时你将全面了解 Python 中最常见的转义序列类型。
+
+反斜杠是一个转义字符，它标志着 Python 字符串字面量中转义字符序列的开始。它允许你对非打印字符（例如换行符）、控制字符（例如用于颜色和文本格式的 ANSI 转义码），以及外文字符和表情符号等进行编码。
+
+当你打印一个包含转义字符序列（例如反斜杠后跟字母 `n`）的普通字符串字面量时，Python 不会按字面意义对待这两个字符。相反，它会将它们解释为一个单独的命令并执行相应的操作：
+
+```python
+>>> print("Hello\nWorld")
+Hello
+World
+
+```
+
+在这种情况下，遇到换行字符序列（`\n`）后，它会换行输出。
+
+另一方面，为同一个字符串字面量加上 `r` 前缀将禁用对此类转义字符序列的默认处理方式：
+
+```python
+>>> print(r"Hello\nWorld")
+Hello\nWorld
+
+```
+
+Python 在打印原始字符串字面量时，不再将 `\n` 视为特殊字符序列。换句话说，原始字符串字面量的外观始终与其打印出来的结果完全一致，而标准字符串字面量则未必。
+
+原始字符串是你的武器库中一个很便捷的工具，但它们并不是禁用转义字符序列特殊含义的唯一方法。值得了解的是，你可以在标准字符串字面量中对反斜杠本身进行转义，从而抑制其特殊行为：
+
+```python
+>>> print("Hello\\nWorld")
+Hello\nWorld
+
+```
+
+在这里，双反斜杠（`\\`）变成了另一个转义字符序列，Python 将其解释为最终字符串中的字面反斜杠。因此，即便不使用原始字符串，你也可以达成预期的效果。
+
+事实上，当你在 Python REPL 中对原始字符串字面量求值时，解释器会自动在显示的输出中对每个反斜杠进行转义：
+
+```python
+>>> r"Hello\nWorld"
+'Hello\\nWorld'
+
+```
+
+这是在 Python 字符串中表示反斜杠字符的规范方式。请记住，原始字符串仅作为字面量存在于你的源代码中。一旦在运行时对它们进行求值，它们就会变成常规的字符串对象，与使用其他替代方法定义的字符串毫无区别。
+
+原始字符串的概念并非 Python 所独有。它解决了编程中一个常见的问题——当你需要在字符串中包含大量字面反斜杠时频繁出现的问题。例如，LaTeX 标记语言在整个语法中大量使用了反斜杠：
+
+```python
+text1 = "\\phi = \\\\ \\frac{1 + \\sqrt{5}}{2}"
+text2 = r"\phi = \\ \frac{1 + \sqrt{5}}{2}"
+
+```
+
+看看第一个字符串字面量与它下方的原始字符串字面量相比有多么难读。使用标准字符串字面量时，你必须通过添加另一个反斜杠来对每个反斜杠进行转义，这可能会导致被称为“倾斜牙签综合征”（leaning toothpick syndrome）的问题。原始字符串通过将每个反斜杠视为字面字符而非转义字符，从而简化了这一问题。
+
+在现实生活中，你最可能希望使用原始字符串的两个常见场景是**正则表达式**和 **Windows 文件路径**。接下来，你将首先了解后者，因为这是一个更容易理解的用例。
+
+### 原始字符串如何帮助你在 Windows 上指定文件路径？
+
+微软 Windows 系列操作系统及其早期的前身 DOS，均使用反斜杠字符（`\`）作为路径分隔符。反斜杠用于表示路径中目录名称与子目录或文件名之间的边界。
+
+例如，路径 `C:\Users\Real Python\main.py` 对应于 Windows 文件系统中的以下层级结构：
+
+```text
+C:
+└── Users
+    └── Real Python
+        └── main.py
+
+```
+
+上方树状图中的每一行都代表该路径的一个单独组成部分。第一行是驱动器盘符（`C:`）。第二行是 `Users` 文件夹，其后是特定用户的子文件夹，以及该子文件夹中名为 `main.py` 的文件。
+
+然而，你不能直接使用标准字符串字面量来写下这样的路径，因为 Windows 的路径分隔符会与 Python 中的转义字符产生冲突。根据所涉及的具体转义字符序列，这可能仅会导致 Python 发出警告，也可能会直接引发严重的语法错误（SyntaxError）：
+
+```python
+>>> documents = "C:\Documents"
+<stdin>:1: SyntaxWarning: invalid escape sequence '\D'
+>>> documents
+'C:\\Documents'
+>>> users = "C:\Users"
+  File "<stdin>", line 1
+    ...
+SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \UXXXXXXXX escape
+
+```
+
+尽管 Python 无法将 `\D` 识别为有效的转义字符序列，但它仍旧接受了它，甚至还替你对反斜杠进行了转义。然而，你不应该依赖这种行为，因为这将在未来的 Python 版本中发生改变，届时将引发异常而不是仅仅显示一条警告信息：
+
+> **自 3.12 版本起变更：** 无法识别的转义序列会产生 `SyntaxWarning`。在未来的 Python 版本中，它们最终将引发 `SyntaxError`。（来源）
+
+另一方面，以 `\U` 开头的转义序列是专为 Unicode 码点保留的，必须遵循特定的格式（稍后你将了解到这一点）。如果它们不符合该格式，Python 就会引发异常并终止运行你的代码。
+
+为了正确地将 Windows 路径表示为字符串字面量，你要么手动对每个反斜杠字符进行转义，要么使用原始字符串字面量：
+
+```python
+path1 = "C:\\Users\\Real Python\\main.py"
+path2 = r"C:\Users\Real Python\main.py"
+
+```
+
+这样做可以关闭对以反斜杠开头的转义序列的插值解析。
+
+需要注意的是，这两种方法都**不被**视为符合 Python 风格（Pythonic）或地道的 Python 写法，因为它们鼓励你硬编码可能不具备可移植性的值。在现代 Python 中，通常建议使用 `pathlib` 模块来定义路径，该模块负责在主要文件系统之间转换路径分隔符：
+
+```python
+from pathlib import Path
+path = Path.home() / "main.py"
+
+```
+
+这可以确保你的代码能够在不同的操作系统上继续正常运行。以下是生成的 `path` 变量在 Windows 和符合 POSIX 标准的类 Unix 系统上的求值结果：
+
+* **Windows：** `WindowsPath('C:/Users/Real Python/main.py')`
+* **类 Unix 系统：** `PosixPath('/home/Real Python/main.py')`
+
+当你在相应的路径对象上调用 `.open()` 时，无论你处于什么操作系统中，它都能正确找到当前用户的文件夹并打开指定的文件。如有必要，Python 会自动转换正斜杠（`/`）。
+
+正如你所见，针对容易引发冲突的路径分隔符，Python 提供了更好的处理方式。在实际开发中，你更有可能在处理**正则表达式**时用到原始字符串，接下来你将对此进行深入了解。
+
+### 原始字符串如何帮助你编写正则表达式？
+
+正则表达式（简称为 regex）是一种采用标准微语言（mini-language）编写的规范化表达式，允许你指定文本模式以进行搜索、提取或修改。包括 Sublime Text 在内的许多文本编辑器都提供了使用正则表达式进行查找和替换的选项，从而支持强大的模式匹配和文本操作功能。
+
+例如，下面是一个用于匹配 HTML 文档内部起始标签（如 `<div class="dark-theme">`）的示例正则表达式：
+
+```text
+<\w+[^>]+>
+
+```
+
+如果你看不太懂也不必担心。核心要点在于，正则表达式通常包含大量特殊字符，包括令人头疼的反斜杠。因此，当你试图在 Python 字符串字面量中表示它们时，就可能会引发问题。
+
+以下示例展示了编程中正则表达式最常见的用例：
+
+* **网络抓取（Web scraping）**：从网站中提取所有电子邮箱地址
+* **数据验证（Data validation）**：检查密码是否足够安全
+* **数据匿名化（Data anonymization）**：掩码处理信用卡号等敏感信息
+* **内容审核（Content moderation）**：从用户评论中移除违规词汇
+
+虽然你也可以使用传统编程技术实现这些目标，但正则表达式带来了诸多优势：
+
+* 声明式风格（Declarative style）
+* 紧凑且具备可移植性的语法
+* 无与伦比的性能
+
+正则表达式描述的是“匹配什么”（what）而不是“如何匹配”（how）。换句话说，它只负责表达要查找的模式，而底层的正则引擎则会生成高效的代码来处理具体细节。此外，你还可以描述那些纯手工实现起来非常复杂的模式。例如，你可以在同一个正则表达式内捕获并引用文本片段，从而实现对动态内容的匹配！
+
+正则表达式的语法是一把双刃剑。作为领域特定语言（DSL）的一种形式，它极其高效，但与此同时，它的简练也往往导致了较差的可读性。更重要的是，同一个符号根据其在表达式中所处位置的不同，可以代表截然不同的含义！
+
+你可以看一看这个极端但语法正确且能够正常工作的邮箱验证正则，以此感受一下。它由大量的特殊字符构成，看起来就像一堆混乱的象形文字或某种深奥晦涩的编程语言（esoteric programming language）。
+
+> **注意：** 现今主要有两种正则表达式语法流派在使用。像 `grep` 这样的命令行工具默认遵循 POSIX 风格的正则语法；而另一方面，许多编程语言则沿用了借鉴自 Perl 脚本语言、稍微更为复杂的语法。
+> 尽管 Perl 的语法在大部分场景下是通用的，但某些编程语言仍引入了细微的差异，因此在不同语言之间迁移正则表达式时，你可能需要做针对性的调整。
+
+最后，正则表达式提供了出色的性能，用纯 Python 自行实现的算法通常很难与之匹敌。即便如此，你还可以通过诸如 Intel 的 Hyperscan 等第三方库的 Python 绑定来获得更高的性能。
+
+在正则表达式的场景下，使用 Python 原始字符串被视为一种最佳实践，即便有时你并不一定非得用它。它们能让你彻底摆脱对正则语法与 Python 转义字符序列之间潜在冲突的担忧。原始字符串让你能够完全站在正则语法的角度去思考，而无论你的正则表达式未来会变得多么复杂。
+
+更具体地说，在处理正则表达式时，原始字符串字面量可以帮助你避免以下问题：
+
+| 问题类型 | 符号 | 转义序列含义（Python） | 正则表达式含义 |
+| --- | --- | --- | --- |
+| **含义冲突** | `\n` | 呈现一个换行符 | 匹配不可见的换行字符 |
+| **假朋友（形同实异）** | `\b` | 将光标向后移动一个字符（退格符） | 匹配单词边界 |
+| **无效语法** | `\d` | 不适用（非法转义序列） | 匹配任意数字字符 |
+
+正则表达式语法与 Python 的转义字符序列共用了部分符号。有些符号在不同语境下指向相同的概念，而有些则是形同实异的“假朋友”（False friends）。还有一些符号在正则表达式中有特定含义，但在普通的 Python 字符串字面量中却会导致无效的语法。
+
+当你在标准字符串字面量中使用这些（或类似的）符号而未对反斜杠字符进行转义时，可能就无法正确表达预期的正则表达式：
+
+```python
+>>> import re
+>>> text = "Pythonic means idiomatic in Python."
+>>> re.findall("Python\b", text)
+[]
+
+```
+
+在这个代码示例中，字符串字面量 `"Python\b"` 包含单词 `Python`，后面跟着一个非打印的退格符（`\b`），而要搜索的文本中并不存在该字符。因此，`re.findall()` 返回了一个空列表。
+
+另一方面，当你转义这个特殊字符序列（`\\b`）时，它就变成了字符串中的字面内容。此时它所代表的正则表达式便可以成功匹配句末的单词边界：
+
+```python
+>>> re.findall("Python\\b", text)
+['Python']
+
+```
+
+不幸的是，当转义与正则表达式结合在一起时，极易诱发前面提到的“倾斜牙签综合征”。因此，你最好从一开始就直接使用 Python 的原始字符串字面量：
+
+```python
+>>> re.findall(r"Python\b", text)
+['Python']
+
+```
+
+这段代码按预期工作，并且你的字符串字面量看起来更加干净清爽。虽然在这个例子中改善可能看起来并不算惊人，但随着正则表达式变得越来越复杂，使用原始字符串的重要性就会愈发突显。
+
+> **注意：** 请记住，原始字符串仅对 Python 源代码中定义的**字符串字面量**有效。如果你是从文件或其他来源加载正则表达式，则无需采取任何额外步骤，因为生成的字符串对象本身已经是正确的格式。
+
+到目前为止，你已经对原始字符串字面量为 Python 带来的好处有了相当深入的了解。然而，这并不意味着它们没有任何自身的局限或挑战。在下一节中，你将了解到在哪些情况下使用它们需要格外小心。
+
+### 使用原始字符串时有哪些注意事项？
+
+同一个原始字符串字面量在屏幕上可能会有不同的视觉表示形式，具体取决于你如何处理它，这有时会让人感到困惑。例如，当你打印（`print`）这样一个字面量时，结果看起来很直观：
+
+```python
+>>> print(r"\\")
+\\
+
+```
+
+输出中显示的文本与双引号内包裹的字面值完全一致，即便它包含反斜杠字符。毕竟，这就是原始字符串字面量的核心设计初衷。
+
+然而，当你在 Python 交互式 Shell（也称为 Python REPL）中工作时，你可以在不打印表达式（如字符串字面量）的情况下，直接预览其视觉表示形式：
+
+```python
+>>> r"\\"
+'\\\\'
+
+```
+
+这被称为对表达式求值（evaluation）。对字符串字面量求值会创建 Python `str` 数据类型的一个新实例。在显示求值后的字符串时，Python 展示给你的是该对象的内部表示形式。在这种情况下，字符串对象用两个反斜杠来表示每个字面的反斜杠，因此你会看到四个反斜杠，而不是两个。
+
+这就是 Python 中字符串对象的规范表示（canonical representation），你可以直接复制粘贴到源代码中。这种表示形式与你前面使用的原始字符串字面量是等价的：
+
+```python
+>>> r"\\" == "\\\\"
+True
+>>> print("\\\\")
+\\
+>>> len("\\\\")
+2
+
+```
+
+正如你所见，原始字符串字面量和标准字符串字面量提供了对相同值进行编码的替代方案。尽管标准字符串字面量中有四个反斜杠，但底层的字符串对象在内存中仅存储了两个字符。
+
+> **注意：** 当你在原始字符串字面量上调用内置的 `repr()` 函数以获取其可打印表示形式时，情况会变得更加复杂：
+> ```python
+> >>> repr(r"\\")
+> "'\\\\\\\\'"
+> >>> print(repr(r"\\"))
+> '\\\\'
+> 
+> ```
+> 
+> 
+> 这在调试时可能会很有用，因为它能为你提供一个精确编码原始字符串字面量（包含外层引号）的字符串。在开发过程中，你可以使用这种方式获取特定字符串对象的快照，以此临时替换源代码中开销昂贵的计算。
+
+另一个可能会让你大吃一惊的挑战是字符串字面量中**末尾反斜杠**的存在。尽管 Python 原始字符串允许你使用字面反斜杠，但这条规则存在一个例外：
+
+```python
+>>> r"\"
+  File "<stdin>", line 1
+    ...
+SyntaxError: unterminated string literal (detected at line 1)
+>>> r"\\"
+'\\\\'
+>>> r"\\\"
+  File "<stdin>", line 1
+    ...
+SyntaxError: unterminated string literal (detected at line 1)
+>>> r"\\\\"
+'\\\\\\\\'
+>>> r"\\\\\"
+  File "<stdin>", line 1
+    ...
+SyntaxError: unterminated string literal (detected at line 1)
+
+```
+
+无论你使用的是标准字符串字面量还是原始字符串字面量，它们都**不能以奇数个连续的反斜杠字符结尾**，否则会导致语法错误。此类字符串字面量会因引号未闭合而被解释为未结束（unterminated）。
+
+请注意，这与转义引号无关，尽管它具有类似的效果。这种出乎意料的行为是 Python 代码解析器的一个副作用（artifact）：解析器只要在反斜杠后面发现还有其他内容，就会把原始字符串中的反斜杠当作字面字符对待。但当你把反斜杠放在字符串字面量的末尾时，解析器就会产生困惑，因为它期望右侧至少还有一个字符。
+
+因此，如果你将相同的序列放置在原始字符串字面量的其他位置，它就会以字面形式出现：
+
+```python
+>>> print(r"The sequence \" is treated literally")
+The sequence \" is treated literally
+
+```
+
+只有在字符串字面量的**末尾**，连续反斜杠的数量才必须为偶数。在字符串的其他任何地方，你都可以使用奇数个连续反斜杠：
+
+```python
+>>> print(r"\\\w+")
+\\\w+
+
+```
+
+在这种情况下，三个反斜杠字符后面紧跟的是普通的字母和符号，因此该字符串字面量并不是以奇数个反斜杠结尾的。
+
+这一特定的极端情况（edge case）会影响那些表示 Windows 目录路径且以单个末尾反斜杠结尾的原始字符串字面量：
+
+```python
+>>> r"C:\Users\Real Python\"
+  File "<stdin>", line 1
+    ...
+SyntaxError: unterminated string literal (detected at line 1)
+
+```
+
+你可以使用一种投机取巧的技巧（hack）来规避该问题，例如在字符串末尾追加一个空格，然后再将其剥离：
+
+```python
+>>> r"C:\Users\Real Python\ ".rstrip()
+'C:\\Users\\Real Python\\'
+
+```
+
+然而，在处理文件路径时，使用 `pathlib` 模块代替字符串通常是更好的选择。
+
+虽然上述限制是原始字符串字面量和标准字符串字面量所共有的，但在字面量内部嵌套引号的挑战则是原始字符串所独有的。对于标准字符串字面量，你始终可以转义单引号或双引号，以避免与外层的字符串定界符发生冲突：
+
+```python
+>>> "She said \"I love you\" to me."
+'She said "I love you" to me.'
+>>> 'Oh, that\'s wonderful to hear!'
+"Oh, that's wonderful to hear!"
+
+```
+
+在这里，`\"` 和 `\'` 序列允许引号成为字符串的一部分，而不会引发语法错误。请注意，Python 在展示求值后的对象时，是如何自动切换外层引号以简化规范字符串表示的。
+
+相比之下，在原始字符串字面量中使用完全相同的序列并不会消除反斜杠，反而会导致反斜杠也直接显示在输出中：
+
+```python
+>>> r"She said \"I love you\" to me."
+'She said \\"I love you\\" to me.'
+>>> print(r"She said \"I love you\" to me.")
+She said \"I love you\" to me.
+
+```
+
+不过，这并不是什么大问题，因为即使是单行字符串字面量，你也始终可以使用三引号来包裹文本：
+
+```python
+>>> r"""She said "I love you" to me."""
+'She said "I love you" to me.'
+
+```
+
+当然，你也可以将三双引号（`"""`）替换为三单引号（`'''`）。
+
+还有一个可能更令人头疼的问题，那就是原始字符串字面量**无法转义 Unicode 字符**。具体而言，你不能在原始字符串中使用 Unicode 字面量或 Unicode 占位符，因为它们不会对转义序列进行处理：
+
+```python
+>>> print("\u00e9", r"\u00e9")
+é \u00e9
+>>> print(
+...     "\N{latin small letter e with acute}",
+...     r"\N{latin small letter e with acute}",
+... )
+é \N{latin small letter e with acute}
+
+```
+
+以 `\u` 和 `\U` 开头的转义序列允许你通过数字形式的 Unicode 码点来表示外文字母和符号，而以 `\N` 开头的序列则允许你通过名称来引用这些字母和符号。但你无法在原始字符串字面量中使用这些编码技术，因为它们会将反斜杠字符纯粹视作字面字符。
+
+目前没有很好的方法能彻底解决这个问题。如果你确实需要使用这些转义序列之一来编码 Unicode 字符，可以将原始字符串字面量与标准字符串字面量进行拼接，如下所示：
+
+```python
+>>> print(r"C:\caf" + "\u00e9.txt")
+C:\café.txt
+
+```
+
+虽然这种写法不够美观，但确实奏效。这与你之前看到的处理目录路径中末尾反斜杠字符的变通方法有些相似。
+
+好了，既然你现在已经知道在 Python 中何时以及如何使用原始字符串字面量，你可能会好奇它的姊妹特性——原始字节字面量（raw bytes literal）是否有任何用途。你将在接下来的章节中发现更多相关内容。
+
+### 何时应该选择原始字节字面量而非原始字符串字面量？
+
+除了在 Python 中定义原始字符串字面量之外，你还可以使用 `rb` 或 `br` 前缀（及其对应的大写形式）来指定等效的原始字节字面量（raw bytes literal）。为了理解它们的用处，首先回顾或熟悉常规的 `bytes` 对象会很有帮助。
+
+`bytes` 实例的外观和行为与字符串十分相似，但它表示的是数值形式的字节序列，而非字符序列。你可以通过在普通字符串字面量前加上字母 `b` 来定义字节字面量。唯一的限制是，你只能在字节字面量中使用 ASCII 字符。要对非 ASCII 字符进行编码，通常需要使用相关的转义字符序列。
+
+例如，下面是将单词 `café` 编码为 UTF-8 字节的示例：
+
+```python
+>>> "café".encode("utf-8")
+b'caf\xc3\xa9'
+>>> list(b"caf\xc3\xa9")
+[99, 97, 102, 195, 169]
+
+```
+
+你可以通过将类字节对象（bytes-like object）传入 `list()` 构造函数来预览各个独立的字节值。由于字母 `é` 没有对应的 ASCII 表示，因此它在 UTF-8 字符编码中需要占用两个字节。你必须使用这两个字节的序数值（通常以十六进制表示）来进行转义。
+
+使用此类转义字符序列的需求，表面上看似乎与原始字节字面量的初衷背道而驰。因为 Python 会将反斜杠视作字面字符，从而阻止你向字节字面量中插入必要的转义序列。然而，在处理主要由 ASCII 字母构成的二进制数据时，原始字节字面量偶尔会派上用场。
+
+例如，`requests` 包可以以字节而非字符串的形式提供 HTTP 报文体。如果你想使用正则表达式在网站这类未经解码的内容中进行搜索，那么使用原始字节字面量来定义正则模式几乎就成了必需品：
+
+```python
+>>> import re
+>>> import requests
+>>> response = requests.get("https://realpython.com/")
+>>> re.findall(rb"<(\w+)\b[^>]+>", response.content)
+[b'html', b'link', b'meta', ..., b'script']
+
+```
+
+在正则模式前组合使用 `r` 和 `b` 前缀，可以创建一个禁用了转义字符序列特殊处理的字节字面量。
+
+另一方面，如果使用仅带有 `b` 前缀的非原始字节字面量，你将不得不手动转义某些正则符号，从而牺牲了可读性。否则，你可能会收到警告，更糟糕的是，你的正则表达式可能无法按预期工作：
+
+```python
+>>> re.findall(b"<(\\w+)\\b[^>]+>", response.content)
+[b'html', b'link', b'meta', ..., b'script']
+>>> re.findall(b"<(\w+)\b[^>]+>", response.content)
+<stdin>:1: SyntaxWarning: invalid escape sequence '\w'
+[]
+
+```
+
+第一个字节字面量可以正确工作，但看起来不如其对应的原始字面量整洁；而第二个则完全没有匹配到任何结果，并生成了一条警告信息。
+
+那么使用普通的原始字符串字面量呢？事实证明，在 Python 中你无法混用字符串和字节对象：
+
+```python
+>>> re.findall(r"<(\w+)\b[^>]+>", response.content)
+Traceback (most recent call last):
+  File "<input>", line 1, in <module>
+    ...
+TypeError: cannot use a string pattern on a bytes-like object
+
+```
+
+尽管这个原始字符串字面量包含与之前看到的原始字节字面量完全相同的 ASCII 字符，但 Python 对它们的处理方式并不相同。
+
+> **注意：** `requests` 包可以将 HTTP 报文体作为 Python 字符串而非字节序列返回。要以字符序列的形式获取网站内容，你可以访问响应对象的 `.text` 属性：
+> ```python
+> >>> response.text
+> '\n\n<!doctype html>\n<html lang="en"> (...) </html>\n'
+> 
+> ```
+> 
+> 
+> 虽然这种方法更为方便，但有时可能会导致格式错误的字符串，因为它依赖于服务器发送的元数据来对内容进行解码。如果配置有误的 Web 服务器发送了错误的字符编码，该库就只能靠猜测来推断编码。
+
+原始字节字面量适用的另一个领域是单元测试，单元测试通常涉及将预期值与实际值进行比较：
+
+```python
+>>> "café".encode("unicode_escape")
+b'caf\\xe9'
+>>> "café".encode("unicode_escape") == rb"caf\xe9"
+True
+
+```
+
+在这里，你使用 `unicode_escape` 编解码器对字符串 `café` 进行编码，这会生成一个带有重音字母的 Unicode 字面量的字节对象。接着，你利用原始字节字面量来比较实际值和预期值，而无需自己对反斜杠进行转义——如果改用常规字节字面量，手动转义是必不可少的。
+
+以上就涵盖了关于 Python 中原始字符串以及原始字节字面量你需要了解的所有内容。作为补充福利，请务必查看下方整理的一些最常见的转义字符序列，你在编程之旅中很可能会遇到它们。
+
+### 常见的转义字符序列有哪些？
+
+Python 中的转义序列借鉴了标准 C 语言所支持的规范，这意味着它们在很大程度上是重叠的。因此，除了用于常见非打印字符（如换行符 `\n` 和制表符 `\t`）的转义序列外，Python 还允许你使用一些不太常见的转义序列，例如空字符（`\0`）——这通常与 C 语言中以空字符结尾的字符串（null-terminated strings）相关联。
+
+在字符串字面量中，你可能包含的最不寻常的转义序列之一就是 `\a`，它代表响铃符（bell character）。在早期，计算机终端配有实体铃铛，每当接收到这种控制字符时就会鸣响。如今，在某些终端仿真器中使用该序列时，它会触发可听见的警报或声音：
+
+```python
+>>> print("Ding!\a")
+
+```
+
+不妨现在就动手试一试，看看你的终端是否支持响铃字符！
+
+Python 中有几种转义序列允许你使用十六进制或八进制计数系统来表示 ASCII 字符的序数值（ordinal values）。例如，星号符号（`*`）的十进制序数值为 42，对应的十六进制为 $2a_{16}$，八进制为 $52_8$：
+
+```python
+>>> ord("*")
+42
+>>> hex(42), oct(42)
+('0x2a', '0o52')
+
+```
+
+在这里，你调用内置的 `ord()` 函数来获取 Python 中某个字符的序数值。`hex()` 和 `oct()` 函数则分别允许你将该十进制整数转换为带有对应十六进制和八进制表示形式的字符串。
+
+需要注意的是，若要将这些字符串转换为转义序列，你在字符串字面量中的书写格式必须稍作调整：
+
+```python
+>>> "Hexadecimal: \x2a"
+'Hexadecimal: *'
+>>> "Octal: \052"
+'Octal: *'
+
+```
+
+以十六进制表示的字符序数值转义序列必须以反斜杠开头，后跟小写字母 `x` 以及正好两位十六进制数字（`\xhh`）。
+
+另一方面，八进制字面量可以包含一到三位八进制数字（`\ooo`）。不过，当字符的序数值不够大时，你无需用前导零填充八进制转义序列。前面提到的日期示例（`"10\25\1991"`）就是利用了这一特性。
+
+当键盘上缺少某个字符且没有类似于 `\a` 这样的简写形式时，在字符串字面量中编码 ASCII 字符的序数值会很有帮助。具体来说，这允许你引入扩展 ASCII 字符集中的非打印控制字符：
+
+```python
+>>> print("Top-Left\x84Bottom-Right")
+Top-Left        Bottom-Right
+
+```
+
+请记住，扩展字符的具体集合可能会根据当前的字符集代码页（code page）而有所不同，代码页定义了原始 7 位 ASCII 字符表的众多超集之一。
+
+不过，你更有可能在字节字面量（bytes literal）中遇到此类十六进制转义码。它们用于编码非 ASCII 字节值，这些字节通常以连续组合的形式出现，组合在一起具有特定的含义：
+
+```python
+>>> b"caf\xc3\xa9".decode("utf-8")
+'café'
+>>> "caf\xc3\xa9"
+'cafÃ©'
+
+```
+
+两个转义序列 `\xc3` 和 `\xa9` 对应的字节十进制值分别为 195 和 169，它们共同构成了带重音字母 `é` 的 UTF-8 编码。当你将此字节字面量解码为字符串时，Python 会将这些字节组合替换为对应的 Unicode 字符。另一方面，将这些完全相同的转义序列放在普通的字符串字面量中时，Python 会将它们分别解释为各自独立的 ASCII 字符。
+
+幸运的是，你可以使用另一种转义序列格式直接在字符串字面量中转义 Unicode 字符：
+
+```python
+>>> ord("é")
+233
+>>> hex(233)
+'0xe9'
+>>> "caf\u00e9"
+'café'
+
+```
+
+`\uhhhh` 格式恰好由四位十六进制数字组成，适用于码点不大于约 65,000 的 16 位 Unicode 字符。这涵盖了基本多语言平面（BMP），其中包括大多数现代字母表中的字符。
+
+若要编码 32 位 Unicode 字符（例如蛇的 emoji 符号），你需要使用由正好八位十六进制数字组成的 `\Uhhhhhhhh` 格式：
+
+```python
+>>> "\U0001f40d"
+'🐍'
+
+```
+
+注意，此处的字母 `\U` 必须为大写！这可以防止转义序列被错误地解释为其四位数字的对应版本。
+
+如果你觉得这些 Unicode 转义序列使用起来不够方便，那么你一定会喜欢另一种格式。它允许你使用 Unicode 名称别名（name alias）而非数字码点来引用字符：
+
+```python
+>>> "\N{snake}"
+'🐍'
+
+```
+
+使用大写字母 `\N` 可以将该转义字符序列与换行符（`\n`）区分开来。你可以使用标准库中的 `unicodedata` 模块查找给定字符的官方 Unicode 名称，如下所示：
+
+```python
+>>> import unicodedata
+>>> unicodedata.lookup("snake")
+'🐍'
+>>> unicodedata.name("🐍")
+'SNAKE'
+
+```
+
+`lookup()` 函数接收包含字符名称的字符串并返回对应的 Unicode 字符，而 `name()` 函数则接收一个字符并将其映射到合适的名称别名。请注意，虽然 `lookup()` 和 `\N{}` 不区分大小写，但 `name()` 始终以大写形式返回字符的名称。
+
+最后，你在 Python 中可能遇到的转义序列的一个非常常见的用例是 ANSI 转义码，它用于控制终端中文本的格式和显示。例如，以下字符串字面量包含了一些神秘的代码，在支持此类标记的终端上，它们会让单词 `really` 显示为红色并带有下划线：
+
+```python
+>>> print("This is \033[31;1;4mreally\033[0m important.")
+This is really important.
+
+```
+
+你注意到转义码是如何从输出中消失的吗？这是因为该终端支持 ANSI 转义码。否则，其中某些字符就会以字面形式显示出来。当你使用不支持 ANSI 代码的客户端登录远程服务器，或者将输出重定向到文件时，有时就会发生这种情况。
+
+> **注意：** 欲了解更多关于在 Python 中使用 ANSI 转义码的内容，请参阅关于 `print()` 函数教程中的对应章节。
+
+了解这些常见的转义字符序列是非常值得的，因为你可能会在不知不觉中尝试在字符串字面量中使用它们，而没有意识到它们在 Python 中具有特殊的含义。现在你知道在使用时要留意它们了！
 
 
 
 ## [基础IO](https://realpython.com/python-input-output/)
 
+### 从键盘读取输入
+
+程序通常需要从用户那里获取数据，这通常通过键盘输入来实现。在 Python 中，从键盘收集用户输入的一种方法是调用 `input()` 函数：
+
+`input()` 函数会暂停程序的执行，以便您从键盘输入一行内容。一旦按下回车键（Enter），所有键入的字符都会被读取并作为字符串返回，但不包括按回车键生成的换行符。
+
+如果在括号之间添加文本，实际上就是向可选的 `prompt`（提示）参数传递一个值，此时 `input()` 会将您输入的文本作为提示信息显示出来：
+
+```python
+>>> name = input("Please enter your name: ")
+Please enter your name: John Doe
+>>> name
+'John Doe'
+
+```
+
+添加有意义的提示有助于用户理解他们应该输入什么内容，从而带来更好的用户体验。
+
+`input()` 函数始终将用户的输入作为字符串读取。即使键入看起来像数字的字符，Python 仍会将其视为字符串：
+
+```python
+>>> number = input("Enter a number: ")
+Enter a number: 50
+>>> type(number)
+<class 'str'>
+>>> number + 100
+Traceback (most recent call last):
+  File "<python-input-1>", line 1, in <module>
+    number + 100
+    ~~~~~~~^~~~~
+TypeError: can only concatenate str (not "int") to str
+
+```
+
+在上面的示例中，您希望将 100 加到用户输入的数字上。然而，第 7 行的表达式 `number + 100` 无法运行，因为 `number` 是一个字符串（`"50"`），而 `100` 是一个整数。在 Python 中，不能使用加号（`+`）运算符将字符串和整数合并。
+
+您原本希望使用两个整数执行数学运算，但由于 `input()` 总是返回字符串，因此需要一种将用户输入读取为数值类型的方法。所以，您需要将字符串转换为相应的类型：
+
+```python
+>>> number = int(input("Enter a number: "))
+Enter a number: 50
+>>> type(number)
+<class 'int'>
+>>> number + 100
+150
+
+```
+
+在这段更新后的代码片段中，您在收集到用户输入后立即使用 `int()` 将其转换为整数。然后，将转换后的值赋给变量名 `number`。这样，计算 `number + 100` 就有了两个要相加的整数。计算成功，Python 返回正确的总和。
+
+**注意：** 在真实场景中使用 `int()` 等函数将用户输入转换为数值类型时，处理可能出现的异常至关重要，以防止程序因无效输入而崩溃。
+
+`input()` 函数允许您收集来自用户的信息。但是，一旦程序计算出了结果，该如何将其展示给用户呢？到目前为止，您所看到的结果都是在 Python 交互式解释器会话中作为输出自动显示的。
+
+但是，如果您从文件运行相同的代码，Python 仍然会计算这些值，但您将看不到结果。要在控制台中显示输出，可以使用 Python 的 `print()` 函数，它允许您向用户展示文本和数据。
+
+
+### 向控制台写入输出
+
+除了从用户那里获取数据之外，程序通常还需要将数据呈现给用户。在 Python 中，你可以使用 `print()` 函数将数据显示到控制台。
+
+要在控制台显示对象，可以将它们作为以逗号分隔的参数列表传递给 `print()`。默认情况下，`print()` 生成的输出会用一个空格分隔各个对象，并在输出末尾追加一个换行符：
+
+```python
+>>> first_name = "John"
+>>> last_name = "Doe"
+>>> print("Name:", first_name, last_name)
+Name: John Doe
+
+```
+
+你可以将任何类型的对象指定为 `print()` 的参数。如果某个对象不是字符串，`print()` 会在显示它之前先将其转换为合适的字符串表示形式：
+
+```python
+>>> numbers = [1, 2, 3]
+>>> print(numbers)
+[1, 2, 3]
+>>> age = 42
+>>> print(age)
+42
+>>> name = {"first": "John", "last": "Doe"}
+>>> print(name)
+{'first': 'John', 'last': 'Doe'}
+>>> print(len)
+<built-in function len>
+
+```
+
+如你所见，你可以使用 `print()` 将列表、字典甚至函数等复杂类型显示到控制台。
+
+### 在一个实用示例中结合 Python 的输入与输出
+
+既然你已经知道了如何使用 `input()` 读取用户输入以及如何使用 `print()` 显示输出，那么你就可以结合这些工具来编写一个仅有两行的小程序，通过用户的名字向其问好。
+
+该程序首先会提示用户输入姓名，并使用 `input()` 捕获该输入。接着，你可以使用 `print()` 输出包含所输入姓名的个性化问候语：
+
+文件名：
+
+`greeter.py`
+
+```python
+name = input("Please enter your name: ")
+print("Hello", name, "and welcome!")
+
+```
+
+该脚本为用户引入了一个小小的互动。当程序运行时，它会暂时暂停，等待用户输入。一旦用户提供了姓名并按下回车键（Enter），程序便会立即以热情的问候作出响应：
+
+请注意，当把多个参数拼接成单个字符串时，`print()` 会自动在各参数之间添加空格。
+
+`greeter.py` 中的这个小程序仅用两行代码就完成了收集用户输入并向控制台输出响应：
+
+* **第 1 行**通过一段有用的信息提示用户。随后，`input()` 函数将用户的回应作为字符串收集起来，并将其赋值给变量 `name`。
+* **第 2 行**利用硬编码的字符串以及存储在 `name` 中的值组合出一条自定义问候语。`print()` 函数将问候语与用户的输入结合起来，并将其显示在控制台上。
+
+这个示例将 `input()` 和 `print()` 函数结合在一起以实现特定目的，充分发挥了每个函数的优势：
+
+* `input()` 收集用户数据，使程序具有交互性，并能适应不同的用户。
+* `print()` 根据该数据展示反馈，这使得程序能够以友好、个性化的方式向用户传达响应。
+
+在实际应用中，这些基本工具可以支持更复杂的工作流程。例如，在欢迎用户之后，你的程序可能会提供更多选项，或者提示他们输入更具体的内容，从而引导他们完成整个流程。
+
+
+### 使用高级特性读取输入
+
+在前面的章节中，你探讨了 `input()` 函数如何让程序暂停并等待用户提供信息。然而，根据你所使用的操作系统和终端 Shell 的不同，标准的 `input()` 可能会有一些影响用户体验的限制。
+
+**注意：** 如果你使用的是 Windows 10 或更新版本，可以跳过本节。Windows 10 在发布时就改进了控制台，支持更好的键盘编辑与文本选择功能。这在命令提示符（Command Prompt）和 PowerShell 中都是原生支持的。
+
+在某些配置下，特别是在类 UNIX 系统以及 Windows 10 之前的 Windows 版本中，你会发现无法使用方向键来在已键入的字符间移动光标，也无法调出之前输入的命令：
+
+在交互式程序中，当用户想要修正错误或快速重复执行命令时，这种情况会变得非常繁琐。
+
+只需导入一个额外的模块，就能以一种简单直接的方式改进输入功能。具体可用的模块取决于你使用的是类 UNIX 系统还是 Windows 系统，因此请确保从以下选项中选择你的操作系统：
+
+* Windows
+* Linux + macOS
+
+如果你使用的是高于 Windows 10 的 Windows 版本，则无需执行任何操作。自 Windows 10 起，命令提示符和 PowerShell 原生支持高级输入编辑功能和历史记录回溯。你可以尝试直接运行后文展示的代码而无需导入 `readline` 模块，依然可以使用上述所有功能。
+
+但是，如果你使用的是 Windows 10 之前的 Windows 版本，则需要安装一个第三方库来获取此功能。`pyreadline3` 就是这样一个库，你可以使用 Python 的包管理器 `pip` 来安装它：
+
+```powershell
+PS> py -m pip install pyreadline3
+
+```
+
+安装完成后，`pyreadline3` 库将提供类似于类 UNIX 系统上 GNU Readline 库的功能。虽然它模拟了 Python 标准库中 `readline` 模块的行为，但由于底层系统存在差异，`pyreadline3` 并非完全对等的替代品。
+
+该第三方项目中的 `readline.py` 文件确保了当你在 Python 代码中 `import readline` 时，代码实际上会使用 `pyreadline3` 的实现。
+
+要在输入界面中激活改进后的输入功能，只需导入 `readline` 即可：
+
+文件名：
+
+`improved_input.py`
+
+```python
+import readline
+
+while (user_input := input("> ")).lower() != "exit":
+    print("You entered:", user_input)
+
+```
+
+尝试运行上面的代码片段，它会让你进入一个无限循环，以便你测试输入编辑和历史记录回溯：
+
+* 使用**左箭头键**和**右箭头键**在输入行内移动光标。
+* 分别使用 **Ctrl+A** 和 **Ctrl+E** 移动到输入行的开头和末尾。
+* 使用**上箭头键**和**下箭头键**调出之前的输入记录。
+
+你可以通过输入 `exit` 退出在 `improved_input.py` 中设置的循环并结束该示例程序。
+
+集成增强型输入特性可以显著改善用户体验，尤其是在命令行工具或游戏等交互式应用程序中：
+
+在预期用户需要频繁输入命令或进行复杂输入且经常需要编辑的场景下，这种增强功能尤为宝贵。
+
+需要注意的是，`readline` 和 `pyreadline3` 提供的特性仅在控制台环境中原生支持，可能无法在所有的集成开发环境（IDE）中正常工作。IDE 对输入的处理方式往往与标准终端环境不同。此外，某些按键绑定和具体功能可能会因系统配置以及模块的具体实现而有所差异。
+
+通过扩展 `input()` 的能力，你的程序能够提供更加健壮且用户友好的界面，带来更加流畅的数据输入和操作流程。
+
+在下一节中，你将继续探索如何利用 `print()` 的一些高级特性来优化输出的外观和格式。
+
+
+### 使用高级特性打印输出
+
+`print()` 函数接受一些额外的参数，这些参数可以让你对输出格式进行一定的控制。它们中的每一个都是一种特殊类型的参数，称为**关键字参数**（keyword argument）。
+
+关键字参数的形式为 `<keyword>=<value>`。你需要在要显示的对象列表之后的末尾位置传递它们。
+
+**注意：** 使用 `print()` 只能实现对控制台输出的基础格式化。如果你需要更精确地控制数据的外观展示，可以使用 Python 的 f-strings（格式化字符串字面值）在将对象传递给 `print()` 之前对其进行格式化。
+
+在本节中，你将看到以下关键字参数如何影响 `print()` 生成的控制台输出：
+
+* `sep`：该参数允许你指定在打印多个对象时它们之间的分隔方式。
+* `end`：使用该参数来设置 Python 在一次 `print()` 调用结束时打印的内容。
+* `file`：允许你将输出重定向到任何类似文件的对象（file-like object）。
+* `flush`：使用该参数刷新输出流，从而有效地绕过所有缓冲区。
+
+添加关键字参数 `sep=<str>` 会让 Python 使用 `<str>` 来分隔各个对象，而不是使用默认的单个空格：
+
+```python
+>>> print("input", "output")
+input output
+>>> print("input", "output", sep="/")
+input/output
+>>> print("input", "output", sep="...")
+input...output
+>>> person = {"first_name": "John", "last_name": "Doe"}
+>>> for key, value in person.items():
+...     print(key, value, sep=" -> ")
+...
+first_name -> John
+last_name -> Doe
+
+```
+
+在这些示例中，你使用了不同的字符串（例如 `"/"`、`"..."` 和 `" -> "`）来分隔要求 `print()` 显示的对象。你可以使用 `sep` 关键字指定任意字符串作为分隔符：
+
+```python
+>>> print("input", "output", sep="Real Python")
+inputReal Pythonoutput
+
+```
+
+然而，传递像 `"Real Python"` 这样的字符串作为分隔符通常没有什么意义。在实践中，你可能更倾向于像之前的示例那样，传递易读的分隔符号。
+
+要将对象紧凑地拼在一起且中间没有任何空格，你可以指定一个空字符串（`""`）作为分隔符：
+
+```python
+>>> print("input", "output", sep="")
+inputoutput
+
+```
+
+最后，你可以通过向 `sep` 传递换行符（`\n`）来在每一项之间添加换行：
+
+```python
+>>> print("input", "output", sep="\n")
+input
+output
+
+```
+
+用换行符分隔对象会将每个对象显示在单独的一行中，这在需要检查更复杂的对象时很有帮助。有时，你甚至可能希望用两个连续的换行符（`\n\n`）来分隔它们，以便更好地对输出进行分组并提高其可读性。
+
+关键字参数 `end=<str>` 会让 Python 以 `<str>` 结束输出，而不是默认的换行符：
+
+```python
+>>> first = "John"
+>>> last = "Doe"
+>>> print(first, last, end="!")
+John Doe!>>>
+
+```
+
+在这个示例中，你用感叹号替换了默认的换行结束符。请注意这如何打破了调用 `print()` 时通常整齐换到新一行的行为。现在你可以看到感叹号后面直接紧跟着 Python 的输入提示符（`>>>`），因为你告诉了 `print()` 不要写入换行符。
+
+你也可以向该参数传递一个空字符串，以规避默认的换行功能。例如，假设你在循环中显示数值：
+
+```python
+>>> for number in range(10):
+...     print(number)
+...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+```
+
+对于这样小的数值，你可能希望在一行中显示所有值，而不是每行显示一个。你可以通过 `end` 来实现这一点：
+
+```python
+>>> for number in range(10):
+...     print(number, end=" ")
+...
+0 1 2 3 4 5 6 7 8 9 >>>
+
+```
+
+请注意，你的提示符再次滑动回到了输出行中，因为你没有使用换行符作为输出终止符。通过紧随循环之后调用一次不带任何参数的 `print()`，你也可以避免这种情况：
+
+```python
+>>> for number in range(10):
+...     print(number, end=" ")
+... print()
+...
+0 1 2 3 4 5 6 7 8 9
+>>>
+
+```
+
+当你没有向 `print()` 提供任何值时，它会输出一个换行符，从而有效地将光标移动到下一行。或者，你也可以通过封装在条件表达式中的一点逻辑来实现相同的效果：
+
+```python
+>>> for number in range(10):
+...     print(number, end=(" " if number < 9 else "\n"))
+...
+0 1 2 3 4 5 6 7 8 9
+>>>
+
+```
+
+就像 `sep` 一样，你可以使用任何字符串作为 `end` 关键字的参数，但某些字符串作为输出终止符显然比其他字符串更合乎逻辑。
+
+`print()` 函数还接受两个额外的关键字参数：`file` 和 `flush`，它们都会影响函数处理输出流的方式。如果你想了解如何使用这两个额外的关键字参数，可以阅读关于 Python `print()` 函数的深度指南。
 
 
 
 
 ## [print()函数](https://realpython.com/python-print/)
 
+### 输出空行
 
+使用 Python 的 `print()` 最简单的例子只需要敲几下键盘：
+
+```python
+print()
+
+```
+
+这会生成一个不可见的换行符，进而在屏幕上显示一个空行。为了增加垂直间距，你可以像这样连续多次调用 `print()`：
+
+```python
+print()
+print()
+print()
+
+```
+
+这就像你在文字处理程序或文本编辑器中按键盘上的 Enter（回车）键一样。
+
+虽然你没有向 `print()` 传递任何参数，但你仍然需要在末尾加上空括号，以告知 Python 实际执行该函数，而不是仅仅通过名称来引用它。如果没有括号，你将获得对底层函数对象的引用：
+
+```python
+>>> print()
+
+>>> print
+<built-in function print>
+
+```
+
+上面的代码片段运行在交互式 Python REPL 中，正如提示符（`>>>`）所示。因为 REPL 会立即执行每一行 Python 代码，所以在调用 `print()` 之后你会立即看到一个空行。另一方面，当你省略末尾的括号时，你看到的是 `print()` 函数本身的字符串表示形式。
+
+正如你刚才看到的，不带参数调用 `print()` 会生成一个空行，即仅由换行符组成的一行。不要将此与空字符串混淆，空字符串完全不包含任何字符，甚至连换行符都没有！
+
+你可以使用 Python 的字符串字面量来直观对比这两者：
+
+* 空行：`"\n"`
+* 空字符串：`""`
+
+第一个字符串字面量的长度刚好是一个字符，而第二个则没有任何内容——它是空的。
+
+> **注意：** 要在 Python 中从字符串中移除换行符，可以使用其 `.rstrip()` 方法，如下所示：
+> ```python
+> >>> "A line of text.\n".rstrip()
+> 'A line of text.'
+> 
+> ```
+> 
+> 
+> 这会从字符序列的右边缘剥离任何末尾空白字符。要了解有关 `.rstrip()` 的更多信息，请查阅教程《如何从 Python 字符串中剥离字符》（How to Strip Characters From a Python String）。
+
+尽管 Python 通常会替你处理好换行符，但了解如何自己处理它仍然很有帮助。
+
+---
+
+### 处理换行
+
+换行符是一种特殊的控制字符，用于表示行尾（EOL，End of Line）。它在屏幕上通常没有可见的表示形式，但某些文本编辑器可以用微小的图形显示此类不可打印字符。
+
+在这种情况下，“字符（character）”一词在某种程度上有些用词不当，因为换行的长度可以超过一个字符。例如，Windows 操作系统以及 HTTP 协议使用一对字符来表示换行。有时你需要考虑到这些差异，以便设计出真正具有可移植性的程序。
+
+要找出你的操作系统中换行符由什么构成，可以使用 Python 标准库中的 `os` 模块。
+
+如果你使用的是 Windows，你会发现你的操作系统使用由两个控制字符组成的序列来表示换行。该序列由一个回车符（`\r`）和一个换行符（`\n`）组成：
+
+```python
+>>> import os
+>>> os.linesep
+'\r\n'
+
+```
+
+在 Unix、Linux 以及较新版本的 macOS 上，它是一个单独的 `\n` 字符：
+
+```python
+>>> import os
+>>> os.linesep
+'\n'
+
+```
+
+经典的 Mac OS（OS X 之前的版本）则坚持其特立独行（think different）的哲学，选择了另一种表示形式，你偶尔仍能在某些遗留环境中见到它：
+
+```python
+>>> import os
+>>> os.linesep
+'\r'
+
+```
+
+请注意这些字符是如何出现在字符串字面量中的。它们使用前面带有反斜杠（`\`）的特殊语法来表示转义字符序列的开始。这些序列允许表示控制字符，否则这些字符在屏幕上是不可见的。
+
+大多数编程语言都为如下特殊字符提供了一组预定义的转义序列：
+
+| 转义序列 | 字符 |
+| --- | --- |
+| `\\` | 反斜杠（Backslash） |
+| `\b` | 退格（Backspace） |
+| `\t` | 制表符（Tab） |
+| `\r` | 回车（Carriage Return, CR） |
+| `\n` | 换行（Line Feed, LF） |
+
+最后两个让人联想到机械打字机，打字机需要两条单独的指令才能插入新的一行。第一条指令将字车移回当前行的开头，而第二条指令则将滚筒推进到下一行。
+
+通过查看相应的 ASCII 字符代码，你会发现，在字符串字面量中的字符前面加上反斜杠会改变该字符的含义。但是，并非所有字符都可以这样用——只有少数特殊字符可以。
+
+要检查某个字符的 ASCII 码，你可以使用内置的 `ord()` 函数：
+
+```python
+>>> ord("r")
+114
+>>> ord("\r")
+13
+
+```
+
+该函数接受一个单字符字符串，因此序列 `\r` 算作一个字符。请记住，为了构成正确的转义序列，反斜杠字符与字母之间绝对不能有空格！
+
+此前，你了解了如何使用 `print()` 打印空行。然而，在更常见的场景中，你希望向最终用户传达某些消息。有几种方法可以实现这一点，你现在就将对此展开探索。
+
+### 传递参数
+
+首先，你可以直接将字符串字面量作为参数传递给 `print()`：
+
+```python
+>>> print("Please wait while the program is loading...")
+Please wait while the program is loading...
+
+```
+
+这会将消息原样打印到屏幕上。
+
+接下来，你可以将该消息提取到一个具有明确含义名称的变量中，以提高可读性并促进代码复用：
+
+```python
+>>> message = "Please wait while the program is loading..."
+>>> print(message)
+Please wait while the program is loading...
+
+```
+
+最后，你可以向 `print()` 传递一个表达式（例如字符串拼接），该表达式会在结果显示之前被动态求值：
+
+```python
+>>> import os
+>>> print("Hello, " + os.getlogin() + "! How are you?")
+Hello, jdoe! How are you?
+
+```
+
+虽然这样可以按预期工作，但 Python 中有十几种字符串格式化工具，它们提供了更加简洁和易读的语法。其中一种工具就是格式化字符串字面量（formatted string literals）或称为 f-strings，你可以将它与 `print()` 结合使用：
+
+```python
+>>> import os
+>>> print(f"Hello, {os.getlogin()}! How are you?")
+Hello, jdoe! How are you?
+
+```
+
+结果与之前相同，但 f-strings 可以防止你犯一个常见错误：忘记对拼接的操作数进行类型转换。Python 是一门强类型语言，这意味着它不允许你这样做：
+
+```python
+>>> "My age is " + 42
+Traceback (most recent call last):
+  File "<python-input-0>", line 1, in <module>
+    "My age is " + 42
+    ~~~~~~~~~~~~~^~~~
+TypeError: can only concatenate str (not "int") to str
+
+```
+
+这是错误的，因为将数字与字符串相加毫无意义。你必须先显式地将数字转换为字符串，才能将它们拼接在一起：
+
+```python
+>>> "My age is " + str(42)
+'My age is 42'
+
+```
+
+除非你自己处理此类错误，否则 Python 解释器会通过显示回溯信息（traceback）来让你知道出现了问题。
+
+> **注意：** `str` 是一个全局内置函数，用于将对象转换为其字符串表示形式。
+> 你可以直接在任何对象上调用它，例如一个数字：
+> ```python
+> >>> str(3.14)
+> '3.14'
+> 
+> ```
+> 
+> 
+> 内置数据类型开箱即用自带预定义的字符串表示形式，但在本教程的后续部分中，你将了解到如何为你自定义的类提供这种表示形式。
+
+就像任何函数一样，传递字面量、变量还是表达式都没有关系。然而，与许多其他函数不同的是，`print()` 可以接受任何内容，而无论其类型如何。
+
+到目前为止，你只接触了字符串，那么其他数据类型呢？试一试不同内置类型的字面量，看看会输出什么：
+
+```python
+>>> print(42)                            # <class 'int'>
+42
+>>> print(3.14)                          # <class 'float'>
+3.14
+>>> print(1 + 2j)                        # <class 'complex'>
+(1+2j)
+>>> print(True)                          # <class 'bool'>
+True
+>>> print([1, 2, 3])                     # <class 'list'>
+[1, 2, 3]
+>>> print((1, 2, 3))                     # <class 'tuple'>
+(1, 2, 3)
+>>> print({"red", "green", "blue"})      # <class 'set'>
+{'red', 'green', 'blue'}
+>>> print({"name": "Alice", "age": 42})  # <class 'dict'>
+{'name': 'Alice', 'age': 42}
+>>> print("hello")                       # <class 'str'>
+hello
+
+```
+
+不过，要留意 `None` 常量。尽管它用于表示值的缺失，但它显示出来的是 `"None"`，而不是空字符串：
+
+```python
+>>> print(None)
+None
+
+```
+
+`print()` 是如何知道如何处理所有这些不同类型的呢？简短的回答是：它其实不知道。它在幕后隐式调用了 `str()`，将任何对象类型转换为字符串。随后，它以统一的方式处理这些字符串。
+
+在本教程的后续部分中，你将学习如何利用这一机制来打印自定义数据类型（例如你自己定义的类）。
+
+好了，现在你已经能够无参调用 `print()`，或者传递单个参数来调用它了。你已经学会了如何在屏幕上显示固定消息和格式化消息。在下一小节中，你将更详细地探讨消息格式化。
+
+### 分隔多个参数
+
+你已经看到过不带任何参数调用 `print()` 来输出空行，以及带单个参数调用它来显示固定或格式化的消息。
+
+事实上，`print()` 是一个可变参数函数（variadic function），这意味着它可以接受任意数量的位置参数，包括零个、一个或多个参数。这在消息格式化的常见场景中非常方便，因为你经常需要将几个元素拼接在一起。
+
+看一下这个例子：
+
+```python
+>>> import os
+>>> print("My name is", os.getlogin(), "and I am", 42)
+My name is jdoe and I am 42
+
+```
+
+`print()` 将传递给它的所有四个参数拼接在一起，并在它们之间插入了一个空格，这样你就不会得到像 `'My name isjdoeand I am42'` 这样挤在一起的消息。
+
+请注意，它还在将每个参数拼接在一起之前，通过在幕后隐式调用 `str()` 处理了正确的类型转换。如果你还记得上一小节的内容，天真的直接拼接很容易因为类型不兼容而导致错误：
+
+```python
+>>> print("My age is: " + 42)
+Traceback (most recent call last):
+  File "<python-input-0>", line 1, in <module>
+    print("My age is: " + 42)
+          ~~~~~~~~~~~~~~^~~~
+TypeError: can only concatenate str (not "int") to str
+
+```
+
+除了接受可变数量的位置参数之外，`print()` 还定义了四个命名参数（或称关键字参数），它们都是可选的，因为它们都带有默认值：
+
+| 关键字参数 | 默认值 | 描述 |
+| --- | --- | --- |
+| `sep` | `" "` | 插入在各个值之间的字符串 |
+| `end` | `"\n"` | 追加在最后一个值后面的字符串 |
+| `file` | `None` | 输出写入的目标类文件对象（file-like object，默认为标准输出 stdout） |
+| `flush` | `False` | 是否强制刷新流 |
+
+你可以在交互式解释器中调用 `help(print)` 来查看它们的简短文档。
+
+目前，你将重点关注 `sep`，它代表分隔符（separator），默认被赋值为一个空格（`" "`）。它决定了用于连接各元素的值。它必须是字符串或 `None`，但后者的效果与默认空格相同：
+
+```python
+>>> print("hello", "world", sep=None)
+hello world
+>>> print("hello", "world", sep=" ")
+hello world
+>>> print("hello", "world")
+hello world
+
+```
+
+如果你想完全去除分隔符，则必须传入一个空字符串（`""`）：
+
+```python
+>>> print("hello", "world", sep="")
+helloworld
+
+```
+
+你可能希望 `print()` 将其参数作为单独的行连接起来。在这种情况下，只需传入前面介绍过的转义换行符即可：
+
+```python
+>>> print("hello", "world", sep="\n")
+hello
+world
+
+```
+
+`sep` 参数一个更有用的例子是打印像文件路径这样的内容：
+
+```python
+>>> print("home", "user", "documents", sep="/")
+home/user/documents
+
+```
+
+请记住，分隔符位于元素之间，而不是围绕在元素周围，因此你需要以某种方式考虑到这一点：
+
+```python
+>>> print("/home", "user", "documents", sep="/")
+/home/user/documents
+>>> print("", "home", "user", "documents", sep="/")
+/home/user/documents
+
+```
+
+具体来说，你可以在第一个位置参数中插入一个正斜杠字符（`/`），或者使用空字符串作为第一个参数来强制加上前置斜杠。
+
+> **注意：** 在连接列表或元组的元素时要格外小心。如果其中至少有一个元素不是字符串，手动连接将导致一个众所周知的 `TypeError`：
+> ```python
+> >>> print(" ".join(["jdoe is", 42, "years old"]))
+> Traceback (most recent call last):
+>   File "<python-input-0>", line 1, in <module>
+>     print(" ".join(["jdoe is", 42, "years old"]))
+>           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> TypeError: sequence item 1: expected str instance, int found
+> 
+> ```
+> 
+> 
+> 更安全的做法是直接使用星号操作符（`*`）解包该序列，让 `print()` 来处理类型转换：
+> ```python
+> >>> print(*["jdoe is", 42, "years old"])
+> jdoe is 42 years old
+> 
+> ```
+> 
+> 
+> 解包的效果与使用列表中的各个单独元素来调用 `print()` 相同。
+
+另一个有趣的用例涉及将数据导出为逗号分隔值（CSV）格式：
+
+```python
+>>> print(1, "Python Tricks", "Dan Bader", sep=",")
+1,Python Tricks,Dan Bader
+
+```
+
+这无法正确处理像转义逗号这样的边缘情况，但对于简单的用例来说已经足够了。上面显示的行会出现在你的终端窗口中。为了将其保存到文件中，你必须重定向输出。在本节的后续部分中，你将看到如何使用 `print()` 直接从 Python 将文本写入文件。
+
+最后，`sep` 参数并不仅限于单个字符。你可以使用任意长度的字符串来连接元素：
+
+```python
+>>> print("node", "child", "child", sep=" -> ")
+node -> child -> child
+
+```
+
+接下来，你将探索 `print()` 函数剩余的关键字参数。
+
+### 阻止换行
+
+有时，你可能不想让消息以末尾的换行符结尾，以便后续对 `print()` 的调用可以在同一行上继续。经典的例子包括更新长时间运行操作的进度，或者提示用户输入。在后一种情况下，你希望用户在同一行上输入答案：
+
+```text
+Are you sure you want to do this? [y/n] y
+
+```
+
+许多编程语言都通过标准库提供了类似于 `print()` 的函数，但它们允许你决定是否添加换行。例如在 Java 和 C# 中，你有两个不同的函数；而其他语言则要求你显式地在字符串字面量末尾追加 `\n`。
+
+以下是此类语言语法的几个示例：
+
+| 语言 | 示例 |
+| --- | --- |
+| Perl | `print "hello world\n"` |
+| C | `printf("hello world\n");` |
+| C++ | `std::cout << "hello world" << std::endl;` |
+
+相比之下，Python 的 `print()` 函数总是不加询问地添加 `\n`，因为这通常正是你想要的。要禁用这一行为，你可以利用另一个关键字参数 `end`，它决定了该行以什么结尾。
+
+在语义上，`end` 参数与你之前看到的 `sep` 参数几乎完全相同：
+
+* 它必须是一个字符串或 `None`。
+* 它的长度可以是任意的。
+* 它的默认值为 `"\n"`。
+* 如果等于 `None`，其效果与默认值相同。
+* 如果等于空字符串（`""`），它将取消（抑制）换行。
+
+现在你明白了不带参数调用 `print()` 时底层发生了什么。因为你没有向该函数提供任何位置参数，所以没有任何东西需要连接，默认的分隔符根本不会被使用。但是，`end` 的默认值仍然有效，因此会显示一个空行。
+
+> **注意：** 你可能会想，为什么 `end` 参数具有固定的默认值，而不是在你的操作系统上有意义的任何值。
+> 只要你是打印到标准输出流（stdout）而不是写入文件（这是该函数的默认行为），你就不必担心不同操作系统之间的换行符表示。Python 会自动处理转换。只需记住始终在字符串字面量中使用 `"\n"` 转义序列即可。
+> 这是目前在 Python 中打印换行符最具可移植性的方式：
+> ```python
+> >>> print("line1\nline2\nline3")
+> line1
+> line2
+> line3
+> 
+> ```
+> 
+> 
+> 例如，如果你尝试在 Linux 机器上强行打印特定于 Windows 的换行符，那么根据你的终端和 Python 版本，最终可能会得到混乱损坏的输出：
+> ```python
+> >>> print("line1\r\nline2\r\nline3")
+> line3
+> 
+> ```
+> 
+> 
+> 当你打开文件进行读取时，也无需关心换行符的表示形式。得益于通用换行（universal newline）功能，Python 会将其遇到的任何系统特定换行符转换为 Unix 风格的 `"\n"`。与此同时，如果你确实需要，也可以控制在输入和输出时如何对待换行符。
+
+要在打印时禁用换行，必须通过 `end` 关键字参数指定一个空字符串：
+
+```python
+print("Checking file integrity...", end="")
+# ...
+print("OK")
+
+```
+
+尽管这是两次单独的 `print()` 调用，且两次执行可能相隔很长时间，但你最终只会看到一行。起初，它看起来像这样：
+
+```text
+Checking file integrity...
+
+```
+
+然而，在第二次调用 `print()` 之后，同一行在屏幕上将显示为：
+
+```text
+Checking file integrity...OK
+
+```
+
+与 `sep` 一样，你可以使用 `end` 将各个独立片段通过自定义分隔符连接成一大段文本。不过，它不是连接多个参数，而是将每次函数调用的文本追加到同一行：
+
+```python
+print("The first sentence", end=". ")
+print("The second sentence", end=". ")
+print("The last sentence.")
+
+```
+
+这三条指令将输出单行文本：
+
+```text
+The first sentence. The second sentence. The last sentence.
+
+```
+
+你可以将这两个关键字参数混合使用：
+
+```python
+print("Mercury", "Venus", "Earth", sep=", ", end=", ")
+print("Mars", "Jupiter", "Saturn", sep=", ", end=", ")
+print("Uranus", "Neptune", "Pluto", sep=", ")
+
+```
+
+你不仅会得到单行文本，而且所有项目都用逗号分隔开：
+
+```text
+Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
+
+```
+
+没有什么能阻止你在换行符周围添加一些额外的填充字符：
+
+```python
+print("Printing in a Nutshell", end="\n- ")
+print("Producing Blank Lines", end="\n- ")
+print("Dealing With Newlines", end="\n- ")
+print("Passing Arguments")
+
+```
+
+它将打印出以下文本：
+
+```text
+Printing in a Nutshell
+- Producing Blank Lines
+- Dealing With Newlines
+- Passing Arguments
+
+```
+
+如你所见，`end` 关键字参数可以接受任意字符串。
+
+> **注意：** 当你遍历文本文件中的各行时，每一行都会保留其换行符。结合 `print()` 的默认行为，这会导致输出中多出一个额外的空行：
+> ```python
+> >>> with open("file.txt", encoding="utf-8") as file:
+> ...     for line in file:
+> ...         print(line)
+> ...
+> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+> 
+> tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+> 
+> quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+> 
+> ```
+> 
+> 
+> 每一行文本后面都有两个换行符。如你之前在教程中所见，你希望在打印该行之前先剔除其中的一个：
+> ```python
+> >>> with open("file.txt", encoding="utf-8") as file:
+> ...     for line in file:
+> ...         print(line.rstrip())
+> ...
+> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+> tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+> quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+> 
+> ```
+> 
+> 
+> 或者，你可以保留内容中的换行符，但抑制 `print()` 自动追加的换行符。为此，你可以使用 `end` 关键字参数：
+> ```python
+> >>> with open("file.txt", encoding="utf-8") as file:
+> ...     for line in file:
+> ...         print(line, end="")
+> ...
+> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+> tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+> quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+> 
+> ```
+> 
+> 
+> 通过以空字符串结束一行，你实际上禁用了其中一个换行符。
+
+你现在对 Python 中的打印越来越熟悉了，但后续还有许多有用的信息。接下来，你将学习如何拦截和重定向 `print()` 函数的输出。
+
+### 打印到文件
+
+信不信由你，`print()` 并不知道如何将消息转换成屏幕上的文本，坦率地说，它也没必要知道。那是更底层代码的工作，底层代码才懂得字节以及如何搬运它们。
+
+`print()` 是对这些底层结构的一层抽象，提供了一个便捷的接口，仅仅是将实际的打印操作委托给一个字符流（stream）。流可以是磁盘上的任意文件、网络套接字（socket），甚至是内存中的数据缓冲区。
+
+除了自定义流之外，操作系统还提供了三个标准流：
+
+1. 标准输入（Standard Input，stdin）
+2. 标准输出（Standard Output，stdout）
+3. 标准错误（Standard Error，stderr）
+
+标准输出就是你在运行各种命令行程序（包括你自己的 Python 脚本）时在终端中看到的内容：
+
+```bash
+$ cat hello.py
+print("This will appear on stdout")
+$ python hello.py
+This will appear on stdout
+
+```
+
+除非另有指示，否则 `print()` 默认会写入标准输出。不过，你可以指示操作系统临时将 stdout 替换为文件流，从而使所有输出发送到该文件而不是屏幕：
+
+```bash
+$ python hello.py > file.txt
+$ cat file.txt
+This will appear on stdout
+
+```
+
+右尖括号（`>`）将 Python 程序的标准输出流重定向到了本地文件中。
+
+标准错误与 stdout 类似，它也会显示在屏幕上。尽管如此，它是一个独立的流，其目的是记录用于诊断的错误信息。通过重定向其中一个或两者，你可以保持界面整洁。虽然 stdout 和 stderr 都是只写的，但 stdin——标准输入——是只读的。你可以将标准输入视为你的键盘。但就像另外两个流一样，你也可以将 stdin 替换为一个文件，以便从中读取数据。
+
+在 Python 中，你可以通过内置的 `sys` 模块访问所有标准流：
+
+```python
+>>> import sys
+>>> sys.stdin
+<_io.TextIOWrapper name='<stdin>' mode='r' encoding='UTF-8'>
+>>> sys.stdin.fileno()
+0
+>>> sys.stdout
+<_io.TextIOWrapper name='<stdout>' mode='w' encoding='UTF-8'>
+>>> sys.stdout.fileno()
+1
+>>> sys.stderr
+<_io.TextIOWrapper name='<stderr>' mode='w' encoding='UTF-8'>
+>>> sys.stderr.fileno()
+2
+
+```
+
+如你所见，这些预定义的值类似于类文件对象（file-like objects），具有 `mode` 和 `encoding` 属性，以及 `.read()` 和 `.write()` 等众多方法。
+
+默认情况下，`print()` 通过其 `file` 参数将输出发送到 `sys.stdout`，但你可以改变这一点。通过将以写入或追加模式打开的文件对象传递给 `file` 参数，你可以将输出直接定向到该文件而不是屏幕：
+
+```python
+>>> with open("file.txt", mode="w", encoding="utf-8") as output_file:
+...     print("hello world", file=output_file)
+...
+
+```
+
+这将使你的代码不受操作系统级别流重定向的影响，这可能是你想要的，也可能不是。
+
+> **注意：** 有关在 Python 中处理文件的更多信息，请查阅《在 Python 中读写文件（指南）》（Reading and Writing Files in Python (Guide)）。
+
+请注意，`print()` 无法控制字符编码。相反，将接收到的 Unicode 字符串正确编码为字节是底层流的责任。作为最佳实践，请考虑显式地将字符编码设置为 UTF-8，这在大多数情况下都是不错的选择。它涵盖了广泛的 Unicode 字符，同时保持与 ASCII 向后兼容。
+
+对于遗留系统，你需要相应地指定不同的编码：
+
+```python
+>>> with open("file.txt", mode="w", encoding="iso-8859-1") as file:
+...     print("über naïve café", file=file)
+...
+
+```
+
+除了存在于文件系统中某个位置的真实文件之外，你还可以提供一个位于计算机内存中的伪文件（fake one）。稍后你将在单元测试中使用此技术来模拟（mock）`print()`：
+
+```python
+>>> import io
+>>> fake_file = io.StringIO()
+>>> print("hello world", file=fake_file)
+>>> fake_file.getvalue()
+'hello world\n'
+
+```
+
+通过这段代码，你将打印出的输出捕获到了内存中的字符串缓冲区中，而不是显示在屏幕上。`print()` 函数写入该缓冲区，而 `.getvalue()` 则以字符串形式检索累积的内容。
+
+如果你已经读到了这里，那么 `print()` 就只剩下最后一个关键字参数了，你接下来就会看到它。尽管它可能是所有参数中最少用到的一个，但有时它又是绝对必不可少的。
+
+### 对 `print()` 调用进行缓冲
+
+在上一节中，你了解到 `print()` 会将打印操作委托给类文件对象（如 `sys.stdout`）。然而，某些流会缓冲特定的 I/O 操作以提升性能，但这有时会带来阻碍。来看一个例子。
+
+假设你正在编写一个倒计时计时器，它应该每秒将剩余时间追加到同一行：
+
+```text
+3...2...1...Go!
+
+```
+
+你的初次尝试可能看起来像这样：
+
+文件名：`countdown.py`
+
+```python
+import time
+
+num_seconds = 3
+for countdown in reversed(range(num_seconds + 1)):
+    if countdown > 0:
+        print(countdown, end="...")
+        time.sleep(1)
+    else:
+        print("Go!")
+
+```
+
+只要 `countdown` 变量大于零，代码就会持续追加不带末尾换行符的文本，然后休眠一秒。最后，当倒计时结束时，它会打印 `Go!` 并结束该行。
+
+出乎意料的是，程序并没有每秒倒计时一次，而是白白闲置了三秒钟，然后突然一次性打印出整行：
+
+这是因为在这种情况下，操作系统缓冲了后续向标准输出的写入操作。你需要了解，就缓冲机制而言，存在三种类型的流：
+
+1. 无缓冲（Unbuffered）
+2. 行缓冲（Line-buffered）
+3. 块缓冲（Block-buffered）
+
+无缓冲顾名思义——不发生任何缓冲，所有的写入操作都会立即生效。行缓冲流在触发任何 I/O 调用之前会一直等待，直到缓冲区中某处出现换行符；而块缓冲流则单纯等待缓冲区填满到特定大小，不论其中的内容是什么。
+
+标准输出既是行缓冲也是块缓冲，取决于哪种情况先发生。缓冲有助于减少代价高昂的 I/O 调用次数。例如，试想一下通过高延迟网络发送消息的情形。
+
+当你连接到远程服务器通过 SSH 协议执行命令时，你的每次击键实际上都可能生成一个独立的数据包，该数据包比其负载有效内容要大上几个数量级。这是多么巨大的开销！等到至少输入了几个字符再将它们一起发送是合情合理的。这正是缓冲发挥作用的地方。
+
+另一方面，缓冲有时也会产生不良效果，就像你刚才在倒计时示例中看到的那样。为了解决这个问题，你可以直接使用 `print()` 的 `flush` 标志，告诉它强制刷新流，而无需等待缓冲区中的换行符：
+
+文件名：`countdown.py`
+
+```python
+import time
+
+num_seconds = 3
+for countdown in reversed(range(num_seconds + 1)):
+    if countdown > 0:
+        print(countdown, end="...", flush=True)
+        time.sleep(1)
+    else:
+        print("Go!")
+
+```
+
+大功告成——你的倒计时现在应该能按预期工作了。亲自试一试，看看其中的区别吧！
+
+祝贺你！到目前为止，你看到的 `print()` 调用示例已经涵盖了它的所有参数。你明白了它们的作用以及何时使用它们。然而，理解该函数的签名仅仅是个开始。在接下来的章节中，你将明白其中的原因。
+
+### 打印自定义数据类型
+
+截至目前，你只接触了字符串和数字等内置数据类型，但你经常会需要打印自己数据类型的对象。通常，在 Python 中你会使用以下工具之一定义自定义数据类型：
+
+* 具名元组（Named Tuples）
+* 数据类（Data Classes）
+* 普通类（Plain Classes）
+
+具名元组非常适合没有业务逻辑、仅用于承载值序列的简单对象。打印时，它们会自动显示整洁、可读性高的文本表示：
+
+```python
+>>> from collections import namedtuple
+>>> Person = namedtuple("Person", "name age")
+>>> jdoe = Person("John Doe", 42)
+>>> print(jdoe)
+Person(name='John Doe', age=42)
+
+```
+
+只要你只需要保存数据，这已经足够好了。但是，为了给你的 `Person` 类型添加行为，你更倾向于将其实现为 `typing.NamedTuple` 的子类，它是带类型特性的 `namedtuple` 变体：
+
+```python
+>>> from typing import NamedTuple
+>>> class Person(NamedTuple):
+...     name: str
+...     age: int
+...
+...     def greet(self):
+...         print(f"My name's {self.name}, and I'm {self.age} years old.")
+...
+>>> jdoe = Person("John Doe", 42)
+>>> jdoe.greet()
+My name's John Doe, and I'm 42 years old.
+>>> print(jdoe)
+Person(name='John Doe', age=42)
+
+```
+
+在这里，你使用类型注解来指定类字段 `.name` 和 `.age`。使用 `class` 关键字意味着你现在拥有了一个类主体，可以在其中定义自定义方法来执行操作（例如打印问候语）。同时，你还可以免费获得与之前相同的字符串表示。
+
+这比普通的 `namedtuple` 更好，因为你不仅可以免费获得打印效果，还可以向类中添加自定义方法和属性。然而，它在解决一个问题的同时引入了另一个问题。请记住，在 Python 中包括具名元组在内的元组都是不可变的，因此它们创建后就无法修改其值：
+
+```python
+>>> jdoe.age += 1
+Traceback (most recent call last):
+  File "<python-input-5>", line 1, in <module>
+    jdoe.age += 1
+    ^^^^^^^^
+AttributeError: can't set attribute
+
+```
+
+确实，设计不可变数据类型通常是可取的，但在许多情况下，你会希望它们允许修改。幸运的是，Python 拥有数据类（data classes），你可以将其视为可变的元组。通过这种方式，你可以兼顾两者的优势。
+
+以下展示了如何将 `Person` 类型实现为可变数据类：
+
+```python
+>>> from dataclasses import dataclass
+>>> @dataclass
+... class Person:
+...     name: str
+...     age: int
+...
+...     def celebrate_birthday(self):
+...         self.age += 1
+...
+>>> jdoe = Person("John Doe", 42)
+>>> jdoe.celebrate_birthday()
+>>> print(jdoe)
+Person(name='John Doe', age=43)
+
+```
+
+尽管这段代码看起来与你之前看到的 `NamedTuple` 示例几乎相同，但它允许你修改一个人的状态。这在具名元组中是无法实现的，因为具名元组不允许对其元素进行就地修改。
+
+> **注意：** 撇开可变性不谈，选择数据类而不是具名元组的主要原因在于，你建模的类型从本质上讲并不是一个序列。毕竟，元组在概念上是值的序列，而且也有方法可以使数据类保持不可变。
+
+具名元组和数据类都是 Python 较新引入的特性。定义自定义数据类型的传统且最常见的方式一直都是使用普通类，它们能为你提供细粒度的控制。即使在今天，你仍然会在许多代码库中频繁遇到它们。
+
+以下是用标准 Python 类实现的同一个 `Person` 类型：
+
+```python
+>>> class Person:
+...     def __init__(self, name, age):
+...         self.name = name
+...         self.age = age
+...
+
+```
+
+遗憾的是，像这样的普通类在默认情况下并没有吸引人的字符串表示。如果你现在创建一个 `Person` 类的实例并尝试打印它，你将得到这种古怪的输出：
+
+```python
+>>> jdoe = Person("John Doe", 42)
+>>> print(jdoe)
+<__main__.Person object at 0x78ec55f50ec0>
+
+```
+
+这是 Python 的默认对象表示形式。它包含对象的内存地址、类名以及定义它的模块。
+
+正如你之前了解到的，`print()` 会在幕后隐式调用内置的 `str()` 函数，将其位置参数转换为字符串。确实，手动对常规 `Person` 类的实例调用 `str()` 会产生与打印它相同的结果：
+
+```python
+>>> str(jdoe)
+'<__main__.Person object at 0x78ec55f50ec0>'
+
+```
+
+反过来，`str()` 函数会在类主体内寻找两个特殊方法（也称为魔术方法）之一，这些方法通常由你自己实现。如果找不到，它就会回退到你刚才看到的那种难看的默认表示形式。按查找顺序，这些特殊方法依次为：
+
+1. `.__str__()`
+2. `.__repr__()`
+
+第一个方法预期返回一段简短的、人类可读的文本，其中包含存储在最相关属性中的信息。在打印对象时，你并不总是想包含所有属性，以避免暴露诸如用户密码之类的敏感数据。
+
+另一个特殊方法应该提供有关对象的完整信息，理想情况下应允许通过字符串恢复其状态。在这种情况下，它应该返回有效的 Python 代码，以便你可以直接将其传递给 `eval()`，如下所示：
+
+```python
+>>> repr(jdoe)
+"Person(name='John Doe', age=42)"
+>>> type(eval(repr(jdoe)))
+<class '__main__.Person'>
+
+```
+
+请注意这里使用了另一个内置函数 `repr()`，它总是尝试调用对象中的 `.__repr__()`，如果找不到该方法，则会回退到默认表示形式。
+
+> **注意：** 要更好地理解这两种方法之间的区别，可以查看《在 Python 中何时应该使用 `.__repr__()` 还是 `.__str__()`？》（When Should You Use .**repr**() vs .**str**() in Python?）。
+
+以下展示了你如何在 `Person` 类中实现这些特殊方法之一，以提供对象有意义的字符串表示形式：
+
+```python
+>>> class Person:
+...     def __init__(self, name, age):
+...         self.name = name
+...         self.age = age
+...
+...     def __str__(self):
+...         class_name = type(self).__name__
+...         return f"{class_name}(name={self.name!r}, age={self.age!r})"
+...
+>>> jdoe = Person("John Doe", 42)
+>>> print(jdoe)
+Person(name='John Doe', age=42)
+
+```
+
+在动态获取类名之后，你使用 f-string 来格式化输出字符串，确保清晰地显示 `.name` 和 `.age` 属性。
+
+> **注意：** 尽管 `print()` 本身使用 `str()` 进行类型转换，但一些复合数据类型会将其委托给对其成员调用 `repr()`。例如，列表和元组就是如此。
+
+考虑下面这个同时包含两个特殊方法的类，它们返回同一对象的不同字符串表示：
+
+```python
+class User:
+    def __init__(self, login, password):
+        self.login = login
+        self.password = password
+
+    def __str__(self):
+        return self.login
+
+    def __repr__(self):
+        return f"User({self.login!r}, {self.password!r})"
+
+```
+
+如果你打印 `User` 类的单个对象，你不会看到密码，因为 `print(user)` 会调用 `str(user)`，最终调用 `user.__str__()`：
+
+```python
+>>> user = User("jdoe", "s3cret")
+>>> print(user)
+jdoe
+
+```
+
+然而，如果你把同一个 `user` 变量用方括号包裹放入列表中，密码就会清晰可见：
+
+```python
+>>> print([user])
+[User('jdoe', 's3cret')]
+
+```
+
+这是因为列表和元组等序列实现了其 `.__str__()` 方法，使得其所有元素首先使用 `repr()` 进行转换。
+
+当没有任何内置数据类型能满足你的需求时，Python 在定义你自己的数据类型方面为你提供了很大的自由度。其中一些（例如具名元组和数据类）无需你做任何额外工作即可提供外观良好的字符串表示。尽管如此，为了获得最大的灵活性，你仍然需要定义一个类并重写上述的特殊方法。
+
+---
+
+### 理解 Python 的 print()
+
+此时你已经对如何使用 `print()` 相当熟悉了，但更深入地理解它到底是什么，能让你更加高效且自觉地使用它。阅读完本节后，你将了解 Python 中的打印机制在这些年里是如何改进的。
+
+#### 从语句到函数
+
+在旧版 Python 中，`print` 是一个语句（statement）而非函数（function）。尽管 `print()` 现在是一个函数，但出于习惯，有些人仍然将其称为“print 语句”，严格从技术层面来说，这是一个过时的术语。这种语法上的转变契合了 Python 的设计哲学——得益于函数的诸多优势（你将在下一节中了解到），Python 倾向于将大多数操作作为函数来处理。
+
+好了，所以 `print()` 在 Python 中是一个函数。更具体地说，它是一个内置函数（built-in function），这意味着你无需从任何地方导入它：
+
+```python
+>>> print
+<built-in function print>
+
+```
+
+它始终在全局命名空间中可用，因此你可以直接调用它；但你也可以通过标准库中的 `builtins` 模块来访问它：
+
+```python
+>>> import builtins
+>>> builtins.print
+<built-in function print>
+>>> builtins.print("Hello, World!")
+Hello, World!
+
+```
+
+通过这种方式，你可以避免与自定义函数发生名称冲突。假设你想重新定义 `print()`，使其不追加末尾的换行符，同时还将原函数以一个新名称（例如 `println()`）保留下来：
+
+```python
+>>> import builtins
+>>> println = builtins.print
+>>> def print(*args, **kwargs):
+...     builtins.print(*args, **kwargs, end="")
+...
+>>> println("Hello, World!")
+Hello, World!
+>>> print("Hello, World!\n")
+Hello, World!
+
+```
+
+现在你拥有了两个独立的打印函数，就像在 Java 编程语言中一样。稍后在模拟（mocking）部分，你也会定义自定义的 `print()` 函数。另外请记住，如果它本身不是一个函数，你一开始就根本无法覆写 `print()`。
+
+另一方面，从数学意义上讲，`print()` 并不是一个函数，因为它除了隐式的 `None` 之外，不会返回任何有意义的值：
+
+```python
+>>> value = print("Hello, World!")
+Hello, World!
+>>> print(value)
+None
+
+```
+
+这类函数实际上是过程（procedures）或子程序（subroutines），你调用它们是为了实现某种副作用（side effect），而这种副作用归根结底是对全局状态的改变。就 `print()` 而言，该副作用就是在标准输出上显示一条消息，或是写入到一个文件中。
+
+
+---
+
+### 函数的优势
+
+因为 `print()` 是一个函数，所以它拥有明确定义的签名（signature）以及已知的属性。你可以使用你喜欢的编辑器快速查阅它的文档，而无需去死记硬背某种用于执行特定任务的怪异语法。
+
+此外，函数更容易扩展。为函数添加新特性，就像添加另一个关键字参数一样简单；而为了支持该新特性去修改编程语言本身，则要繁琐得多。例如，想想流重定向（stream redirection）或缓冲区刷新（buffer flushing）。
+
+`print()` 作为一个函数的另一大优势是**可组合性（composability）**。在 Python 中，函数是所谓的“头等对象”（first-class objects）或“头等公民”（first-class citizens），这是一种华丽的说法，用来表示它们就像字符串或数字一样是普通的“值”。通过这种方式，你可以将函数赋值给变量、将其传递给另一个函数，甚至从另一个函数中返回它。`print()` 在这方面也不例外。例如，你可以利用这一特性实现依赖注入（dependency injection）：
+
+```python
+def download(url, log=print):
+    log(f"Downloading {url}")
+    # ...
+
+def suppress_print(*args):
+    pass  # 不打印任何内容
+
+download("/js/app.js", log=suppress_print)
+
+```
+
+在这里，`log` 参数允许你注入一个回调函数，该参数默认是 `print()`，但也可以是任何可调用对象（callable）。在这个例子中，通过用一个什么都不做的哑函数（dummy function）替换 `print()`，打印功能被彻底禁用了。
+
+> **注意：** 依赖（dependency）是指被另一段代码所需要的任何一段代码。
+
+组合（Composition）允许你将几个函数结合成一个同类型的全新函数。在下面，你将通过指定一个自定义的 `error()` 函数来看到这一实际应用，该函数会打印到标准错误流（standard error stream），并为所有消息添加给定日志级别的前缀：
+
+```python
+>>> import sys
+>>> from functools import partial
+>>> redirect = lambda function, stream: partial(function, file=stream)
+>>> prefix = lambda function, prefix: partial(function, prefix)
+>>> error = prefix(redirect(print, sys.stderr), "[ERROR]")
+>>> error("Something went wrong")
+[ERROR] Something went wrong
+
+```
+
+这个自定义的 `error()` 函数是用偏函数（partial functions）构建的，以达到预期效果。这是借鉴自函数式编程范式的一个高级概念，因此你目前无需对其进行太深入的探究。但是，如果你对这个主题感兴趣，可以去看一下 `functools` 模块。
+
+与语句不同，函数是值（values）。这意味着你可以将它们与表达式结合使用，特别是 Lambda 表达式。因此，你无需定义一个完整的函数来替换 `print()`，而是可以使用一个直接调用它的匿名 Lambda 表达式：
+
+```python
+>>> download("/js/app.js", lambda message: print("[INFO]", message))
+[INFO] Downloading /js/app.js
+
+```
+
+然而，因为 Lambda 表达式是就地定义的，所以无法在代码的其他地方引用它。只有当你并不打算重用该匿名函数时，这样做才有意义。
+
+> **注意：** 在 Python 中，你不能在匿名 Lambda 函数中放入语句，例如赋值语句、条件语句、循环等。Lambda 函数必须只包含单个表达式。
+
+正如你所看到的，函数提供了一种优雅且可扩展的解决方案，这与该语言的其他部分保持了一致。因为 `print()` 是一个函数，所以在如何使其适应你的打印需求方面，它提供了极大的灵活性。
+
+
+---
+
+### 别具一格的打印
+
+如果你认为打印仅仅是在屏幕上点亮像素，那么从技术上讲，你是对的。然而，有许多方法可以使它看起来很酷。在本节中，你将了解如何格式化复杂的数据结构、添加颜色和其他修饰、构建基于文本的用户界面（TUI）、使用动画，甚至用文本播放声音！
+
+#### 美化打印嵌套数据结构
+
+计算机语言允许你以结构化的方式展现数据以及可执行代码。与 Python 不同，大多数语言在空白字符和格式化方面赋予了你极大的自由度。这在数据压缩等方面可能很有用，但有时会导致代码的可读性变差。
+
+美化打印（Pretty-printing）旨在让一段数据或代码对肉眼更具吸引力，从而更容易被理解。这是通过缩进特定行、插入换行符、重新排列元素等方式来实现的。
+
+Python 在其标准库中自带了 `pprint` 模块，它能帮助你美化那些无法在单行中放下的大型数据结构。由于它以更加人性化的方式进行打印，许多流行的 REPL 工具（包括 JupyterLab 和 IPython）都默认使用它来代替常规的 `print()` 函数。
+
+> **注意：** 要在 IPython 中切换美化打印开关，请执行以下命令：
+> ```python
+> In [1]: %pprint
+> Pretty printing has been turned OFF
+> In [2]: %pprint
+> Pretty printing has been turned ON
+> 
+> ```
+> 
+> 
+> 这是 IPython 中“魔法命令”（magic commands）的一个例子。有许多内置命令都是以百分号（`%`）开头的，不过你可以在 PyPI 上找到更多命令，甚至可以创建属于你自己的命令。
+
+如果你不介意在全局范围内失去对原始 `print()` 函数的访问权，那么你可以在代码中使用导入重命名（import renaming）将其替换为 `pprint()`：
+
+```python
+>>> from pprint import pprint as print
+>>> print
+<function pprint at 0x7f7a775a3510>
+
+```
+
+现在，调用 `print()` 实际上将委托给 `pprint()`。若只想偶尔使用美化版本，你可以在自定义函数的作用域内将 `print()` 重新赋值为 `pprint()`：
+
+```python
+>>> from pprint import pprint
+>>> def function():
+...     print = pprint
+...     print(print)
+...
+>>> function()
+<function pprint at 0x730ff4de4040>
+>>> print(print)
+<built-in function print>
+
+```
+
+取决于你在代码的何处调用 `print()`，你要么会调用 Python 自带的原始 `print()` 函数，要么会调用来自 `pprint` 模块的函数。
+
+为了始终能将这两个函数掌握在指尖，你可能希望显式导入 `pprint()` 或其简写别名 `pp()`：
+
+```python
+>>> from pprint import pp
+
+```
+
+乍一看，`print()` 与 `pprint()`——或其别名 `pp()`——之间几乎没有任何区别，在某些情况下，实际上完全没有区别：
+
+```python
+>>> print(42)
+42
+>>> pp(42)
+42
+>>> print("hello")
+hello
+>>> pp("hello")
+'hello'
+
+```
+
+使用 `print()` 和 `pp()` 打印数字看起来一模一样，但字符串看起来却有所不同。这是因为 `pp()` 在进行类型转换时调用的是 `repr()` 而非通常的 `str()`。这确保了深层嵌套数据结构具有一致的表示形式。
+
+当你开始向 `pp()` 传入更复杂的数据结构时，这种差异会变得更加明显：
+
+```python
+>>> data = {"powers": [x**10 for x in range(10)]}
+>>> pp(data)
+{'powers': [0,
+            1,
+            1024,
+            59049,
+            1048576,
+            9765625,
+            60466176,
+            282475249,
+            1073741824,
+            3486784401]}
+
+```
+
+该函数应用了合理的格式化来提升可读性，但你还可以通过几个参数对其进行进一步的自定义。例如，你可以通过在给定层级下方显示省略号来限制深层嵌套的层次结构：
+
+```python
+>>> cities = {"USA": {"Texas": {"Dallas": ["Irving"]}}}
+>>> pp(cities, depth=3)
+{'USA': {'Texas': {'Dallas': [...]}}}
+
+```
+
+普通的 `print()` 函数也会使用省略号，但那是用于显示形成闭环的递归数据结构，以避免栈溢出错误（stack overflow error）：
+
+```python
+>>> items = [1, 2, 3]
+>>> items.append(items)
+>>> print(items)
+[1, 2, 3, [...]]
+
+```
+
+然而，`pp()` 对此更加明确，它会包含自引用对象的唯一标识（identity）：
+
+```python
+>>> pp(items)
+[1, 2, 3, <Recursion on list with id=140635757287688>]
+>>> id(items)
+140635757287688
+
+```
+
+列表中的最后一个元素与整个列表本身是同一个对象。
+
+> **注意：** 递归或非常庞大的数据集也可以使用 `reprlib` 模块来处理：
+> ```python
+> >>> import reprlib
+> >>> reprlib.repr([x**10 for x in range(10)])
+> '[0, 1, 1024, 59049, 1048576, 9765625, ...]'
+> 
+> ```
+> 
+> 
+> 该模块支持大多数内置类型，并被 Python 调试器（debugger）所使用。
+
+`pp()` 会在打印前自动为你对字典的键进行排序，这便于进行一致的比较。当你比较字符串时，你通常并不关心序列化属性的特定顺序。尽管如此，在序列化之前比较实际的字典始终是最佳做法。
+
+字典通常代表 JSON 数据，而 JSON 在互联网上被广泛使用。为了将字典正确序列化为格式合法的 JSON 字符串，你可以利用 `json` 模块。它同样具备美化打印的能力：
+
+```python
+>>> import json
+>>> data = {"username": "jdoe", "password": "s3cret"}
+>>> ugly = json.dumps(data)
+>>> pretty = json.dumps(data, indent=4, sort_keys=True)
+>>> print(ugly)
+{"username": "jdoe", "password": "s3cret"}
+>>> print(pretty)
+{
+    "password": "s3cret",
+    "username": "jdoe"
+}
+
+```
+
+但请注意，你需要自行处理打印，因为 `json.dumps()` 仅仅返回一个 Python 字符串。类似地，`pprint` 模块还有一个额外的 `pformat()` 函数，它也返回一个字符串，以备你在打印之外还需要对其进行其他处理时使用。
+
+令人惊讶的是，`pp()` 的函数签名与 `print()` 函数的签名大相径庭：
+
+```python
+pp(
+    object,
+    stream=None,
+    indent=1,
+    width=80,
+    depth=None,
+    *,
+    compact=False,
+    sort_dicts=False,
+    underscore_numbers=False
+)
+
+```
+
+除了第一个位置参数 `object` 之外，你无法向 `pp()` 传入多个值来进行打印。这表明了该函数对打印数据结构的专注程度。
+
+要想在 Python 中解锁更强大的“别具一格的打印”方法，你可能还需要去探究其他技术。
+
+
+---
+
+### 使用 ANSI 转义序列添加颜色
+
+随着个人电脑变得越来越精密，它们拥有了更好的图形性能，并能显示更多的颜色。然而，不同的厂商在控制颜色的 API 设计上各有各的想法。这种情况在几十年前发生了改变——美国国家标准学会（American National Standards Institute）引入了 ANSI 转义码（ANSI escape codes），以标准化终端间的文本格式化和颜色控制。
+
+当今大多数终端模拟器都在某种程度上支持这一标准。直到最近，Windows 操作系统一直是一个显著的例外。因此，如果你想要获得最佳的可移植性，可以使用像 `colorama` 这样的第三方 Python 库。它会将 ANSI 代码转换为 Windows 中相应的对等形式，同时在其他操作系统中保持代码原样不变。
+
+要检查你的终端是否支持 ANSI 转义序列的一个子集（例如与颜色相关的序列），你可以尝试运行以下命令：
+
+```bash
+$ tput colors
+256
+
+```
+
+某些 Linux 发行版上的默认终端（GNOME Terminal）表明它可以显示 256 种不同的颜色，而 xterm 仅支持 8 种。如果不支持颜色，上述命令将返回一个负数。
+
+ANSI 转义序列就像是终端的一种标记语言（markup language）。在 HTML 中，你使用像 `<b>` 或 `<i>` 这样的标签来改变文档中元素的外观。这些标签与你的内容混合在一起，但它们本身是不可见的。类似地，只要终端能识别转义码，它们就不会显示在终端中。否则，它们将以字面形式出现，就如同你在查看网页源代码一样。
+
+顾名思义，一个序列必须以不可打印的 Esc 字符开头，其 ASCII 值为 27，有时在十六进制中表示为 `0x1b`，在八进制中表示为 `033`。你可以使用 Python 的数字字面量来快速验证它确实是同一个数字：
+
+```python
+>>> 27 == 0x1b == 0o33
+True
+
+```
+
+此外，你可以在 shell 中使用 `\e` 转义序列来获取它：
+
+```bash
+$ echo -e "\e"
+
+```
+
+最常见的 ANSI 转义序列采用以下形式：
+
+| 元素（Element） | 描述（Description） | 示例（Example） |
+| --- | --- | --- |
+| **Esc** | 不可打印的转义字符 | `\033` |
+| **[** | 左方括号 | `[` |
+| **数字代码（Numeric code）** | 用 `;` 分隔的一个或多个数字 | `0` |
+| **字符代码（Character code）** | 大写或小写字母 | `m` |
+
+数字代码可以是用分号分隔的一个或多个数字，而字符代码则仅仅是一个字母。它们具体的含义由 ANSI 标准定义。例如，要重置所有格式，你可以输入以下任一等效命令（它们均使用代码数字 0 和字母 m）：
+
+```bash
+$ echo -e "\e[0m"
+$ echo -e "\x1b[0m"
+$ echo -e "\033[0m"
+
+```
+
+在另一端，你还可以使用复合代码值。假设你的终端支持 24 位色深，要通过 RGB 通道设置前景色和背景色，你可以提供多个数字：
+
+```bash
+$ echo -e "\e[38;2;0;0;0m\e[48;2;255;255;255mBlack on white\e[0m"
+
+```
+
+使用 ANSI 转义码可以设置的不仅仅是文本颜色。例如，你可以清空并滚动终端窗口、更改其背景色、移动光标位置、让文本闪烁，或者为其加上下划线作为修饰。
+
+在 Python 中，你可能会编写一个辅助函数，用于将任意代码包装成一个序列：
+
+```python
+>>> def esc(*codes):
+...     return f"\033[{';'.join(str(code) for code in codes)}m"
+...
+>>> print(esc(31, 1, 4) + "really" + esc(0) + " important")
+
+```
+
+这将使单词 "really" 以红色（31）、粗体（1）和下划线（4）样式显示：
+
+然而，除了 ANSI 转义码之外，还存在更高级别的抽象，比如前面提到的 `colorama` 库，以及用于在控制台中构建功能完备的用户界面的工具。
+
+
+---
+
+### 构建控制台用户界面
+
+虽然摆弄 ANSI 转义码可以带来极大的乐趣，但在现实世界中，你最终会需要更抽象的构建块来创建用户界面。如果你正在构建商业应用程序，不妨了解一下 Rich 和 Textual，它们提供了典型的图形化微件（widgets）。然而，若想要对终端拥有极致的控制权，`curses` 似乎是最受欢迎的选择。
+
+> **注意：** 要在 Windows 中使用 `curses` 库，你需要安装一个第三方包：
+> ```powershell
+> PS> python -m pip install windows-curses
+> 
+> ```
+> 
+> 
+> 这是因为在面向 Windows 的 Python 发行版标准库中，并没有自带 `curses`。
+
+首先，它允许你以独立的图形微件而非一整块文本的思维方式来进行思考。此外，你拥有极大的自由度来展现你内心的艺术天分，因为这真的就像在一张白纸画卷上作画一样。该库隐藏了处理不同终端所带来的复杂性。除此之外，它对键盘事件有着出色的支持，这在编写视频游戏时可能会非常有用。
+
+制作一款复古贪吃蛇游戏怎么样？你即将创建一个 Python 贪吃蛇模拟器：
+
+首先，你需要导入 `curses` 模块。由于它会修改正在运行的终端的状态，因此优雅地处理错误并恢复之前的状态就显得至关重要。你可以手动完成这些操作，但该库为你的主函数提供了一个便捷的包装器（wrapper）：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+
+def main(screen):
+    pass
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+```
+
+请注意，你的 `main()` 函数接收了一个对主窗口对象的引用，该对象也称为 `stdscr`，稍后你将使用它来进行额外的配置。
+
+如果你现在运行这个程序，你将看不到任何效果，因为它会立即终止。不过，你可以添加一个微小的延迟来先睹为快：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+import time
+
+def main(screen):
+    time.sleep(1)
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+```
+
+这一次，屏幕完全黑了一秒钟，但光标仍在闪烁。要隐藏它，只需调用该模块中定义的配置函数之一即可：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+import time
+
+def main(screen):
+    curses.curs_set(0)  # 隐藏光标
+    time.sleep(1)
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+```
+
+将蛇定义为屏幕坐标点组成的列表，这些坐标是行列格式（y, x），且以左上角为原点：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+import time
+
+def main(screen):
+    curses.curs_set(0)  # 隐藏光标
+    snake = [(0, i) for i in reversed(range(20))]
+    time.sleep(1)
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+```
+
+蛇头始终是列表中的第一个元素，而蛇尾则是最后一个。蛇的初始形状呈水平状，从屏幕左上角开始并朝向右侧。当其 y 坐标保持为 0 时，其 x 坐标从头部到尾部依次递减：
+
+```python
+[(0, 19), (0, 18), (0, 17), ..., (0, 0)]
+
+```
+
+为了绘制这条蛇，你将先从蛇头（`@`）开始，然后接着绘制其余身体段（`*`）。每个段都带有 `(y, x)` 坐标，因此你可以对其进行解包：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+import time
+
+def main(screen):
+    curses.curs_set(0)  # 隐藏光标
+
+    snake = [(0, i) for i in reversed(range(20))]
+    # 绘制蛇
+    screen.addstr(*snake[0], "@")
+    for segment in snake[1:]:
+        screen.addstr(*segment, "*")
+
+    time.sleep(1)
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+```
+
+同样，如果你现在运行这段代码，它不会显示任何内容，因为你在绘制后需要显式地刷新屏幕：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+import time
+
+def main(screen):
+    curses.curs_set(0)  # 隐藏光标
+
+    snake = [(0, i) for i in reversed(range(20))]
+
+    # 绘制蛇
+    screen.addstr(*snake[0], "@")
+    for segment in snake[1:]:
+        screen.addstr(*segment, "*")
+    screen.refresh()
+    time.sleep(1)
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+```
+
+你希望蛇向四个方向之一移动，这些方向可以定义为向量。最终，方向将根据方向键按键发生改变，因此你可以将其与该库的按键代码关联起来：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+import time
+
+def main(screen):
+    curses.curs_set(0)  # 隐藏光标
+    directions = {
+        curses.KEY_UP: (-1, 0),
+        curses.KEY_DOWN: (1, 0),
+        curses.KEY_LEFT: (0, -1),
+        curses.KEY_RIGHT: (0, 1),
+    }
+    direction = directions[curses.KEY_RIGHT]
+    snake = [(0, i) for i in reversed(range(20))]
+
+    # 绘制蛇
+    screen.addstr(*snake[0], "@")
+    for segment in snake[1:]:
+        screen.addstr(*segment, "*")
+
+    screen.refresh()
+    time.sleep(1)
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+```
+
+蛇是如何移动的？事实证明，只有它的头部真正移动到了新位置，而所有其他身体段都只是朝着它移过去。在每一步中，除了头部和尾部，几乎所有的身体段都保持不变。假设蛇没有长大，你可以移除尾部，并在列表开头插入一个新蛇头：
+
+```python
+# 移动蛇
+snake.pop()
+snake.insert(0, tuple(map(sum, zip(snake[0], direction))))
+
+```
+
+为了获取蛇头的新坐标，你需要向其加上方向向量。然而在 Python 中，直接对元组进行加法操作会得到一个更大的元组，而不是对应向量分量的代数和。解决这个问题的一种方法是使用内置的 `zip()`、`sum()` 和 `map()` 函数。
+
+方向会在按键时发生改变，因此你需要调用 `.getch()` 来获取按下的键码。但是，如果按下的键与先前定义为字典键的方向键不符，方向将不会改变：
+
+```python
+# 响应方向键按键改变方向
+direction = directions.get(screen.getch(), direction)
+
+```
+
+然而，默认情况下 `.getch()` 是一个阻塞调用（blocking call），除非有按键按下，否则它会阻止蛇移动。因此，你需要通过添加另一项配置来使该调用变为非阻塞：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+import time
+
+def main(screen):
+    curses.curs_set(0)    # 隐藏光标
+    screen.nodelay(True)  # 不阻塞 I/O 调用
+    # ...
+# ...
+
+```
+
+你已经快完成了，但还剩下最后一件事情。如果你现在把这段代码循环起来，蛇看起来会像是在变长而不是在移动。这是因为你在每次迭代之前都必须显式地清除屏幕。
+
+最后，这就是你在 Python 中玩贪吃蛇游戏所需的全部内容：
+
+**文件名：**
+`snake.py`
+
+```python
+import curses
+import time
+
+def main(screen):
+    curses.curs_set(0)    # 隐藏光标
+    screen.nodelay(True)  # 不阻塞 I/O 调用
+
+    directions = {
+        curses.KEY_UP: (-1, 0),
+        curses.KEY_DOWN: (1, 0),
+        curses.KEY_LEFT: (0, -1),
+        curses.KEY_RIGHT: (0, 1),
+    }
+
+    direction = directions[curses.KEY_RIGHT]
+    snake = [(0, i) for i in reversed(range(20))]
+
+    while True:
+        screen.erase()
+        # 绘制蛇
+        screen.addstr(*snake[0], "@")
+        for segment in snake[1:]:
+            screen.addstr(*segment, "*")
+
+        # 移动蛇
+        snake.pop()
+        snake.insert(0, tuple(map(sum, zip(snake[0], direction))))
+
+        # 响应方向键按键改变方向
+        direction = directions.get(screen.getch(), direction)
+
+        screen.refresh()
+        time.sleep(0.1)
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+```
+
+这仅仅触及了 `curses` 模块所开启的诸多可能性的皮毛。你可以将其用于像这样的游戏开发，或者用于更偏向商业的应用。
+
+
+---
+
+### 用酷炫动画活跃气氛
+
+动画不仅能让用户界面更加赏心悦目，还能提升整体的用户体验。例如，当你向用户提供早期反馈时，他们就能知道你的程序是否仍在运行，抑或是到了该强制终止它的时候。
+
+要在终端中实现文本动画，你必须能够自由地移动光标。你可以借助前面提到的工具之一来做到这一点，例如 ANSI 转义码或 `curses` 库。然而，还有一种更为简单的方法。
+
+如果动画可以限制在单行文本内，那么你可能会对两个特殊的转义字符序列感兴趣：
+
+* **回车符（Carriage Return, `\r`）：** 将光标移至行首
+* **退格符（Backspace, `\b`）：** 将光标向左移动一个字符，并删除该位置的字符
+
+回车符（CR）以非破坏性的方式工作，在再次调用 `print()` 之前，不会覆盖已经写好的文本。相比之下，退格符会删除光标左侧的字符，从而有效地将其从文本中移除。
+
+你现在来看几个例子。例如，你可能想显示一个旋转轮（spinning wheel）来表明某项任务正在进行中，即便你并不确切知道还剩多少时间能完成：
+
+许多命令行工具在通过网络下载数据时都会使用这一技巧。你可以利用一串以轮询（round-robin）方式循环的字符序列，制作一个极其简单的定格动画：
+
+**文件名：**
+`spinning_wheel.py`
+
+```python
+from itertools import cycle
+from time import sleep
+
+for frame in cycle(r"-\|/-\|/"):
+    print("\r", frame, sep="", end="", flush=True)
+    sleep(0.2)
+
+```
+
+该循环获取下一个要打印的字符，然后将光标移动到行首，并在不添加换行符的情况下覆写之前的内容。你不希望在位置参数之间出现多余的空格，因此分隔符参数（`sep`）必须为空。此外，请注意，由于字面量中存在反斜杠字符，这里使用了 Python 的原始字符串（raw strings）。
+
+当你获知剩余时间或任务完成百分比时，你便能够显示一个动画进度条：
+
+首先，你需要计算要显示多少个井号（`#`）以及插入多少个空格。接下来，清除该行并从头构建进度条：
+
+**文件名：**
+`progress.py`
+
+```python
+from time import sleep
+
+def progress(percent=0, width=30):
+    left = width * percent // 100
+    right = width - left
+    print("\r[", "#" * left, " " * right, "]",
+          f" {percent:.0f}%",
+          sep="", end="", flush=True)
+
+for i in range(101):
+    progress(i)
+    sleep(0.1)
+
+```
+
+与之前一样，每次更新请求都会重绘整行内容，以反映当前的进度。
+
+请注意，存在一些强大的第三方库允许你在终端中显示此类进度条。用于简单进度追踪的一个流行选择是 `tqdm` 库。如果你需要更高级的基于文本的微件（widgets），像 `Rich` 和 `Textual` 这样的库是非常不错的选择。
+
+
+---
+
+### 用 print() 发出声音
+
+如果你年纪足够大，还记得配有 PC 扬声器（PC speaker）的电脑，那么你一定也记得它们独特的哔哔声（beep sound），这种声音常用来提示硬件故障。除此之外，它们几乎发不出任何别的声音，然而有了它，电子游戏却显得生动得多。
+
+今天，你仍然可以使用这种小型扬声器，但你的笔记本电脑很可能并没有配备它。在这种情况下，你可以在你的 shell 中开启终端响铃模拟（terminal bell emulation），这样就会改播系统警告音。
+
+不妨输入以下命令，看看你的终端能否发出声音：
+
+```bash
+$ echo -e "\a"
+
+```
+
+通常这会打印文本，但 `-e` 标志启用了对反斜杠转义字符的解析。正如你所看到的，有一个专门的转义序列 `\a`（代表“警报”/alert），它会输出一个特殊的响铃字符（bell character）。某些终端每当检测到它时就会发出声音。
+
+类似地，你也可以在 Python 中打印这个字符。或许可以在循环中打印它来形成某种旋律。虽然它只是一个单音，但你仍然可以改变连续发声之间的停顿时间长度。这似乎是一个用来播放摩尔斯电码（Morse code）的绝佳玩具！
+
+规则如下：
+
+* 字母由一系列点（·）和划（–）符号编码而成。
+* 一个点代表一个时间单位。
+* 一个划代表三个时间单位。
+* 同一字母内各个符号之间间隔一个时间单位。
+* 两个相邻字母的符号之间间隔三个时间单位。
+* 两个相邻单词的符号之间间隔七个时间单位。
+
+根据这些规则，你可以通过以下方式无限循环地“打印”SOS 信号：
+
+**文件名：**
+`morse_code.py`
+
+```python
+# ...
+while True:
+    dot(); symbol_space()
+    dot(); symbol_space()
+    dot(); letter_space()
+
+    dash(); symbol_space()
+    dash(); symbol_space()
+    dash(); letter_space()
+
+    dot(); symbol_space()
+    dot(); symbol_space()
+    dot(); word_space()
+
+```
+
+通过使用分号（`;`），你可以在单行中放置多个 Python 语句。虽然在这个特定示例中这提升了可读性，但为了代码清晰，通常最好还是遵循标准的格式化惯例。
+
+你只需区区十行代码，就可以实现上面示例中出现的各个函数：
+
+**文件名：**
+`morse_code.py`
+
+```python
+from time import sleep
+
+speed = 0.1
+
+def signal(duration, symbol):
+    sleep(duration)
+    print(symbol, end="", flush=True)
+
+dot = lambda: signal(speed, "·\a")
+dash = lambda: signal(3*speed, "−\a")
+symbol_space = lambda: signal(speed, "")
+letter_space = lambda: signal(3*speed, "")
+word_space = lambda: signal(7*speed, " ")
+# ...
+
+```
+
+也许你甚至可以更进一步，制作一个用于将文本翻译成摩尔斯电码的命令行工具？但愿这听起来像是一个有趣且充满成就感的挑战！
+
+
+---
+
+### 在单元测试中模拟
+
+如今，人们期望你交付符合高质量标准的代码。如果你渴望成为一名专业人士，就必须学会如何测试你的代码。
+
+软件测试在像 Python 这样的动态类型语言中尤为重要，因为这类语言没有编译器来针对显而易见的错误向你发出警告。缺陷可能会悄悄混入生产环境并长期潜伏，直到某一天某个代码分支终于被执行。
+
+当然，你有 linter、类型检查器以及其他用于静态代码分析的工具来辅助你。但它们无法告诉你程序在业务层面上是否完成了它理应完成的任务。
+
+那么，你应该去测试 `print()` 吗？不。毕竟它是一个内置函数，必然已经通过了一套全面的测试套件。然而，你真正想要测试的是：你的代码是否在正确的时间以预期的参数调用了 `print()`。换句话说，你想要测试的是代码的**行为**。
+
+你可以通过模拟（mocking）真实的对象或函数来测试行为。在这种情况下，你想模拟 `print()` 来记录并验证它的调用情况。
+
+> **注意：** 你可能听说过以下这些被混用的术语：
+> * Dummy（哑对象）
+> * Fake（伪造对象）
+> * Mock（模拟对象）
+> * Spy（间谍对象）
+> * Stub（存根）
+> 
+> 
+> 有些人对它们进行了区分，而有些人则没有。Martin Fowler 在一份简短的词汇表中解释了它们的区别，并将它们统称为“测试替身”（test doubles）。
+
+在 Python 中，你可以从两个角度来进行模拟：依赖注入（dependency injection）或猴子补丁（monkey patching）。现在你将先来看第一种方法。
+
+#### 使用依赖注入
+
+你可以采用静态类型语言的传统路径，运用依赖注入。这有时可能需要你修改被测代码；如果代码定义在外部库中，这并不总是可行的：
+
+```python
+>>> def download(url, log=print):
+...     log(f"Downloading {url}")
+...     # ...
+...
+
+```
+
+这个函数经过了自觉的设计，允许使用具有兼容接口的自定义函数来替换 `print()`。要检查调用 `download()` 是否会打印预期的消息，你必须拦截其输出。你可以通过注入一个模拟的日志记录函数来实现这一点：
+
+```python
+>>> def mock_print(message):
+...     mock_print.last_message = message
+...
+>>> download("favicon.ico", mock_print)
+>>> assert "Downloading favicon.ico" == mock_print.last_message
+
+```
+
+你的 `mock_print()` 函数没有打印所提供的消息，而是将最新的一条消息存储在一个属性 `.last_message` 中，供你稍后检查。在单元测试中，你很可能会使用 `assert` 语句将实际消息与预期消息进行比对。
+
+> **注意：** 依赖注入是一种在代码设计中使用的技术，旨在使其更具可测试性、可重用性并易于扩展。你可以通过抽象接口间接引用依赖项，并以“推”（push）而非“拉”（pull）的方式提供它们来实现这一目标。
+
+互联网上流传着一个关于依赖注入的有趣解释：
+
+> **面向五岁小孩的依赖注入**
+> 当你自己去冰箱里拿东西时，可能会惹出麻烦。你可能会忘记关门，可能会拿到爸爸妈妈不希望你吃的东西。你甚至可能会去翻找我们根本没有或已经过期的东西。
+> 你应该做的是陈述一个需求：“我午餐需要喝点东西，”然后我们会确保你在坐下来吃饭时能拿到它。
+> —— John Munsch，2009年10月28日。（来源）
+
+在另一种略有不同的解决方案中，你可以将标准输出重定向到内存字符流中，而不是用自定义包装器替换整个 `print()` 函数：
+
+```python
+>>> def download(url, stream=None):
+...     print(f"Downloading {url}", file=stream)
+...     # ...
+...
+>>> import io
+>>> memory_buffer = io.StringIO()
+>>> download("app.js", memory_buffer)
+>>> download("style.css", memory_buffer)
+>>> memory_buffer.getvalue()
+'Downloading app.js\nDownloading style.css\n'
+
+```
+
+这一次，该函数显式调用了 `print()`，但它将其 `file` 参数暴露给了外部世界。
+
+如果你无法掌控被测代码，而且它在设计时并没有考虑依赖注入，该怎么办呢？接下来你将了解如何处理那种场景。
+
+
+---
+
+### 应用猴子补丁
+
+一种更符合 Python 风格（Pythonic）的模拟对象方式是利用内置的 `mock` 模块，该模块使用了一种称为“猴子补丁”（monkey patching）的技术。这个贬义的名称源于它是一种“粗劣的黑客手段”（dirty hack），很容易让你搬起石头砸自己的脚。它不如依赖注入优雅，但绝对迅速且便捷。
+
+猴子补丁所做的就是在运行时动态地修改实现。这种改变在全局范围内都是可见的，因此可能会带来意想不到的后果。然而在实践中，打补丁通常只在测试执行期间对代码产生影响。
+
+要在测试用例中模拟 `print()`，你通常会使用 `@patch` 装饰器，并通过包含模块名称的完全限定名（fully qualified name）来指定打补丁的目标：
+
+**文件名：**
+`test_print.py`
+
+```python
+from unittest import TestCase
+from unittest.mock import patch
+
+class TestPrint(TestCase):
+    @patch("builtins.print")
+    def test_print(self, mock_print):
+        print("Not a real print()")
+        mock_print.assert_called_with("Not a real print()")
+
+```
+
+这将自动为你创建模拟对象，并将其注入到测试方法中。不过，你现在需要声明你的测试方法接收一个模拟对象。底层模拟对象拥有许多用于验证行为的实用方法和属性。
+
+你注意到那段代码片段有什么奇特之处了吗？
+
+尽管向方法中注入了一个模拟对象，但你并没有直接调用它，虽然你完全可以这么做。注入的模拟对象仅仅用于在事后进行断言（assertions），以及可能在运行测试之前准备上下文环境。
+
+在现实中，模拟通过移除数据库连接等依赖项，来帮助隔离被测代码。你很少会在测试中直接调用模拟对象，因为那并没有太大意义。相反，是其他代码在不知情的情况下间接调用了你的模拟对象。
+
+其含义如下：
+
+**文件名：**
+`test_print.py`
+
+```python
+from unittest import TestCase
+from unittest.mock import patch
+
+class TestPrint(TestCase):
+    @patch("builtins.print")
+    def test_print(self, mock_print):
+        print("Not a real print()")
+        mock_print.assert_called_with("Not a real print()")
+
+    @patch("builtins.print")
+    def test_greet(self, mock_print):
+        greet("John")
+        mock_print.assert_called_with("Hello, John!")
+
+def greet(name):
+    print(f"Hello, {name}!")
+
+```
+
+被测代码是一个打印问候语的函数。尽管这是一个相当简单的函数，但你无法轻松地测试它，因为它并不返回值。它具有副作用（side effect）。
+
+为了消除这种副作用，你需要将该依赖项模拟掉。打补丁让你无需修改原函数，该函数可以完全对 `print()` 的具体实现保持不知情（agnostic）。它自以为调用的是 `print()`，但实际上调用的是一个完全由你掌控的模拟对象。
+
+测试软件有诸多原因，寻找漏洞（bugs）便是其中之一。在编写测试时，你通常希望摆脱 `print()` 函数（例如通过将其模拟掉）。然而矛盾的是，在下一节你将读到的相关调试（debugging）过程中，这同一个函数却能帮助你找出漏洞。
+
+
+---
+
+### Python 中的调试方法
+
+在本节中，你将了解 Python 中可用的调试工具——从不起眼的 `print()` 函数、到 `logging` 模块、再到功能完备的调试器（debugger）。阅读完本节后，你将能够针对特定场景判断哪种工具最为合适。
+
+> **注意：** 调试（Debugging）是指在发现软件中的 bug 或缺陷后，寻找其根本原因并采取措施予以修复的过程。关于“bug”这个术语名称的由来，还有一个有趣的轶事。
+
+#### 追踪
+
+追踪也被称为“print 调试”（print debugging）或“穴居人式调试”（caveman debugging），是软件故障排查中最基础的形式。虽然它略显过时，但依然十分强大且有用武之地。
+
+其核心思路是沿着程序的执行路径一路跟进，直至程序意外终止或输出错误结果，从而定位出存在问题的确切指令。具体做法是在精心挑选的位置插入带有特殊标记的 `print` 调用，以便引起你的注意。
+
+来看这个表现出舍入误差的示例：
+
+```python
+>>> def average(numbers):
+...     if len(numbers) > 0:
+...         return sum(numbers) / len(numbers)
+...
+>>> average([0.2, 0.1])
+0.15000000000000002
+
+```
+
+对于两个输入值 `0.2` 和 `0.1`，该函数返回了一个接近预期值 `0.15` 但带有微小偏差的结果。为了探查这种差异从何而来，你可以在函数内部的关键位置插入 `print()` 调用，以追踪中间计算过程：
+
+```python
+>>> def average(numbers):
+...     print("debug1:", numbers)
+...     if len(numbers) > 0:
+...         print("debug2:", sum(numbers))
+...         return sum(numbers) / len(numbers)
+...
+>>> average([0.2, 0.1])
+debug1: [0.2, 0.1]
+debug2: 0.30000000000000004
+0.15000000000000002
+
+```
+
+现在你可以清楚地看到，该函数在计算输入数字的总和时就出现了误差。这是由于计算机中浮点数运算固有的不精确性所导致的。请记住，数字是以二进制形式存储的。十进制数值 `0.1` 在二进制中实际上具有无限循环的表示形式，因而会被截断舍入。
+
+> **注意：** 有关 Python 中数字舍入的更多信息，你可以查看《如何在 Python 中舍入数字》（*How to Round Numbers in Python*）。
+
+在算法的不同步骤追踪变量状态，可以为你提示问题所在。这种方法简单直观，并且几乎适用于市面上的每一种编程语言。更不用说，它在学习过程中是一项极好的练习。
+
+另一方面，一旦你掌握了更高级的技术，就很难再回头了，因为那些技术能让你更快地找出 bug。追踪是一个耗时费力的人工过程，甚至可能导致混入更多错误。构建和部署周期往往需要花费时间。之后，你还必须记得仔细移除所有自己添加的 `print()` 调用，同时又不能误删原本就存在的调用。
+
+此外，它要求你修改代码，而这并不总是可行的。也许你正在调试运行在远程 Web 服务器上的应用程序，或者试图以事后分析（post-mortem）的方式诊断问题。有时你根本无法访问标准输出。
+
+这恰恰是日志记录（logging）大显身手之处，因为它允许你捕获有关应用程序执行的详细信息，而无需直接修改代码。接下来你将探索这项技术。
+
+
+---
+
+### 日志记录
+
+不妨设想一下你正在运营一家电子商务网站。某天，一位愤怒的顾客打电话投诉一笔失败的交易，声称自己的钱丢了。他表示自己曾尝试购买几件商品，但最终出现了一个莫名其妙的隐晦错误，导致他无法完成订单。然而，当他查看自己的银行账户时，钱却已经被扣走了。
+
+你诚恳地道了歉并进行了退款，但你肯定也不希望此类事件日后再次发生。你该如何去调试这个问题？要是你能拥有某种记录了当时所发生情况的痕迹就好了，理想的形式是一份按时间先后顺序排列、附带有具体上下文的事件清单。
+
+每当你发现自己在进行 print 调试时，不妨考虑将其转化为永久的日志消息。这在此类场景下可能会很有帮助——即当事态发生之后，你需要在一个自己无法直接访问的环境中分析问题。
+
+> **注意：** 要了解更多关于 Python 日志记录的内容，请查看以下资源：
+> * 《Python 中的日志记录》（*Logging in Python*）
+> * 《Python 日志系统：漫步源码》（*Python Logging: A Stroll Through the Source Code*）
+> * 《如何使用 Loguru 实现更简单的 Python 日志记录》（*How to Use Loguru for Simpler Python Logging*）
+> 
+> 
+
+虽然市面上有许多用于日志聚合与检索的高级工具，但在最基础的层面上，你可以将日志视为文本文件。每一行都传达了有关系统内某次事件的详细信息。通常它不会包含个人身份信息（PII），但在某些情况下，法律可能会强制要求记录。
+
+以下是一条典型日志记录的结构拆解：
+
+```text
+[2019-06-14 15:18:34,517][DEBUG][root][MainThread] Customer(id=123) logged out
+
+```
+
+如你所见，它具有结构化的形式。除了一条描述性消息之外，还有几个可定制的字段用来提供事件的上下文。在这里，包含了精确的日期与时间、日志级别（log level）、记录器名称（logger name）以及线程名称（thread name）。
+
+日志级别允许你快速过滤消息以降低噪点。例如，如果你正在寻找一个错误，那么你肯定不想看到所有的警告或调试消息。通过配置，在特定日志级别禁用或启用消息变得轻而易举，甚至完全无需触动代码。
+
+借助日志记录，你可以将调试消息与标准输出分离开来。默认情况下，所有日志消息都会流向标准错误流（standard error stream），这可以很方便地以不同颜色显示。此外，你还可以将日志消息重定向到单独的文件中，甚至可以针对单个模块分别进行配置！
+
+很常见的是，配置不当的日志记录可能导致服务器磁盘空间耗尽。为防止这种情况，你可以设置日志轮转（log rotation），这会将日志文件保留指定的时长（例如一周），或者直到文件达到特定大小为止。尽管如此，对旧日志进行归档始终是一种良好的工程实践。某些法规甚至强制要求将客户数据保留长达数年之久！
+
+与其他编程语言相比，Python 中的日志记录十分直截了当，因为 `logging` 模块直接内置于标准库中。你只需短短两行代码即可完成导入与配置：
+
+```python
+>>> import logging
+>>> logging.basicConfig(level=logging.DEBUG)
+
+```
+
+你可以调用在模块层级定义的函数，这些函数会挂钩到根记录器（root logger）上；但通行的做法是为你每个 Python 源文件获取一个专用的记录器：
+
+```python
+>>> logging.debug("This is a debug message from the root logger")
+DEBUG:root:This is a debug message from the root logger
+>>> logger = logging.getLogger(__name__)
+>>> logger.debug("This is a debug message from the dedicated logger")
+DEBUG:__main__:This is a debug message from the dedicated logger
+
+```
+
+使用自定义记录器的优势在于它们能赋予你更细粒度的控制。它们通常通过 `__name__` 变量以定义它们所在的模块来命名。
+
+> **注意：** Python 中还有一个多少有些关联的 `warnings` 模块，它也可以向标准错误流输出消息。不过，它的应用范围更为狭窄，主要用于库（library）代码中，而客户端应用程序则应当使用 `logging` 模块。
+> 尽管如此，你可以通过调用 `logging.captureWarnings(True)` 使它们协同工作。
+
+从 `print()` 函数切换到日志记录的最后一个理由是**线程安全（thread safety）**。在接下来的章节中，你将看到前者在面对多个执行线程时的表现并不尽如人意。
+
+
+---
+
+### 调试
+
+事实是，追踪和日志记录都不能算作真正的调试。要进行实际意义上的调试，你需要一个调试器（debugger），它是一种允许你执行以下操作的工具：
+
+* 交互式单步执行代码。
+* 设置断点，包括条件断点。
+* 内省（审查）内存中的变量。
+* 在运行时求值自定义表达式。
+
+Python 标准库中自带了一个在终端中运行的简易调试器，名字毫不意外地叫做 `pdb`（代表“Python 调试器”/The Python Debugger）。这使得它始终立即可用，因此它可能是你进行远程调试时的唯一选择。或许这就是熟悉它的一个充分理由。
+
+然而，它并没有附带图形界面，所以使用 `pdb` 可能会稍微有点棘手。如果你无法修改代码，那么你必须使用 `-m` 选项将 `pdb` 作为 Python 模块运行，并将你的脚本路径作为命令行参数传入：
+
+```bash
+$ python -m pdb my_script.py
+
+```
+
+否则，你可以直接在代码中设置断点，这会暂停脚本的执行并将你带入调试器中。以往的做法需要两个步骤：
+
+```python
+>>> import pdb
+>>> pdb.set_trace()
+> <python-input-1>(1)<module>()
+(Pdb)
+
+```
+
+这会弹出一个交互式提示符，起初看起来可能会让人有些望而生畏。然而，在此时你仍然可以输入原生的 Python 代码来检查或修改局部变量的状态。除此之外，你真正需要用来单步执行代码的调试器专用命令其实屈指可数。
+
+> **注意：** 人们通常习惯将启动调试器的这两条指令写在同一行中。这需要用到分号，而分号在 Python 程序中是很少见到的：
+> ```python
+> import pdb; pdb.set_trace()
+> 
+> ```
+> 
+> 
+> 虽然这显然不符合 Pythonic 风格，但它格外醒目，能提醒你在调试完成后将其移除。
+
+你还可以调用内置的 `breakpoint()` 函数，它执行相同的操作，但方式更加紧凑，并且附带了一些额外的附加功能（bells and whistles）：
+
+```python
+>>> def average(numbers):
+...     if len(numbers) > 0:
+...         breakpoint()
+...         return sum(numbers) / len(numbers)
+...
+>>> average([0.2, 0.1])
+> <python-input-0>(3)average()
+(Pdb)
+
+```
+
+在大多数情况下，你可能会使用集成在代码编辑器中的可视化调试器。PyCharm 拥有一个以高性能著称的出色调试器，但你也能找到大量带有调试器的替代 IDE，无论是付费的还是免费的。
+
+调试并非众所周知的灵丹妙药。有时候，日志记录或追踪会是更好的解决方案。例如，诸如竞争条件（race conditions）之类难以复现的缺陷往往源于时间耦合（temporal coupling）。当你在断点处停下来时，程序执行中的那点微小停顿就可能会掩盖问题。这有点像海森堡测不准原理：你无法在测量 bug 的同时观察它。
+
+归根结底，这些方法并不是相互排斥的——它们是相辅相成的。
+
+---
+
+### 以线程安全的方式进行打印
+
+在前面推荐使用日志记录而非 `print()` 函数时，你曾简要触及过渡到线程安全这一问题。当使用多个需要显示文本的执行线程时，这有助于你避免输出出现乱码。若要顺利跟上本节内容，你应该已经熟练掌握了线程（threads）的概念。
+
+#### 理解线程安全
+
+线程安全意味着一段代码可以在多个执行线程之间安全地共享。确保线程安全最简单的策略是仅共享不可变对象（immutable objects）。如果线程无法修改对象的状态，就不存在破坏其一致性的风险。
+
+另一种方法则是利用本地内存（local memory），这使得每个线程都接收同一份对象的独立副本。通过这种方式，其他线程就无法看到当前线程对其所做的更改。
+
+但这并没有解决问题，不是吗？你通常希望你的线程之间能够通过修改同一共享资源来进行协作。同步对该资源的并发访问最常见的方式是使用锁（locks）。它们在同一时间仅向一个（有时是少数几个）线程赋予独占的写访问权限。
+
+然而，加锁操作开销很大，并且会降低并发吞吐量，因此人们发明了其他控制访问的手段，例如原子变量（atomic variables）或比较并交换算法（compare-and-swap algorithm）。在本节中，出于其简易性，你将利用加锁机制来使对 `print()` 的调用达到线程安全。
+
+---
+
+### 演示不安全的打印
+
+在 Python 中打印并非线程安全。`print()` 函数持有对标准输出的引用，而标准输出是一个共享的全局变量。理论上，因为没有加锁，在调用 `sys.stdout.write()` 期间可能会发生上下文切换（context switch），从而将来自多个 `print()` 调用的文本片段交错混杂在一起。
+
+> **注意：** 上下文切换意味着一个线程无论是主动还是被动地暂停其执行，以便另一个线程可以接管。这可能发生在任何时刻，甚至在函数调用的正中间。
+
+然而在实践中，这种情况并不会发生。无论你怎么尝试，使用 `print()` 写入标准输出似乎都是原子性的（atomic）。你有时可能观察到的唯一问题是换行符混乱：
+
+```text
+[Thread-3 A][Thread-2 A][Thread-1 A]
+
+[Thread-3 B][Thread-1 B]
+
+
+[Thread-1 C][Thread-3 C]
+
+[Thread-2 B]
+[Thread-2 C]
+
+```
+
+为了模拟这一点，你可以通过让底层的 `.write()` 方法休眠一段随机时间，以此增加上下文切换的概率。如何实现？通过模拟它（mocking），对此你已经在前面的章节中有所了解：
+
+**文件名：**
+`threads_simulation.py`
+
+```python
+import sys
+from random import random
+from threading import Thread, current_thread
+from time import sleep
+from unittest.mock import patch
+
+write = sys.stdout.write
+
+def slow_write(text):
+    sleep(random())
+    write(text)
+
+def task():
+    thread_name = current_thread().name
+    for letter in "ABC":
+        print(f"[{thread_name} {letter}]")
+
+with patch("sys.stdout") as mock_stdout:
+    mock_stdout.write = slow_write
+    for i in range(1, 4):
+        Thread(target=task, name=f"Thread-{i}").start()
+
+```
+
+首先，你将原始的 `.write()` 方法保存在一个全局变量中，稍后在你的 `slow_write()` 函数中委托给它。接着，你向模拟对象提供你的伪造实现，该实现最多需要一秒钟来执行。每个线程都会进行几次带有自身名称以及字母 A、B 和 C 的 `print()` 调用。
+
+如果你之前读过模拟（mocking）那一节，那么你可能已经大致明白打印为什么会出现这种异常行为了。尽管如此，为了使其彻底明了，你可以捕获喂给你的 `slow_write()` 函数的值。当你这样做时，你会注意到每次运行都会得到略微不同的序列：
+
+```python
+[
+    '[Thread-3 A]',
+    '[Thread-2 A]',
+    '[Thread-1 A]',
+    '\n',
+    '\n',
+    '[Thread-3 B]',
+    # ...
+]
+
+```
+
+即使 `sys.stdout.write()` 本身是一个原子操作，对 `print()` 函数的单次调用也可以产生多次写入。例如，换行符是与其余文本分开写入的，而上下文切换恰好发生在这些写入操作之间。
+
+> **注意：** Python 中标准输出的原子性是全局解释器锁（Global Interpreter Lock, GIL）的副产物，GIL 会在字节码指令周围应用锁机制。然而请注意，许多解释器版本并不具备 GIL，在那些版本中，多线程打印需要显式加锁。
+
+既然你已经知道了多线程环境中导致 `print()` 函数不稳定行为的原因，你就可以直接解决这个潜在问题了。在下一节中，你将强制 `print()` 每次调用仅触发一次 `sys.stdout.write()`，从而防止输出相互交错。
+
+---
+
+### 解决问题
+
+为了解决并发打印的问题，你可以通过手动处理换行符，使其成为消息不可分割的一部分：
+
+**文件名：**
+`threads_simulation.py`
+
+```python
+# ...
+def task():
+    thread_name = current_thread().name
+    for letter in "ABC":
+        print(f"[{thread_name} {letter}]\n", end="")
+# ...
+
+```
+
+你已将换行符（`\n`）追加到了消息末尾。与此同时，你将 `end` 参数设置为空字符串（`""`），从而禁用了 `print()` 本会自动添加的换行符。这修复了输出：
+
+```text
+[Thread-2 A]
+[Thread-1 A]
+[Thread-3 A]
+[Thread-1 B]
+[Thread-3 B]
+[Thread-2 B]
+[Thread-1 C]
+[Thread-2 C]
+[Thread-3 C]
+
+```
+
+然而请注意，`print()` 函数依然会为空后缀发起一次单独的调用，这转化为了无用的 `sys.stdout.write("")` 指令：
+
+```python
+[
+    '[Thread-2 A]\n',
+    '[Thread-1 A]\n',
+    '[Thread-3 A]\n',
+    '',
+    '',
+    '',
+    '[Thread-1 B]\n',
+    # ...
+]
+
+```
+
+
+---
+
+### 使 print() 线程安全
+
+一个真正线程安全版本的 `print()` 函数将利用显式加锁机制，如下所示：
+
+**文件名：**
+`thread_safe_print.py`
+
+```python
+import threading
+
+lock = threading.Lock()
+
+def thread_safe_print(*args, **kwargs):
+    with lock:
+        print(*args, **kwargs)
+
+```
+
+你定义了一个包装函数，它在底层使用传入的位置参数和关键字参数调用 `print()`。与此同时，它将对 `print()` 的调用围栏在临界区（critical section）内，确保同一时间只有一个线程能够进行打印。`with` 语句利用了 Python 的上下文管理器（context manager），在合适的时间自动获取和释放锁。
+
+你可以导入你的自定义函数，并用它来替代标准的 `print()`：
+
+```python
+>>> from threading import Thread, current_thread
+>>> from thread_safe_print import thread_safe_print
+>>> def task():
+...     thread_name = current_thread().name
+...     for letter in "ABC":
+...         thread_safe_print(f"[{thread_name} {letter}]")
+...
+>>> for i in range(1, 4):
+...     Thread(target=task, name=f"Thread-{i}").start()
+...
+[Thread-3 A]
+[Thread-1 B]
+[Thread-1 C]
+[Thread-2 A]
+[Thread-2 B]
+[Thread-2 C]
+[Thread-1 A]
+[Thread-3 B]
+[Thread-3 C]
+
+```
+
+现在，尽管每次 `print()` 请求依然会发起两次写入，但只允许一个线程与流进行交互，其余线程必须等待：
+
+```python
+[
+    # Lock acquired by Thread-3
+    '[Thread-3 A]',
+    '\n',
+    # Lock released by Thread-3
+    # Lock acquired by Thread-1
+    '[Thread-1 B]',
+    '\n',
+    # Lock released by Thread-1
+    # ...
+]
+
+```
+
+添加的注释指明了锁是如何限制对共享资源的访问的。
+
+请注意，即使在单线程代码中，你也可能会陷入某种类似的情形！具体而言，当你同时向带缓冲的标准输出（buffered standard output）和无缓冲的标准错误（unbuffered standard error）流进行打印时。除非你将其中一个或两者重定向到单独的文件中，否则它们都会共享同一个终端窗口。
+
+### 依赖日志记录
+
+相反，`logging` 模块在设计上就是线程安全的，这一点体现在它能够在格式化消息中显示线程名称的能力上：
+
+```python
+>>> import logging
+>>> logging.basicConfig(format="%(threadName)s %(message)s")
+>>> logging.error("hello")
+MainThread hello
+
+```
+
+这也是你可能并不希望始终使用 `print()` 函数的原因之一。
+
+---
+
+### 探索打印的对等功能
+
+到目前为止，关于 `print()` 函数你已经了解得相当多了。但如果不稍微谈谈它的对等功能，这个主题就不算完整。虽然 `print()` 关乎的是“输出”，但同样存在专门负责“输入”的函数和库。
+
+#### 收集用户输入
+
+Python 自带了一个用于接收用户输入的内置函数，名字毫无悬念地叫做 `input()`。它从标准输入流接收数据，这通常来自键盘：
+
+```python
+>>> name = input("Enter your name: ")
+Enter your name: John Doe
+>>> print(name)
+John Doe
+
+```
+
+该函数始终返回一个字符串，因此你可能需要对其进行相应的解析：
+
+```python
+>>> try:
+...     age = int(input("How old are you? "))
+... except ValueError:
+...     print(f"That's not a correct number!")
+...
+How old are you? eighteen
+That's not a correct number!
+
+```
+
+提示符参数（prompt）是完全可选的，所以如果你跳过它，屏幕上不会显示任何内容，但该函数依然可以正常工作：
+
+```python
+>>> user_input = input()
+Typing some text...
+>>> print(user_input)
+Typing some text...
+
+```
+
+尽管如此，加入一条具描述性的行动号召（call to action）能让用户体验好上许多。
+
+#### 安全地处理输入
+
+使用 `input()` 向用户询问密码是一个糟糕的主意，因为密码会在用户输入时以明文显示。在这种情况下，你应该改用 `getpass()` 函数，它会掩盖输入的字符。该函数定义在一个同名模块中，该模块同样内置于标准库中：
+
+```python
+>>> from getpass import getpass
+>>> password = getpass()
+Password:
+>>> print(password)
+s3cret
+
+```
+
+`getpass` 模块还包含另一个用于从环境变量中获取用户名称的函数。你可能会发现它在预填充问卷调查时非常有用：
+
+```python
+>>> from getpass import getuser
+>>> default_user = getuser()
+>>> input(f"Enter your name ({default_user!r}): ") or default_user
+Enter your name ('jdoe'): 
+'jdoe'
+
+```
+
+当用户没有提供任何输入时，你通过布尔表达式的短路求值（short-circuit evaluation）回退到了默认值。
+
+#### 添加 Readline 功能
+
+现在，假设你编写了一个能够理解三条指令的命令行界面，其中包括一条用于相加数字的指令：
+
+**文件名：**
+`calculator.py`
+
+```python
+print('Type "help", "exit", "add a [b [c ...]]"')
+while True:
+    command, *arguments = input("~ ").split(" ")
+    if len(command) > 0:
+        if command.lower() == "exit":
+            break
+        elif command.lower() == "help":
+            print("This is help.")
+        elif command.lower() == "add":
+            print(sum(map(int, arguments)))
+        else:
+            print("Unknown command")
+
+```
+
+乍一看，运行它时就像是一个典型的交互提示符：
+
+```bash
+$ python calculator.py
+Type "help", "exit", "add a [b [c ...]]"
+~ add 1 2 3 4
+10
+~ aad 2 3
+Unknown command
+~ exit
+$
+
+```
+
+但一旦你犯了拼写错误并想修正它时，你会发现所有的功能键都无法如预期那样工作。例如，按下左方向键会在屏幕上显示 `^[[D`，而不是将光标后移：
+
+```bash
+$ python calculator.py
+Type "help", "exit", "add a [b [c ...]]"
+~ aad^[[D
+
+```
+
+为了解决这个问题，你可以利用 Python 标准库中的 `readline` 模块。只需在脚本顶部导入该模块即可：
+
+**文件名：**
+`calculator.py`
+
+```python
+import readline
+# ...
+
+```
+
+这就行了！其结果不仅能让方向键正常工作，你还可以搜索自定义命令的持久化历史记录、使用自动补全，以及使用快捷键编辑行：
+
+```bash
+$ python calculator.py
+Type "help", "exit", "add a [b [c ...]]"
+(reverse-i-search)`a': add 1 2 3 4
+
+```
+
+这难道不是很棒吗？
+
+> **注意：** 值得一提的是，你还可以通过使用 `rlwrap`（readline 包装器）命令运行 Python 脚本来达到相同的效果：
+> ```bash
+> $ rlwrap python calculator.py
+> Type "help", "exit", "add a [b [c ...]]"
+> (reverse-i-search)`a': add 1 2 3 4
+> 
+> ```
+> 
+> 
+> 你不需要对代码做任何修改就能让它工作！
+
+话虽如此，使用 Python 原生函数处理标准输入有时可能会受到局限。幸运的是，市面上有大量的第三方包提供了更加精细高级的工具。
+
+#### 评估第三方库
+
+市面上有许多外部 Python 包，允许构建专门用于从用户处收集数据的复杂图形界面。它们的部分特性包括：
+
+* 高级格式化与样式设置
+* 用户数据的自动化解析、验证和清理（sanitization）
+* 声明式（declarative）的布局定义风格
+* 交互式自动补全
+* 鼠标支持
+* 预定义的微件（widgets），如检查清单（checklists）或菜单
+* 可检索的已输入命令历史记录
+* 语法高亮
+
+展示此类工具超出了本教程的范畴，但你可能希望自行去尝试它们。除了前面提到的 Rich 和 Textual 之外，你还可以了解以下这些：
+
+* `bullet`
+* `cooked-input`
+* `prompt_toolkit`
+* `questionnaire`
+
+这些工具中有几款曾亮相于播客节目——值得一提的是，在讨论构建大语言模型（LLM）聊天机器人时，`prompt_toolkit` 曾出现在 Real Python Podcast 的第 199 期节目中。
 
 
 ## [Pretty Print](https://realpython.com/python-pretty-print/)
 
 
+---
+
+
+处理数据对任何 Python 使用者都是必不可少的，但有时那些数据就是不太好看。计算机并不在乎格式，但如果没有良好的格式，人类可能会觉得难以阅读。当你对大型字典或长列表使用 `print()` 时，输出并不漂亮——它很高效，但不漂亮。
+
+Python 中的 `pprint` 模块是一个实用模块，你可以用它以可读、漂亮的方式打印数据结构。它是标准库的一部分，在调试处理 API 请求、大型 JSON 文件以及一般数据的代码时特别有用。
+
+
+### 理解 Python Pretty Print 的必要性
+
+Python 的 `pprint` 模块在许多情况下都很有帮助。在发起 API 请求、处理 JSON 文件，或处理复杂且嵌套的数据时，它会派上用场。你可能会发现，使用普通的 `print()` 函数不足以有效地探索你的数据并调试你的应用。当你对字典和列表使用 `print()` 时，输出不包含任何换行。
+
+在开始探索 `pprint` 之前，你将先使用 `urllib` 发起请求以获取一些数据。你将向 `{JSON} Placeholder` 发起请求，获取一些模拟的用户信息。首先要做的是发起 HTTP `GET` 请求，并把响应放入一个字典：
+
+```
+>>> from urllib import request
+>>> response = request.urlopen("https://jsonplaceholder.typicode.com/users")
+>>> json_response = response.read()
+>>> import json
+>>> users = json.loads(json_response)
+```
+
+在这里，你发起一个基本的 `GET` 请求，然后用 `json.loads()` 把响应解析成字典。字典现在已经在一个变量中，常见的下一步是用 `print()` 打印其内容：
+
+```
+>>> print(users)
+[{'id': 1, 'name': 'Leanne Graham', ... }]
+```
+
+哎呀！一整行，没有任何换行。取决于你的控制台设置，这可能显示为一行非常长的内容。或者，你的控制台输出可能开启了自动换行模式，这是最常见的情况。不幸的是，那并不会让输出友好多少！
+
+如果你看第一个和最后一个字符，你会看到这似乎是一个列表。你可能会忍不住开始写一个循环来打印这些项：
+
+```
+for user in users:
+    print(user)
+```
+
+这个 `for` 循环会把每个对象打印在单独一行上，但即便如此，每个对象占用的空间也远超单行所能容纳的范围。以这种方式打印确实让情况好了一点，但绝非理想。上面的例子是一个相对简单的数据结构，但如果你面对一个深度嵌套、规模大上 100 倍的字典，你会怎么做？
+
+当然，你可以写一个使用递归的函数，想办法把所有内容都打印出来。不幸的是，你很可能会遇到一些边缘情况，让这行不通。你甚至可能发现自己在写一整套函数模块，仅仅是为了搞清楚数据的结构！
+
+
+### 使用 `pprint`
+
+`pprint` 是一个用于以漂亮方式打印数据结构的 Python 模块。它长期以来一直是 Python 标准库的一部分，因此不需要单独安装。你只需要导入它的 `pprint()` 函数：
+
+```
+>>> from pprint import pprint
+```
+
+然后，不要像上面的例子那样使用普通的 `print(users)`，你可以调用你新最喜欢的函数来让输出变漂亮：
+
+```
+>>> pprint(users)
+```
+
+这个函数会打印 `users`——但是以一种全新且改进过的漂亮方式：
+
+```
+>>> pprint(users)
+[{'address': {'city': 'Gwenborough',
+              'geo': {'lat': '-37.3159', 'lng': '81.1496'},
+              'street': 'Kulas Light',
+              'suite': 'Apt. 556',
+              'zipcode': '92998-3874'},
+  'company': {'bs': 'harness real-time e-markets',
+              'catchPhrase': 'Multi-layered client-server neural-net',
+              'name': 'Romaguera-Crona'},
+  'email': 'Sincere@april.biz',
+  'id': 1,
+  'name': 'Leanne Graham',
+  'phone': '1-770-736-8031 x56442',
+  'username': 'Bret',
+  'website': 'hildegard.org'},
+ ...
+]
+```
+
+多么漂亮！字典的键甚至在视觉上被缩进了！这种输出让扫描和可视化分析数据结构变得直接得多。
+
+注意：如果你自己运行这段代码，你会看到更长的输出。这个代码块为了可读性截断了输出。
+
+如果你是尽量少打字的爱好者，你会高兴地知道 `pprint()` 有一个别名 `pp()`：
+
+```
+>>> from pprint import pp
+>>> pp(users)
+```
+
+`pp()` 只是 `pprint()` 的一个包装器，它的行为会完全相同。
+
+注意：Python 从 3.8.0 alpha 2 版本开始包含这个别名。
+
+然而，即便是默认输出，一开始也可能信息太多，难以扫描。也许你真正想要的只是验证你正在处理的是一个普通对象的列表。为此，你会想稍微调整一下输出。
+
+对于这些情况，有各种参数可以传给 `pprint()`，即使是最简略的数据结构也能变得漂亮。
+
+### 探索 `pprint()` 的可选参数
+
+在这一节中，你将学习 `pprint()` 可用的全部参数。有七个参数可以用来配置你的 Python 风格漂亮打印机。你不必全部使用它们，其中一些会比另一些更有用。你可能会发现最有价值的那个大概是 `depth`。
+
+#### 概括你的数据：`depth`
+
+最方便把玩的参数之一是 `depth`。下面这条 Python 命令只会在数据结构处于或低于指定深度时打印 `users` 的完整内容——当然，同时保持漂亮。更深数据结构的内容会被替换成三个点：
+
+```
+>>> pprint(users, depth=1)
+[{...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}]
+```
+
+现在你可以立刻看到这确实是一个字典列表。要进一步探索数据结构，你可以把深度增加一级，这会打印 `users` 中字典的所有顶层键：
+
+```
+>>> pprint(users, depth=2)
+[{'address': {...},
+  'company': {...},
+  'email': 'Sincere@april.biz',
+  'id': 1,
+  'name': 'Leanne Graham',
+  'phone': '1-770-736-8031 x56442',
+  'username': 'Bret',
+  'website': 'hildegard.org'},
+ ...
+]
+```
+
+现在你可以快速检查是否所有字典都共享它们的顶层键。这是一个很有价值的观察，尤其是当你的任务是开发一个消费这类数据的应用时。
+
+#### 给你的数据空间：`indent`
+
+`indent` 参数控制漂亮打印表示中每一层在输出中会缩进多少。默认缩进只是 `1`，这对应一个空格字符：
+
+```
+>>> pprint(users[0], depth=1)
+{'address': {...},
+ 'company': {...},
+ 'email': 'Sincere@april.biz',
+ 'id': 1,
+ 'name': 'Leanne Graham',
+ 'phone': '1-770-736-8031 x56442',
+ 'username': 'Bret',
+ 'website': 'hildegard.org'}
+
+>>> pprint(users[0], depth=1, indent=4)
+{   'address': {...},
+    'company': {...},
+    'email': 'Sincere@april.biz',
+    'id': 1,
+    'name': 'Leanne Graham',
+    'phone': '1-770-736-8031 x56442',
+    'username': 'Bret',
+    'website': 'hildegard.org'}
+```
+
+`pprint()` 缩进行为最重要的部分是让所有键在视觉上保持对齐。应用多少缩进取决于 `indent` 参数以及该键所在的位置。
+
+由于上面的例子中没有嵌套，缩进量完全基于 `indent` 参数。在两个例子中，注意开括号（`{`）被算作第一个键的一个缩进单位。在第一个例子中，第一个键的开单引号紧跟在 `{` 后面，中间没有任何空格，因为缩进被设为 `1`。
+
+然而，当存在嵌套时，缩进会应用到行内的第一个元素上，然后 `pprint()` 会让后续所有元素与第一个元素对齐。所以如果你在打印 `users` 时把 `indent` 设为 `4`，第一个元素会缩进四个字符，而嵌套元素会缩进超过八个字符，因为缩进是从第一个键的末尾开始的：
+
+```
+>>> pprint(users[0], depth=2, indent=4)
+{   'address': {   'city': 'Gwenborough',
+                   'geo': {...},
+                   'street': 'Kulas Light',
+                   'suite': 'Apt. 556',
+                   'zipcode': '92998-3874'},
+    'company': {   'bs': 'harness real-time e-markets',
+                   'catchPhrase': 'Multi-layered client-server neural-net',
+                   'name': 'Romaguera-Crona'},
+    'email': 'Sincere@april.biz',
+    'id': 1,
+    'name': 'Leanne Graham',
+    'phone': '1-770-736-8031 x56442',
+    'username': 'Bret',
+    'website': 'hildegard.org'}
+```
+
+这只是 Python 的 `pprint()` 中“漂亮”的另一部分！
+
+#### 限制你的行长度：`width`
+
+默认情况下，`pprint()` 每行最多只会输出八十个字符。你可以通过传入一个 `width` 参数来自定义这个值。`pprint()` 会努力把内容放进一行。如果一个数据结构的内容超过这个限制，它就会把当前数据结构的每个元素打印在新的一行上：
+
+```
+>>> pprint(users[0])
+{'address': {'city': 'Gwenborough',
+             'geo': {'lat': '-37.3159', 'lng': '81.1496'},
+             'street': 'Kulas Light',
+             'suite': 'Apt. 556',
+             'zipcode': '92998-3874'},
+ 'company': {'bs': 'harness real-time e-markets',
+             'catchPhrase': 'Multi-layered client-server neural-net',
+             'name': 'Romaguera-Crona'},
+ 'email': 'Sincere@april.biz',
+ 'id': 1,
+ 'name': 'Leanne Graham',
+ 'phone': '1-770-736-8031 x56442',
+ 'username': 'Bret',
+ 'website': 'hildegard.org'}
+```
+
+当你把宽度保持在默认的八十个字符时，`users[0]['address']['geo']` 处的字典只包含一个 `'lat'` 和一个 `'lng'` 属性。这意味着把缩进和打印该字典所需的字符数（包括中间的空格）加起来，会少于八十个字符。由于它少于八十个字符（默认宽度），`pprint()` 把它全部放在一行上。
+
+然而，`users[0]['company']` 处的字典会超过默认宽度，所以 `pprint()` 把每个键放在新的一行上。这对字典、列表、元组和集合都成立：
+
+```
+>>> pprint(users[0], width=160)
+{'address': {'city': 'Gwenborough', 'geo': {'lat': '-37.3159', 'lng': '81.1496'}, 'street': 'Kulas Light', 'suite': 'Apt. 556', 'zipcode': '92998-3874'},
+ 'company': {'bs': 'harness real-time e-markets', 'catchPhrase': 'Multi-layered client-server neural-net', 'name': 'Romaguera-Crona'},
+ 'email': 'Sincere@april.biz',
+ 'id': 1,
+ 'name': 'Leanne Graham',
+ 'phone': '1-770-736-8031 x56442',
+ 'username': 'Bret',
+ 'website': 'hildegard.org'}
+```
+
+如果你把宽度设成一个较大的值，比如 `160`，那么所有嵌套字典都能放在一行上。你甚至可以把它推到极端，使用一个巨大的值，比如 `500`，对于这个例子，它会把整个字典打印在一行上：
+
+```
+>>> pprint(users[0], width=500)
+{'address': {'city': 'Gwenborough', 'geo': {'lat': '-37.3159', 'lng': '81.1496'}, 'street': 'Kulas Light', 'suite': 'Apt. 556', 'zipcode': '92998-3874'}, 'company': {'bs': 'harness real-time e-markets', 'catchPhrase': 'Multi-layered client-server neural-net', 'name': 'Romaguera-Crona'}, 'email': 'Sincere@april.biz', 'id': 1, 'name': 'Leanne Graham', 'phone': '1-770-736-8031 x56442', 'username': 'Bret', 'website': 'hildegard.org'}
+```
+
+在这里，你看到了把 `width` 设成相对较大值的效果。你也可以反过来，把 `width` 设成一个很小的值，比如 `1`。然而，这主要产生的效果是确保每个数据结构都会把它的组成部分显示在单独的行上。你仍然会得到把各组成部分对齐的视觉缩进：
+
+```
+>>> pprint(users[0], width=5)
+{'address': {'city': 'Gwenborough',
+             'geo': {'lat': '-37.3159',
+                     'lng': '81.1496'},
+             'street': 'Kulas '
+                       'Light',
+             'suite': 'Apt. '
+                      '556',
+             'zipcode': '92998-3874'},
+ ...
+}
+```
+
+很难让 Python 的 `pprint()` 打印得难看。它会尽一切所能保持漂亮！
+
+在这个例子中，除了学习 `width`，你还在探索打印机如何拆分长文本行。注意 `users[0]["company"]["catchPhrase"]`，它最初是 `'Multi-layered client-server neural-net'`，已经在每个空格处被拆分。打印机避免在单词中间分割这个字符串，因为那会让它难以阅读。
+
+#### 压缩你的长序列：`compact`
+
+你可能会以为 `compact` 指的是你在关于 `width` 的那一节中探索过的行为——也就是说，`compact` 是否让数据结构出现在一行上还是分开的多行上。然而，`compact` 只有在一行超过 `width` 时才会影响输出。
+
+注意：`compact` 只影响序列的输出：列表、集合和元组，而不影响字典。这是有意为之的，尽管并不清楚为什么做出这个决定。关于这一点，在 Python Issue #34798 中有一场正在进行的讨论。
+
+如果 `compact` 为 `True`，那么输出会折到下一行。默认行为是：如果数据结构比宽度更长，每个元素会出现在自己的行上：
+
+```
+>>> pprint(users, depth=1)
+[{...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}, {...}]
+
+>>> pprint(users, depth=1, width=40)
+[{...},
+ {...},
+ {...},
+ {...},
+ {...},
+ {...},
+ {...},
+ {...},
+ {...},
+ {...}]
+
+>>> pprint(users, depth=1, width=40, compact=True)
+[{...}, {...}, {...}, {...}, {...},
+ {...}, {...}, {...}, {...}, {...}]
+```
+
+使用默认设置漂亮打印这个列表时，会把缩写版本打印在一行上。把 `width` 限制为 `40` 个字符，你会迫使 `pprint()` 把列表的所有元素输出在单独的行上。如果你然后设置 `compact=True`，列表就会在四十个字符处折行，并且会比它通常看起来更紧凑。
+
+注意：要小心，把宽度设为少于七个字符——在这个例子中，这等价于 `[{...},` 输出——似乎会完全绕过 `depth` 参数，并且 `pprint()` 最终会打印所有内容而没有任何折叠。这已经被报告为 bug #45611。
+
+`compact` 对于元素较短的长序列很有用，否则这些序列会占用很多行，让输出更难读。
+
+#### 引导你的输出：`stream`
+
+`stream` 参数指的是 `pprint()` 的输出。默认情况下，它会去到 `print()` 去到的同一个地方。具体来说，它会去到 `sys.stdout`，这在 Python 中实际上是一个文件对象。然而，你可以把它重定向到任何文件对象，就像你可以对 `print()` 做的那样：
+
+```
+>>> with open("output.txt", mode="w") as file_object:
+...     pprint(users, stream=file_object)
+```
+
+在这里，你用 `open()` 创建一个文件对象，然后把 `pprint()` 中的 `stream` 参数设为那个文件对象。如果你随后打开 `output.txt` 文件，你应该会看到你已经把 `users` 中的所有内容漂亮地打印到了那里。
+
+Python 确实有它自己的 logging 模块。然而，如果你愿意，你也可以使用 `pprint()` 把漂亮的输出发送到文件，并让这些文件充当日志。
+
+#### 阻止字典排序：`sort_dicts`
+
+尽管字典通常被认为是无序的数据结构，自 Python 3.6 起，字典按插入顺序排列。
+
+`pprint()` 会按字母顺序对键进行排序以便打印：
+
+```
+>>> pprint(users[0], depth=1)
+{'address': {...},
+ 'company': {...},
+ 'email': 'Sincere@april.biz',
+ 'id': 1,
+ 'name': 'Leanne Graham',
+ 'phone': '1-770-736-8031 x56442',
+ 'username': 'Bret',
+ 'website': 'hildegard.org'}
+
+>>> pprint(users[0], depth=1, sort_dicts=False)
+{'id': 1,
+ 'name': 'Leanne Graham',
+ 'username': 'Bret',
+ 'email': 'Sincere@april.biz',
+ 'address': {...},
+ 'phone': '1-770-736-8031 x56442',
+ 'website': 'hildegard.org',
+ 'company': {...}}
+```
+
+除非你把 `sort_dicts` 设为 `False`，Python 的 `pprint()` 会按字母顺序对键排序。它让字典的输出保持一致、可读，并且——嗯——漂亮！
+
+当 `pprint()` 最初被实现时，字典是无序的。如果不按字母顺序排列键，一个字典的键理论上可能在每次打印时都不同。
+
+#### 美化你的数字：`underscore_numbers`
+
+`underscore_numbers` 参数是 Python 3.10 中引入的一个功能，它让长数字更可读。考虑到你到目前为止使用的例子不包含任何长数字，你需要一个新例子来试用它：
+
+```
+>>> number_list = [123456789, 10000000000000]
+>>> pprint(number_list, underscore_numbers=True)
+[123_456_789, 10_000_000_000_000]
+```
+
+如果你尝试运行这次对 `pprint()` 的调用并得到了一个错误，你并不孤单。截至 2021 年 10 月，当直接调用 `pprint()` 时，这个参数不起作用。Python 社区很快注意到了这一点，并且它已在 2021 年 12 月的 3.10.1 错误修复版本中被修复。Python 的人们对他们的漂亮打印机很上心！到你阅读本教程时，他们大概已经修复了这个问题。
+
+如果当你直接调用 `pprint()` 时 `underscore_numbers` 不起作用，而你又真的想要漂亮的数字，有一个变通方法：当你创建你自己的 `PrettyPrinter` 对象时，这个参数应该会像上面的例子中那样工作。
+
+接下来，你将了解如何创建一个 `PrettyPrinter` 对象。
+
+### 创建一个自定义的 `PrettyPrinter` 对象
+
+可以创建一个你已定义默认值的 `PrettyPrinter` 实例。一旦你有了这个自定义 `PrettyPrinter` 对象的新实例，你就可以通过在该 `PrettyPrinter` 实例上调用 `.pprint()` 方法来使用它：
+
+```
+>>> from pprint import PrettyPrinter
+>>> custom_printer = PrettyPrinter(
+...     indent=4,
+...     width=100,
+...     depth=2,
+...     compact=True,
+...     sort_dicts=False,
+...     underscore_numbers=True
+... )
+...
+>>> custom_printer.pprint(users[0])
+{   'id': 1,
+    'name': 'Leanne Graham',
+    'username': 'Bret',
+    'email': 'Sincere@april.biz',
+    'address': {   'street': 'Kulas Light',
+                   'suite': 'Apt. 556',
+                   'city': 'Gwenborough',
+                   'zipcode': '92998-3874',
+                   'geo': {...}},
+    'phone': '1-770-736-8031 x56442',
+    'website': 'hildegard.org',
+    'company': {   'name': 'Romaguera-Crona',
+                   'catchPhrase': 'Multi-layered client-server neural-net',
+                   'bs': 'harness real-time e-markets'}}
+>>> number_list = [123456789, 10000000000000]
+>>> custom_printer.pprint(number_list)
+[123_456_789, 10_000_000_000_000]
+```
+
+通过这些命令，你：
+
+- 导入了 `PrettyPrinter`，它是一个类定义
+- 用某些参数创建了该类的一个新实例
+- 打印了 `users` 中的第一个用户
+- 定义了一个包含几个长数字的列表
+- 打印了 `number_list`，这也演示了 `underscore_numbers` 的实际效果
+
+注意，你传给 `PrettyPrinter` 的参数与默认的 `pprint()` 参数完全相同，只是你跳过了第一个参数。在 `pprint()` 中，这是你想要打印的对象。
+
+这样，你可以有各种打印机预设——也许有些会去到不同的流——并在需要时调用它们。
+
+### 用 `pformat()` 获取一个漂亮的字符串
+
+如果你不想把 `pprint()` 的漂亮输出发送到一个流怎么办？也许你想做一些正则匹配并替换某些键。对于普通字典，你可能会发现自己想要去掉括号和引号，让它们看起来更便于人类阅读。
+
+无论你可能想对这个字符串预输出做什么，你都可以通过使用 `pformat()` 来获取该字符串：
+
+```
+>>> from pprint import pformat
+>>> address = pformat(users[0]["address"])
+>>> chars_to_remove = ["{", "}", "'"]
+>>> for char in chars_to_remove:
+...     address = address.replace(char, "")
+...
+>>> print(address)
+city: Gwenborough,
+ geo: lat: -37.3159, lng: 81.1496,
+ street: Kulas Light,
+ suite: Apt. 556,
+ zipcode: 92998-3874
+```
+
+`pformat()` 是一个你可以用来介于漂亮打印机和输出流之间的工具。
+
+另一个用例可能是：如果你正在构建一个 API，并想发送 JSON 字符串的漂亮字符串表示。你的最终用户大概会对此表示感谢！
+
+### 处理递归数据结构
+
+Python 的 `pprint()` 是递归的，这意味着它会漂亮地打印一个字典的所有内容、任何子字典的所有内容，依此类推。
+
+问问你自己，当一个递归函数遇到一个递归数据结构时会发生什么。想象你有字典 `A` 和字典 `B`：
+
+- `A` 有一个属性 `.link`，它指向 `B`。
+- `B` 有一个属性 `.link`，它指向 `A`。
+
+如果你想象中的递归函数没有办法处理这种循环引用，它将永远无法完成打印！它会打印 `A`，然后打印它的子项 `B`。但 `B` 也有 `A` 作为子项，所以它会无限进行下去。
+
+幸运的是，普通的 `print()` 函数和 `pprint()` 函数都能优雅地处理这种情况：
+
+```
+>>> A = {}
+>>> B = {"link": A}
+>>> A["link"] = B
+>>> print(A)
+{'link': {'link': {...}}}
+>>> from pprint import pprint
+>>> pprint(A)
+{'link': {'link': <Recursion on dict with id=3032338942464>}}
+```
+
+Python 常规的 `print()` 只是缩写输出，而 `pprint()` 会明确通知你存在递归，并且还会加上该字典的 ID。
+
+如果你想探索为什么这个结构是递归的，你可以了解更多关于按引用传递的内容。
+
+
 
 ## [Modulo格式化](https://realpython.com/python-modulo-string-formatting/)
 
+
+如果你正在用 Python 3 编写现代 Python 代码，你大概会想用 Python f-string 来格式化字符串。然而，如果你在处理较旧的 Python 代码库，你很可能会遇到用于字符串格式化的字符串取模运算符。
+
+如果你在阅读或编写 Python 2 代码，熟悉这种技术会有帮助。因为这种语法在 Python 3 中仍然有效，你甚至可能看到开发者在现代 Python 代码库中使用它。
+
+在本教程中，你将学习如何：
+
+- 使用取模运算符（`%`）进行字符串格式化
+- 在把值插入字符串之前，将它们转换成特定类型
+- 指定格式化后的值所占用的水平空间
+- 使用转换标志微调显示
+- 使用字典映射而不是元组来指定值
+
+如果你熟悉 C、Perl 或 Java 的 `printf()` 系列函数，那么你会发现这些函数在 Python 中并不存在。然而，`printf()` 和字符串取模运算符之间有相当多的相似之处，所以如果你熟悉 `printf()`，那么下面的很多内容都会让你感到熟悉。
+
+另一方面，如果你不熟悉 `printf()`，也不用担心！你不需要任何关于 `printf()` 的先验知识，就能掌握 Python 中的取模字符串格式化。
+
+### 在 Python 中使用取模运算符进行字符串格式化
+
+你以前大概已经对数字使用过取模运算符（`%`），在那种情况下，它计算的是除法的余数：
+
+```
+>>> 11 % 3
+2
+```
+
+对于字符串操作数，取模运算符有一个完全不同的功能：字符串格式化。
+
+注意：这两种操作并不太相似。它们只是因为由同一个符号（`%`）表示，才共享同一个名称。
+
+字符串取模运算符的语法如下所示：
+
+```
+<format_string> % <values>
+```
+
+在 `%` 运算符的左侧，`<format_string>` 是一个包含一个或多个转换说明符的字符串。右侧的 `<values>` 会替代转换说明符被插入到 `<format_string>` 中。得到的格式化字符串就是该表达式的值。
+
+从一个例子开始，你调用 `print()`，使用字符串取模运算符来显示一个格式化字符串：
+
+```
+>>> print("%d %s cost $%.2f" % (6, "bananas", 1.74))
+6 bananas cost $1.74
+```
+
+除了表示字符串取模运算本身之外，`%` 字符还表示格式字符串中一个转换说明符的开始——在这个例子中，有三个：`%d`、`%s` 和 `%.2f`。
+
+在输出中，Python 把值元组中的每一项转换成一个字符串值，并把它插入到格式字符串中，以替代对应的转换说明符：
+
+- 元组中的第一项是 `6`，一个替换格式字符串中 `%d` 的数值。
+- 下一项是字符串值 `"bananas"`，它替换 `%s`。
+- 最后一项是浮点值 `1.74`，它替换 `%.2f`。
+
+得到的字符串是 `6 bananas cost $1.74`。
+
+如果有多个值要插入，那么它们必须被包在一个元组中，如上所示。如果只有一个值，那么你可以单独写它，而不需要周围的括号：
+
+```
+>>> print("Hello, my name is %s." % "Graham")
+Hello, my name is Graham.
+```
+
+还要注意，字符串取模运算不仅仅用于打印。你也可以格式化值并把它们赋给另一个字符串变量：
+
+```
+>>> welcome_sentence = "Hello, my name is %s." % "Graham"
+>>> welcome_sentence
+'Hello, my name is Graham.'
+```
+
+如果你熟悉 C 编程语言中与 `printf()` 相关的函数，那么你可能会注意到，上面展示的取模字符串格式化语法让人联想到 `sprintf()`。如果你不熟悉，那就别担心！
+
+### 认识转换说明符
+
+转换说明符的不同组成部分出现在格式字符串中，并决定当 Python 把值插入格式字符串时，这些值如何被格式化。
+
+一个转换说明符以 `%` 字符开始，并且可以由按特定顺序排列的几个组成部分构成：
+
+> `%[<flags>][<width>][.<precision>]<type>`
+
+`%` 字符和 `<type>` 组成部分是必需的。其余组成部分显示在方括号中，是可选的。
+
+下表总结了转换说明符的每个组成部分做什么：
+
+| 组成部分 | 含义 |
+| --- | --- |
+| `%` | 引入转换说明符 |
+| `<flags>` | 表示一个或多个对格式化施加更精细控制的标志 |
+| `<width>` | 指定格式化结果的最小宽度 |
+| `.<precision>` | 决定浮点数或字符串输出的长度和精度 |
+| `<type>` | 表示要执行的转换类型 |
+
+继续往下读，了解这些如何工作的更多细节。
+
+### 使用转换类型转换值
+
+转换说明符的最后一个组成部分 `<type>`，是除了引入性的 `%` 字符之外唯一必需的组成部分：
+
+> `%[<flags>][<width>][.<precision>]<type>`
+
+它决定 Python 在把对应的值插入格式字符串之前，对该值应用的转换类型。下面是一个列出可能转换类型的表：
+
+| `<type>` | 转换类型 |
+| --- | --- |
+| `d`, `i`, `u` | 十进制整数 |
+| `x`, `X` | 十六进制整数 |
+| `o` | 八进制整数 |
+| `f`, `F` | 浮点数 |
+| `e`, `E` | E 记数法 |
+| `g`, `G` | 浮点数或 E 记数法 |
+| `c` | 单个字符 |
+| `s`, `r`, `a` | 字符串 |
+| `%` | 单个 `'%'` 字符 |
+
+你将在接下来的各节中看到如何使用这些转换类型。
+
+#### 整数转换类型
+
+`d`、`i`、`u`、`x`、`X` 和 `o` 转换类型对应于整数值。
+
+`d`、`i` 和 `u` 在功能上是等价的。它们都把对应的参数转换成十进制整数的字符串表示：
+
+```
+>>> "%d, %i, %u" % (42, 42, 42)
+'42, 42, 42'
+
+>>> "%d, %i, %u" % (-42, -42, -42)
+'-42, -42, -42'
+```
+
+该值可以是正数或负数。如果它是负数，那么得到的值将以一个减号字符（`-`）开始。
+
+转换类型 `x` 和 `X` 转换成十六进制整数值的字符串表示，而 `o` 转换成八进制整数值的字符串表示：
+
+```
+>>> "%x, %X" % (252, 252)
+'fc, FC'
+
+>>> "%o" % 16
+'20'
+```
+
+使用小写 `x` 产生小写输出，使用大写 `X` 产生大写输出。
+
+注意：大写 `O` 不是一个有效的转换类型。
+
+你可以通过使用转换标志对得到的格式获得额外控制，你将在即将到来的一节中了解更多相关内容。
+
+#### 浮点转换类型
+
+转换类型 `f` 和 `F` 转换成浮点数的字符串表示，而 `e` 和 `E` 产生表示 E（科学）记数法的字符串：
+
+```
+>>> "%f, %F" % (3.14159, 3.14)
+'3.141590, 3.140000'
+
+>>> "%e, %E" % (1000.0, 1000.0)
+'1.000000e+03, 1.000000E+03'
+```
+
+使用小写 `f` 和 `e` 产生小写输出，大写 `F` 和 `E` 产生大写输出。
+
+**深入了解：`inf` 和 `NaN`**
+
+在某些情况下，一个浮点运算可能产生一个本质上无限的值。这种数字在 Python 中的字符串表示是 `inf`。
+
+也可能会发生：一个浮点运算产生一个无法表示为数字的值。Python 用特殊的浮点值 `nan` 来表示这一点。
+
+当这些值用字符串取模运算符转换时，转换类型字符控制得到输出的大小写。`f` 和 `e` 产生小写字符串，而 `F` 和 `E` 产生大写字符串：
+
+```
+>>> x = float("NaN")
+>>> "%f, %e, %F, %E" % (x, x, x, x)
+'nan, nan, NAN, NAN'
+
+>>> y = float("Inf")
+>>> "%f, %e, %F, %E" % (y, y, y, y)
+'inf, inf, INF, INF'
+```
+
+这些转换类型的小写和大写版本之间的唯一区别是，它们分别产生小写和大写字符串输出。这种区别甚至延伸到浮点数 E 记数法输出中 `e` 和 `E` 的大小写。
+
+`g` 和 `G` 转换类型在浮点输出或 E 记数法输出之间进行选择，这取决于指数的大小以及你为 `.<precision>` 组成部分指定的值：
+
+```
+>>> "%g" % 3.14
+'3.14'
+
+>>> "%g" % 0.00000003
+'3e-08'
+
+>>> "%G" % 0.00000003
+'3E-08'
+```
+
+如果指数小于 `-4`，或不小于 `.<precision>`，输出就与 `e` 或 `E` 相同。否则，它与 `f` 或 `F` 相同。你将在本教程后面了解更多关于 `.<precision>` 组成部分的内容。
+
+注意：你可以把这些转换类型想成在做一个合理的选择。如果所讨论的值相当适合浮点输出，它们就会产生浮点输出，否则就使用 E 记数法。
+
+与其他浮点转换类型类似，`g` 产生小写输出，`G` 产生大写输出。
+
+#### 字符转换类型
+
+`c` 转换类型插入单个字符。对应的值可以是一个整数，也可以是一个单字符字符串：
+
+```
+>>> "%c" % 97
+'a'
+
+>>> "%c" % "y"
+'y'
+```
+
+如果你提供一个整数，那么 Python 会把它翻译成对应的可打印字符。这种转换类型也支持转换成 Unicode 字符：
+
+```
+>>> "%c" % 8721
+'∑'
+```
+
+你可以使用 `%c`，并传入一个 ASCII 或 Unicode 字符的码点，以便在你的字符串中把它渲染得格式良好。
+
+转换类型 `s`、`r` 和 `a` 分别使用内置函数 `str()`、`repr()` 和 `ascii()` 产生字符串输出：
+
+```
+>>> "%s" % "Café ☕️"
+'Café ☕️'
+
+>>> "%r" % "Café ☕️"
+"'Café ☕️'"
+
+>>> "%a" % "Café ☕️"
+"'Caf\\xe9 \\u2615\\ufe0f'"
+```
+
+当你使用 `%a` 时，Python 会把 Unicode 字符转换成它们的 ASCII 表示。
+
+正如你很快会看到的，你可以用 `<width>` 和 `.<precision>` 转换说明符组成部分来控制字符串输出的对齐和填充。
+
+#### 字面百分号字符（`%%`）
+
+要把百分号字符（`%`）插入输出，你可以在格式字符串中指定两个连续的百分号字符（`%%`）。第一个百分号字符引入一个转换说明符，第二个百分号字符指定转换类型是 `%`。
+
+这种格式化会在你的输出中得到一个单个百分号字符（`%`）：
+
+```
+>>> "Get %d%% off on %s today only!" % (30, "bananas")
+'Get 30% off on bananas today only!'
+```
+
+这个代码示例中的子字符串 `%d%%` 表示两个彼此紧随的转换类型：
+
+1. `%d` 表示十进制整数转换类型。
+2. `%%` 代表一个字面百分号字符，它渲染为 `%`。
+
+注意，`%%` 转换类型不会消耗字符串取模运算符右侧所示的两个 `<values>` 中的任何一个（`30, "bananas"`）。你可以把这种转换类型想成一种转义百分号字符的方式，以防你需要在字符串中渲染一个字面百分号字符。
+
+### 使用宽度和精度水平对齐数据
+
+`<width>` 和 `.<precision>` 组成部分位于转换说明符的中间：
+
+> `%[<flags>][<width>][.<precision>]<type>`
+
+你可以单独使用它们，也可以把它们结合起来使用。它们通过改变字符串填充，或改变 Python 显示的值的总长度，来决定一个格式化后的值占用多少水平空间。
+
+#### `<width>` 组成部分
+
+你可以使用 `<width>` 组成部分来决定输出字段的最小宽度。如果输出比 `<width>` 更短，那么默认情况下，它会在一个宽度为 `<width>` 个字符的字段中右对齐，并在左侧用 ASCII 空格字符填充：
+
+```
+>>> "%5s" % "foo"
+'  foo'
+
+>>> "%3d" % 4
+'  4'
+```
+
+第一个字符串 `"foo"` 的长度是三个字符。因为你把 `5` 用作 `<width>` 转换说明符组成部分，Python 会在添加 `"foo"` 之前加上两个空白字符，以构建一个总长度为五个字符的字符串。
+
+在第二个例子中，你把一位数字 `4` 用作输入值，并请求一个三字符的字符串宽度。因此，Python 再次在插入 `4` 的字符串表示之前加上两个空白字符，以构建一个总长度为三个字符的最终字符串。
+
+你可以修改对齐方式，以及 Python 应该使用哪个填充字符。你将在下面关于转换标志的一节中了解更多关于如何做到这一点的内容。
+
+如果输出长度大于 `<width>`，那么 `<width>` 没有效果：
+
+```
+>>> "%2d" % 1234
+'1234'
+>>> "%d" % 1234
+'1234'
+
+>>> "%2s" % "foobar"
+'foobar'
+>>> "%s" % "foobar"
+'foobar'
+```
+
+这些例子中的每一个都指定了字段宽度为 `2`。但由于你要求 Python 格式化的值超过两个字符长，结果与你根本不指定 `<width>` 时相同。
+
+#### `.<precision>` 组成部分
+
+`. <precision>` 转换说明符组成部分会影响浮点转换类型和字符转换类型。
+
+对于浮点转换类型 `f`、`F`、`e` 和 `E`，`.<precision>` 决定小数点后的位数：
+
+```
+>>> "%.2f" % 123.456789
+'123.46'
+
+>>> "%.2e" % 123.456789
+'1.23e+02'
+```
+
+对于浮点转换类型 `g` 和 `G`，`.<precision>` 决定小数点前后有效数字的总数：
+
+```
+>>> "%.2g" % 123.456789
+'1.2e+02'
+```
+
+用 `s`、`r` 和 `a` 字符转换类型格式化的字符串值会被截断到由 `.<precision>` 组成部分指定的长度：
+
+```
+>>> "%.4s" % "foobar"
+'foob'
+```
+
+在这个例子中，你的输入值 `"foobar"` 的长度是六个字符，但你把 `.<precision>` 设为了 `4`。因此 Python 只显示输入字符串的前四个字符。
+
+你大概也会看到 `<width>` 和 `.<precision>` 一起使用：
+
+```
+>>> "%8.2f" % 123.45678
+'  123.46'
+
+>>> "%8.3s" % "foobar"
+'     foo'
+```
+
+你可以通过使用星号字符（`*`）作为占位符，同时指定 `<width>` 和 `.<precision>`。如果你那样做，Python 会从 `<values>` 元组中的项获取它们的值：
+
+```
+>>> "%*d" % (10, 123)
+'       123'
+
+>>> "%.*d" % (10, 123)
+'0000000123'
+
+>>> "%*.*d" % (10, 5, 123)
+'     00123'
+```
+
+当你的 `<width>` 值是一个常量时，你大概不需要使用这个。使用像上面例子中那样的占位符，与直接添加这些值之间，没有任何功能上的区别：
+
+```
+>>> "%10d" % 123
+'       123'
+
+>>> "%.10d" % 123
+'0000000123'
+
+>>> "%10.5d" % 123
+'     00123'
+```
+
+当你使用变量指定宽度或精度时，使用占位符星号会变得更有意思：
+
+```
+>>> for i in range(3):
+...     w = int(input("Enter width: "))
+...     print("[%*s]" % (w, "foo"))
+...
+Enter width: 2
+[foo]
+Enter width: 4
+[ foo]
+Enter width: 8
+[     foo]
+```
+
+有了这种语法，你可以在运行时决定宽度和精度，这意味着它们可能从一次执行到另一次执行发生变化。
+
+### 用转换标志微调你的输出
+
+你可以在初始 `%` 字符之后立即指定可选的转换标志：
+
+> `%[<flags>][<width>][.<precision>]<type>`
+
+这些标志让你能更详细地控制某些转换类型的显示。转换说明符的 `<flags>` 组成部分可以包含下表中显示的任何字符：
+
+| 字符 | 控制内容 |
+| --- | --- |
+| `#` | 整数和浮点值的进制或小数点的显示 |
+| `0` | 短于指定字段宽度的值的填充 |
+| `-` | 短于指定字段宽度的值的对齐 |
+| `+` | 数值的前导符号的显示 |
+| `' '`（空格） | 数值的前导符号的显示 |
+
+接下来的各节更详细地解释转换标志如何运作。
+
+#### 井号标志（`#`）
+
+`#` 标志会使进制信息包含在八进制和十六进制转换类型的格式化输出中。对于 `o` 转换类型，这个标志会添加一个前导 `"0o"`。对于 `x` 和 `X` 转换类型，它会添加一个前导 `"0x"` 或 `"0X"`：
+
+```
+>>> "%#o" % 16
+'0o20'
+
+>>> "%#x" % 16, "%#X" % 16
+('0x10', '0X10')
+```
+
+对于十进制转换类型 `d`、`i` 和 `u`，`#` 标志会被忽略。
+
+对于浮点值，`#` 标志会强制输出始终包含一个小数点。通常，如果小数点后没有任何数字，浮点值将不包含小数点。这个标志会强制包含一个小数点：
+
+```
+>>> "%.0f" % 123
+'123'
+>>> "%#.0f" % 123
+'123.'
+
+>>> "%.0e" % 123
+'1e+02'
+>>> "%#.0e" % 123
+'1.e+02'
+```
+
+使用 `#` 标志强制包含小数点，对以 E 记数法显示的值同样有效，如示例代码片段所示。
+
+#### 零标志（`0`）
+
+当一个格式化后的数值短于指定的字段宽度时，默认行为是用 ASCII 空格字符在值的左侧填充该字段。`0` 标志会改为用 `"0"` 字符填充：
+
+```
+>>> "%05d" % 123
+'00123'
+
+>>> "%08.2f" % 1.2
+'00001.20'
+```
+
+`0` 标志可以与所有数值转换类型一起使用：`d`、`i`、`u`、`x`、`X`、`o`、`f`、`F`、`e`、`E`、`g` 和 `G`。
+
+#### 连字符减号标志（`-`）
+
+当一个格式化后的值短于指定的字段宽度时，它通常在字段中右对齐。连字符减号（`-`）标志会使该值在指定字段中改为左对齐：
+
+```
+>>> "%-5d" % 123
+'123  '
+
+>>> "%-8.2f" % 123.3
+'123.30  '
+
+>>> "%-*s" % (10, "foo")
+'foo       '
+```
+
+你可以把 `-` 标志与字符串转换类型 `s`、`a` 和 `r` 以及所有数值转换类型一起使用。对于数值类型，如果 `0` 和 `-` 同时存在，那么 `0` 会被忽略。
+
+#### 加号标志（`+`）
+
+默认情况下，正数值没有前导符号字符。`+` 标志会在数值输出的左侧添加一个加号字符（`+`）：
+
+```
+>>> "%+d" % 3
+'+3'
+
+>>> "%+5d" % 3
+'   +3'
+
+>>> "%5d" % 3
+'    3'
+```
+
+在比较最后两个输出时，你可能会注意到，Python 在计算输出宽度时会把你用这个标志添加的 `+` 字符考虑在内。
+
+这个标志不影响负数值，负数值始终有一个前导减号字符（`-`）。就像加号字符一样，Python 在计算输出宽度时也会把减号字符考虑在内。
+
+#### 空格字符标志（`' '`）
+
+空格字符标志（`' '`）会在正数值前面添加一个空格字符：
+
+```
+>>> "% d" % 3
+' 3'
+```
+
+就像 `+` 标志一样，这个标志也不影响负数值，负数值始终有一个前导减号字符（`-`）：
+
+```
+>>> "% d" % 3
+' 3'
+
+>>> "% d" % -3
+'-3'
+>>> "%d" % -3
+'-3'
+```
+
+使用 `+` 标志或空格字符标志，可以帮助你把正值和负值的混合一致地对齐。
+
+### 通过字典映射指定值
+
+你可以把插入格式字符串的 `<values>` 指定为一个字典，而不是一个元组。在那种情况下，每个转换说明符必须在紧跟 `%` 字符之后的括号中包含其中一个字典键：
+
+```
+>>> "%d %s cost $%.2f" % (6, "bananas", 1.74)
+'6 bananas cost $1.74'
+
+>>> data = {"quantity": 6, "item": "bananas", "price": 1.74}
+>>> template = "%(quantity)d %(item)s cost $%(price).2f"
+>>> template % data
+'6 bananas cost $1.74'
+```
+
+通过使用这种技术，你可以按任意顺序指定插入的值：
+
+```
+>>> data = {"quantity": 6, "item": "bananas", "price": 1.74}
+
+>>> ad_1 = "%(quantity)d %(item)s cost $%(price).2f"
+>>> ad_1 % data
+'6 bananas cost $1.74'
+
+>>> ad_2 = "You'll pay $%(price).2f for %(item)s, if you buy %(quantity)d"
+>>> ad_2 % data
+"You'll pay $1.74 for bananas, if you buy 6"
+```
+
+上面显示的所有转换说明符组成部分——`<flags>`、`<width>`、`.<precision>` 和 `<type>`——仍然以与你使用元组输入值时相同的方式工作。当你把 `<values>` 指定为字典时，你可以使用它们中的任何一个：
+
+```
+>>> "Quantity: %(quantity)03d" % data
+'Quantity: 006'
+
+>>> "Item:     %(item).5s" % data
+'Item:     banan'
+```
+
+在上面的示例代码片段中，你在第一个例子中使用了与 `<width>` 组合的 `0` 标志，并在第二个例子中使用了值为 `5` 的 `.<precision>`。
+
+注意：如果你通过字典映射指定 `<values>`，那么你不能使用星号占位符（`*`）来指定 `<width>` 或 `.<precision>`。
+
+如果你想只定义一次数据，并且可能在不同输出中切换显示顺序，通过字典映射指定输入值会特别有用。
+
+
+---
 
 
 ## [T-Strings](https://realpython.com/python-t-strings/)
@@ -3135,7 +7463,1016 @@ logging.info(msg_template)
 ## [F-Strings](https://realpython.com/how-to-python-f-string-format-float/)
 
 
+
+你经常需要格式化并四舍五入一个 Python `float`，以便在字符串中整齐地显示计算结果。在较早的 Python 版本中，这是一件凌乱的事情，因为你需要先四舍五入数字，然后再使用字符串拼接或旧的字符串格式化技术来完成这件事。
+
+自 Python 3.6 起，字面字符串插值，更常被称为格式化字符串字面量或 f-string，让你可以以更可读的方式自定义字符串内容。
+
+一个 f-string 是一个以小写或大写字母 `f` 为前缀的字面字符串，并包含零个或多个包在一对花括号 `{...}` 中的替换字段。每个字段包含一个产生值的表达式。你可以计算该字段的内容，但你也可以使用函数调用，甚至使用变量。
+
+虽然大多数字符串具有常量值，但 f-string 是在运行时求值的。这使你可以向同一个 f-string 的替换字段传入不同数据，并产生不同输出。f-string 的这种可扩展性使它们成为在字符串内部整齐嵌入动态内容的好方法。然而，尽管 f-string 在很大程度上已经取代了较早的方法，它们也有自己的缺点。
+
+例如，对关系数据库执行的最常见攻击之一是 SQL 注入攻击。用户经常为 SQL 查询提供参数，如果查询是在 f-string 中形成的，就可能通过传入恶意命令来损坏数据库。F-string 也可以通过攻击 Python 的 logging 模块代码，被用于拒绝服务攻击。
+
+在较旧的 Python 版本中，f-string 还有一些其他限制，这些限制直到 Python 3.12 才被修复。本教程全程使用该版本。
+
+看一下下面的例子。它向你展示如何把一次计算的结果嵌入 f-string：
+
+```
+>>> f"One third, expressed as a float is: {1 / 3}"
+'One third, expressed as a float is: 0.3333333333333333'
+```
+
+在没有任何显式四舍五入的情况下，一旦一个表达式产生了它的值，它就会以默认的小数位数被插入字符串。在这里，结果被显示到十六位小数，在大多数情况下，这比你真正需要的精度更多。所以你很可能想把最终答案四舍五入到更实用的位数。
+
+
+### 如何在 Python F-String 中格式化并四舍五入一个浮点数
+
+要在 Python f-string 中整齐地显示一个 `float`，你可以使用一个格式说明符。在其最基本的形式中，这让你可以定义精度，或者说该 `float` 将以多少位小数显示。
+
+下面的代码显示了与之前相同的计算，只是显示得更整齐：
+
+```
+>>> f"One third, rounded to two decimal places is: {1 / 3:.2f}"
+'One third, rounded to two decimal places is: 0.33'
+```
+
+要在替换字段中使用 Python 的格式说明符，你用一个冒号（`:`）把它们与表达式分开。如你所见，你的 `float` 已被四舍五入到两位小数。你是通过把格式说明符 `.2f` 加入替换字段来实现这一点的。`2` 是精度，而小写 `f` 是表示类型的一个例子。你稍后会看到更多这些内容。
+
+注意：当你使用格式说明符时，你实际上并没有改变底层数字。你只是改善了它的显示。
+
+Python 的 f-string 也有它们自己的迷你语言，让你可以以各种不同方式格式化输出。尽管本教程将聚焦于四舍五入，这当然不是你能用它们做的唯一事情。正如你稍后会看到的，它们的迷你语言也用于其他字符串格式化技术。
+
+除了显示计算结果之外，格式说明符的精度部分也可以直接应用于变量和函数调用的返回值：
+
+```
+>>> def total_price(cost):
+...     return cost * 1.2
+...
+
+>>> cost_price = 1000
+>>> tax = 0.2
+>>> f"£{1000:,.2f} + £{cost_price * tax:,.2f} = £{total_price(cost_price):,.2f}"
+'£1,000.00 + £200.00 = £1,200.00'
+```
+
+这一次，你在同一个字符串中使用了多个替换字段。第一个格式化一个字面数字，第二个格式化一次计算的结果，而第三个格式化一次函数调用的返回值。此外，通过在格式说明符中的小数点（`.`）之前插入一个逗号（`,`），你为最终输出添加了千位分隔符。
+
+在日常使用中，你用固定的小数位数显示数字，但在进行科学或工程计算时，你可能更愿意使用有效数字来格式化它们。然后你的结果被假定精确到你显示它们所用的有效数字位数。
+
+如果你想把数字四舍五入到有效数字，你在格式说明符中使用小写字母 `g`。你也可以使用大写 `G`，但这会为较大的数字自动把格式切换到科学记数法。
+
+假设你有一个半径为 10.203 米的圆。要算出面积，你可以使用这段代码：
+
+```
+>>> import math
+
+>>> f"Area = {math.pi * 10.203**2}"
+'Area = 327.0435934242156'
+```
+
+你决定使用 Python 的 `math` 模块提供的 `pi` 常量值。虽然你的答案看起来确实高度精确，但其中很大一部分是没有意义的。任何计算都只精确到其任何组成部分中最低的有效数字位数。在这种情况下，半径值 `10.203` 只包含五位有效数字，这少于 `math.pi`，所以最终结果应该被四舍五入到这个位数。
+
+编写这个计算的更好方式会是：
+
+```py
+>>> f"Area = {math.pi * 10.203**2:,.5g}"
+'Area = 327.04'
+```
+
+面积，精确到五位有效数字，是 327.04 平方米。
+
+你也可以使用格式说明符把数字显示为百分比。要手动做到这一点，你需要把数字乘以一百，并在以所需小数位数显示它之前追加一个百分号（`%`）。你可以通过在格式说明符中用 `%` 表示类型代替小写 `f` 或 `g`，来自动完成所有这些：
+
+```py
+>>> f"{0.1256:.1%}"
+'12.6%'
+>>> f"{0.5:.2%}"
+'50.00%'
+>>> f"{3:.2%}"
+'300.00%'
+```
+
+如你所见，`.2%` 已经自动为你处理了乘法、四舍五入和 `%` 追加。
+
+你现在已经知道如何处理在 Python f-string 中格式化浮点数时最常见的场景。你将在下一节中学到更多，但在继续之前，展开下面的部分，看看你能否完成这些任务。做完这些是复习并巩固你到目前为止理解的好方法。
+
+**练习：“整齐地格式化字符串”**
+
+任务 1：使用 `number = 64723.4161`，看看你能否写一行代码来产生所示输出。除了格式说明符所需的数字之外，你的字符串不应包含其他数字：
+
+```py
+>>> number = 64723.4161
+>>> # Write your solution here
+'The number 64,723.4161, when rounded to two decimal places, is 64_723.42.'
+```
+
+任务 2：从变量 `numerator = 3` 和 `denominator = 8` 开始，看看你能否写一行代码来产生所示输出。同样，除了格式说明符所需的数字之外，你的字符串不应包含其他数字：
+
+```py
+>>> numerator = 3
+>>> denominator = 8
+>>> # Write your solution here
+'3/8 as a percentage is 37.5%.'
+```
+
+任务 3：计算半径为 2.340 米的球体的体积。你的答案应以适当数量的有效数字显示。
+
+你会在本教程随附的可下载材料中找到可能的解答。
+
+现在，是时候继续前进，了解更多你可以增强字符串中数字显示的方式了。
+
+### 自定义格式化字符串的宽度
+
+除了精度之外，格式说明符还包含一个宽度参数。这让你可以设置用于显示该数字的总字符数。如果你的数字长度超过宽度参数，那么会分配额外空间。否则，结果将在左侧用空格填充到其指定宽度。假设你把宽度设为适合最大的数字，每个数字都会与其他数字具有相同的固定长度。
+
+固定长度记录对于保存到文件很有用。固定长度文件是一种其记录字段都占用相同字符数的文件。通常，字段会用额外字符填充，最常见的是文本用尾随空格，数字用前导零。
+
+固定长度文件已经存在多年，你今天仍然会看到它们。尽管你会发现像 XML 和 YAML 这样的格式更易于手动阅读，固定长度文件确实仍提供一些优势。你的代码可以非常高效地读取固定长度记录，因为每条记录中的每个字段都在相同位置。相比之下，XML 解析器通常需要更多资源，尤其是当你要处理大量数据时。
+
+然而，固定长度文件通常比其他格式更特定于应用，这意味着你无法轻易地在系统之间传输它们。此外，对 XML 和 YAML 使用解析器让你可以快速添加和读取额外字段。相比之下，更新固定长度字段通常涉及对每个需要处理它们的程序进行一次重大重新编码。
+
+要看到宽度参数的效果，看一下下面显示的代码：
+
+```py
+>>> sample = 12345.6789
+
+>>> print(
+...     f"(1) |{sample:.2f}|",
+...     f"(2) |{sample:1.2f}|",
+...     f"(3) |{sample:8.2f}|",
+...     f"(4) |{sample:12.2f}|",
+...     sep="\n",
+... )
+(1) |12345.68|
+(2) |12345.68|
+(3) |12345.68|
+(4) |    12345.68|
+```
+
+在这四个结果中的每一个里，精度都被设为 `.2f`，意味着一切都被四舍五入到两位小数。因为你在处理数字，它们默认在左侧用空格填充。你使用换行符（`\n`）作为值分隔符，以便把每个输出打印在自己的行上。你还把每个数字显示在管道字符（`|`）之间，以强调填充。
+
+在第一个结果中，没有指定宽度，所以 f-string 为你处理了它，并把字符串调整到能包含小数点前的所有内容以及指定的小数点后两位数字。
+
+在第二个例子中，宽度太小，无法容纳输出，所以它被调整大小以让字符串能够放入。
+
+在第三个例子中，宽度正好是所需大小，所以没有填充，再次出现相同结果。
+
+最后一个例子显示填充已被应用到输出。宽度超出所需四个字符，所以四个空格被插入到字符串的开头。
+
+除非你需要这种额外填充，通常最好完全忽略宽度值，并让 f-string 为你处理它。
+
+注意：默认情况下，当你对字符串应用字段宽度参数时，填充被放在右侧：
+
+```py
+>>> f"|{"123.45":10}|"
+'|123.45    |'
+
+>>> f"|{123.45:10}|"
+'|    123.45|'
+```
+
+如你所见，额外空格已被添加到字符串右侧，以把它的宽度提升到 `10` 个字符。第二个例子显示该数字被左侧填充，但仍然到相同的 `10` 个字符。如果你为该字符串指定了一个精度参数，比如 `.2f`，你会生成一个 `ValueError`。字符串不理解精度。你将在本教程后面了解更多关于对字符串使用格式说明符的内容。
+
+如果需要，你也可以控制填充的位置。可以在指定宽度内对数据进行左对齐、右对齐，甚至居中对齐：
+
+```py
+>>> sample = 12345.6789
+
+>>> print(
+...     f"(1) |{sample:<12,.2f}|",
+...     f"(2) |{sample:>12,.2f}|",
+...     f"(3) |{sample:^12,.2f}|",
+...     sep="\n",
+... )
+(1) |12,345.68   |
+(2) |   12,345.68|
+(3) | 12,345.68  |
+```
+
+要控制填充位置，你使用小于（`<`）、大于（`>`）或插入符号（`^`）对齐选项。它们分别让你可以在宽度值内对数字进行左对齐、右对齐和居中对齐。
+
+你可能已经注意到只添加了三个空格字符，而不是你之前看到的四个。这是因为通过在格式说明符中包含千位分隔符，你已经占用了一个额外的字符空间。
+
+现在假设你想使用填充，但更愿意使用与到目前为止所用的默认空格不同的填充字符。要做到这一点，你在对齐选项之前添加你选择的填充字符：
+
+```py
+>>> sample = 12345.6789
+
+>>> print(
+...     f"(1) |{sample:*<12.2f}|",
+...     f"(2) |{sample:*>12.2f}|",
+...     f"(3) |{sample:*^12.2f}|",
+...     sep="\n",
+... )
+(1) |12345.68****|
+(2) |****12345.68|
+(3) |**12345.68**|
+```
+
+在这个例子中，你选择用星号（`*`）字符填充数字，尽管你本可以使用任何其他字符。要做到这一点，你把星号加入了格式说明符。你的数字被格式化到预期的两位小数，并用适当数量的星号填充，以确保它是你想要的 `12` 个字符宽。
+
+### 控制数字符号的位置
+
+到目前为止，在你的每个例子中，你都使用了正数。请随意用负数重新运行其中任何一个，你会看到一个负号会出现在它们旁边。正数保持无符号，以符合无符号数字为正数的通常假设。
+
+假设你想为每个数字显示一个符号，以强调或澄清，或为归档创建固定长度记录。要强制为所有数字显示符号，你把加号（`+`）选项加入格式说明符，如下所示：
+
+```py
+>>> sample = -12345.68
+
+>>> print(
+...     f"(1) |{sample:12,.2f}|",
+...     f"(2) |{sample:+12,.2f}|",
+...     f"(3) |{-sample:+12,.2f}|",
+...     sep="\n",
+... )
+(1) |  -12,345.68|
+(2) |  -12,345.68|
+(3) |  +12,345.68|
+```
+
+这一次，你使用的数字是负数。在第一个例子中，当你使用 `12,.2f` 格式说明符时，负号出现。第二个例子给你相同的输出，但你在格式说明符开头添加了一个加号。这种做法的好处只有在第三个例子中你对该数字取反时才变得明显。格式说明符中的加号（`+`）选项现在强制在输出中显示加号。
+
+注意：在计算中显示结果为零时，计算领域有一个由来已久的问题。如果计算的一部分涉及负数，可能会显示一个令人恼火的结果：
+
+```py
+>>> result = (5 * 0) / (-4 + 2)
+
+>>> print(
+...     f"(1) {result:12.1g}",
+...     f"(2) {result:+12.1f}",
+...     sep="\n",
+... )
+(1)           -0
+(2)         -0.0
+```
+
+虽然逻辑告诉你答案是一个无符号零，Python 像大多数语言一样，坚持显示负号。这是因为浮点数在内存中的表示方式。无论你是四舍五入到小数位、有效数字，还是在格式说明符中使用加号，这都会发生。通常，这是你不想看到的东西。
+
+幸运的是，PEP 682 提供了一个解决方案，让你可以从零中去掉讨厌的负号（`-`）。要做到这一点，你使用 `z` 选项，如下所示：
+
+```py
+>>> print(
+...     f"(1) {result:z12.1g}",
+...     f"(2) {result:z12.1f}",
+...     sep="\n",
+... )
+(1)            0
+(2)          0.0
+```
+
+如你所见，负号现在消失了，你让事情看起来更整齐了。
+
+你现在已经知道如何处理围绕四舍五入数字显示的一些细节。仍有一些有趣的事情供你学习，但在继续之前，是时候再次戴上你的思考帽了。为什么不看看你能否解决下面的任务？
+
+**练习：“更具挑战性的格式化”**
+
+任务 4a：使用 `sample = -12345.6789`，看看你能否写一行代码来产生所示输出。输出应左对齐，十二个字符宽，精度为两位小数。不要忘记命令分隔符，并包含所有零：
+
+```py
+>>> sample = -12345.6789
+
+>>> print(
+...      # Write your solution here
+... )
+|-12,345.68  |
+|+12,345.68  |
+```
+
+任务 4b：更新你之前的输出，使其显示如下所示。它与之前的输出非常相似，只是加号（`+`）被替换成了一个空格。理想情况下，你应该为两个输出使用类似的格式说明符。如果需要帮助，记得查阅 Python 文档：
+
+```py
+>>> sample = -12345.6789
+
+>>> print(
+...      # Write your solution here
+... )
+|-12,345.68  |
+| 12,345.68  |
+```
+
+任务 5：从 `result = 5 * 3` 开始，然后看看你能否在不把字面小数点符号（`.`）编码到 f-string 末尾的情况下产生所示输出。相反，使用适当的格式说明符语法来编码尾随小数点：
+
+```py
+>>> result = 5 * 3
+
+>>> print(
+...      # Write your solution here
+... )
+By default, the result is displayed like this: 15
+However, some people love trailing decimal points like this: 15.
+```
+
+任务 6：从三个变量 `customer_id = "C123456"`、`amount1 = 12.34` 和 `amount2 = 56.78` 开始，看看你能否产生如下所示的固定长度记录：
+
+```py
+>>> customer_id = "C123456"
+>>> amount1 = 12.34
+>>> amount2 = 56.78
+
+>>> print(
+...      # Write your solution here
+... )
+C12345600012.3400056.78
+```
+
+`customer_id` 应按原样写入，但 `amount1` 和 `amount2` 应被零填充到总长度为八个字符和两位小数，如上所示。
+
+你会在本教程随附的可下载材料中找到可能的解答。
+
+现在你已经学会了如何四舍五入日常数字，并有机会练习你的技能，是时候看看如何格式化大数和小数，以及难以想象的复数了。
+
+### 四舍五入科学记数法和复数
+
+当你想简洁地写出非常大或非常小的数字时，你经常使用科学记数法。Python 像许多其他编程语言一样，使用 E 记数法来显示科学记数法，如下所示：
+
+在上图中，你可以看到两个用科学记数法格式化的数字例子。第一个使用传统数学表示，而第二个使用 Python 的表示。
+
+你不会感到惊讶地了解到，你可以使用格式说明符以科学记数法显示数字。做法如下：
+
+```py
+>>> f"{1234.56789:.2e}"
+'1.23e+03'
+
+>>> f"{0.00012345:.3e}"
+'1.234e-04'
+```
+
+你可能用来以科学记数法格式化数字的一个常见说明符是小写（`e`）表示类型。这会在其显示中使用小写字母 `e`。
+
+在第一个例子中，因为你把精度设为 `.2e`，你的字符串将以四舍五入到两位小数的科学记数法显示该数字。也可以添加一个宽度值。和之前一样，这只是在必要时把结果填充到该宽度。
+
+在第二个例子中，你朝另一个方向前进，并显示一个非常小的数字。因此，科学记数法把十的幂提升到 `-04`。这一次，你对 `.3e` 的使用把结果显示到三位小数。
+
+与你通过格式说明符传递的所有数字一样，格式说明符只是一个显示工具。所有计算都应使用原始数字以保持准确性。
+
+你也可以对复数使用格式说明符。复数在工程和物理中被广泛使用，以求解与振荡相关的方程。它们可以被使用，例如，作为傅里叶变换的一部分，以从真实传输中去除噪声频率。
+
+一个复数由实部和虚部组成，虚部是负一的平方根的倍数。它们通常写成 a+bi 的形式，其中 a 称为实部，b 称为虚部。
+
+注意：Python 使用字母 j 而不是 i 来表示虚部。
+
+尽管复数有些抽象，你会高兴地知道格式说明符已经覆盖了它们：
+
+```py
+>>> value = 3.474 + 2.323j
+>>> print(
+...     f"The complex number {value} is formed",
+...     f"from the real part {value.real:.2f},",
+...     f"the imaginary part {value.imag:.1f},",
+...     f"and is approximately {value:.0f}.",
+...     sep="\n",
+... )
+The complex number (3.474+2.323j) is formed
+from the real part 3.47,
+the imaginary part 2.3,
+and is approximately 3+2j.
+```
+
+如你所见，你在 f-string 表达式中使用它们的 `.real` 和 `.imag` 属性来访问复数的实部和虚部。一旦你有了这些，你就可以用与格式化任何其他数字相同的方式来格式化它们。你也可以通过直接对整个复数应用格式说明符，一次性格式化整个复数。
+
+在上面的例子中，`.2f` 把实部格式化为两位小数，然后 `.1f` 把虚部格式化到一位小数。最后，`.0f` 把完整数字格式化到零位小数。
+
+很快，你将离开在 f-string 中用格式说明符四舍五入数字的基本方法，并学习它们可以如何以其他方式使用。在此之前，是时候进行另一次挑战了。
+
+**练习：“格式化科学记数法和复数”**
+
+任务 7：使用 `value = 13579+0.0245j`，看看你能否写一行代码来产生如下所示的输出：
+
+```py
+>>> value = 13579+0.0245j
+>>> print(
+...     # Write your solution here
+... )
+The real part is 1.36E+04 and the imaginary part 2.45E-02.
+```
+
+看看你能否找出所需的格式说明符。记住，你的目标是一个大写 `E`，所以你可能需要阅读文档。
+
+你会在本教程随附的可下载材料中找到可能的解答。
+
+### 使用 `decimal` 对象来减轻浮点不准确性
+
+Python 的 `float` 类型把你限制为用 64 位存储来保存数字。这意味着如果你的任何数字超过这个大小，它们就无法被准确表示。下面的代码显示了一个例子：
+
+```py
+>>> f"{(10000000000000 / 3)}"
+'3333333333333.3335'
+```
+
+精确答案是无限循环的三。如你所见，由于空间限制，出现了一个尾随 `5`。
+
+你可能认为使用格式说明符 `.2f` 把输出显示到两位小数会解决问题，但后台的不准确性仍然存在。格式说明符只为显示而四舍五入它们的数据。它们不会截断它。
+
+例如，考虑下面的计算：
+
+```py
+>>> f"{(10000000000000 / 3) + 0.6666}"
+'3333333333334.0'
+```
+
+结果不仅表明不准确性仍然存在，而且该错误现在已经进入了结果的整数部分。进一步的计算会加剧这个问题，并导致最终结果中更大的不准确性。
+
+尽管计算机上浮点算术周围的精度问题是其设计的固有部分，如果你需要准确性保证，那么你应该考虑改用内置的 `decimal` 模块。`Decimal` 对象对浮点算术提供比内置 `float` 类型更多的控制，因为它们让你可以按一致的精度执行计算，并集中设置该精度。
+
+要看到这种好处的实际效果，看一下下面显示的代码：
+
+```py
+>>> from decimal import Decimal as D
+>>> from decimal import getcontext
+
+>>> getcontext().prec = 4
+>>> f"£{float("0.1") + float("0.1") + float("0.1")}"
+'£0.30000000000000004'
+
+>>> f"£{D("0.1") + D("0.1") + D("0.1")}"
+'£0.3'
+```
+
+`decimal` 模块是 Python 标准库的一部分，所以你不需要安装它。然而，要访问你将从中实例化对象的 `Decimal` 类，你仍然必须导入它。通过用字母 `D` 作为别名导入 `Decimal`，你可以在创建实例时使用该别名，从而编写更简洁的代码。
+
+你还导入了 `getcontext()` 函数。当你在代码中使用 `Decimal` 对象时，它们的许多关键属性由其上下文对象集中管理。`getcontext()` 函数为你获取这个对象。然后你使用它的 `.prec` 属性来设置 `Decimal` 对象的精度。这定义了每个 `Decimal` 将包含的有效数字位数。`Decimal` 实例会被四舍五入以适应它们的精度。
+
+看一下上面代码的输出。当你使用浮点数时，表示误差出现了。然而，当使用 `Decimal` 实例时，它无处可见。更重要的是，该错误也永远不会再出现。
+
+这里的要点是：对于非常高的精度，你应该在应用格式说明符之前把字符串转换成小数而不是浮点数。这可以防止错误渗入你的计算，因为任何存在于指定精度之外的内容都已被安全移除。此外，小数更精确，默认精度为 28 位，而浮点数大约只有 16 位。
+
+注意：你可能在想，是否应该干脆用 Python 内置的 `round()` 函数来四舍五入每个 `float` 值。这当然是去除表示误差的一种替代方案，但 `decimal` 模块使用的上下文对象让在一个地方更改每个数字的精度更容易。该库还提供 `Decimal.quantize()` 方法，让你对 `Decimal` 对象如何被四舍五入拥有更细粒度的控制。
+
+为了帮助你决定使用哪个精度值，考虑保护数字的概念。假设你正在执行涉及货币的计算。即使结果可能包含两位小数，中间计算也应使用四位小数，以防止四舍五入影响最终结果。你应该始终在希望显示的小数位数之外使用两位保护数字。
+
+你可以通过结合精度和格式说明符来引入保护数字。格式说明符可以以与应用于浮点数相同的方式应用于 `Decimal` 对象：
+
+```
+>>> getcontext().prec = 4
+>>> f"£{D("0.10001") + D("0.20001"):.2f}"
+'£0.30'
+```
+
+首先，你正在把两个在原始形式中包含微小不准确性的数字相加。因为你已经把上下文精度设为 `4` 位有效数字，当每个字符串被转换成 `Decimal` 对象时，这些将被移除。一旦计算进行，格式说明符把显示的答案四舍五入到两位小数。
+
+注意：尽管 `decimal` 模块提供出色的浮点支持，它仍然无法解决与浮点数相关的底层四舍五入问题。
+
+看一下下面显示的 `Decimal` 对象：
+
+```
+>>> D(0.1)
+Decimal('0.1000000000000000055511151231257827021181583404541015625')
+```
+
+鉴于全局精度是 `4`，你可能期望答案是 `0.1000`。精度被忽略的原因是 `getcontext().prec` 属性只应用于表达式的结果，而不直接应用于一个 `float`。你可以强制应用该精度，但代码有点牵强：
+
+```
+>>> D(0.1) * D(1)
+Decimal('0.1000')
+```
+
+通过乘以 `D(1)`，你再次应用了四位有效数字的精度。
+
+在 Python 中，仍有一些其他方式可以把数字格式化为字符串，你接下来将探索它们。
+
+### 以其他方式格式化字符串
+
+Python 内置的 `format()` 函数是产生格式化字符串的另一种方式。该函数接受两个参数：要格式化的值，加上你已经学过的任何格式说明符。下面显示了一些例子，并包含它们的 f-string 等价物以供比较：
+
+```
+>>> format(-123.4567, "+9.2f")
+'  -123.46'
+>>> f"{-123.456:+9.2f}"
+'  -123.46'
+
+>>> format(0.125, ".2%")
+'12.50%'
+>>> f"{0.125:.2%}"
+'12.50%'
+```
+
+如你所见，`format()` 函数使用与更现代的 f-string 相同的格式说明迷你语言。你的第一个例子使用 `+9.2f` 来显示一个表示带符号浮点数的字符串，填充到 `9` 个字符，并四舍五入到 `2` 位小数。然后你使用 `.2%` 把该数字以百分比显示到两位小数。
+
+花一点时间把使用 `format()` 的代码与使用 f-string 的代码进行比较，你会看到 f-string 版本更紧凑，通常也更可读。
+
+一种较早的、今天仍有一席之地的字符串格式化方法是 `str.format()` 方法。要使用它，你需要在希望数据出现的地方，把替换字段占位符插入字符串。然后你把格式说明符加入占位符，以指定你希望数据如何出现。最后，你把要插入字符串的数据作为参数，按与占位符相同的顺序传给 `.format()`。
+
+下面的代码示例说明了所有这些：
+
+```
+>>> opposite = 1.234
+>>> adjacent = 5.678
+>>> hypotenuse = (opposite**2 + adjacent**2) ** 0.5
+>>> template = "Opposite = {:0.1f}, Adjacent = {:0.2f}, Hypotenuse = {:0.3f}"
+>>> template.format(opposite, adjacent, hypotenuse)
+'Opposite = 1.2, Adjacent = 5.68, Hypotenuse = 5.811'
+```
+
+如你所见，占位符按顺序使用传给 `.format()` 方法的每个参数。尽管这不如 f-string 替代方案那么可读，你仍然使用相同的迷你语言来定义格式化。
+
+也可以通过关键字把值传给 `.format()`。当你把这些关键字加入字符串的替换字段时，对应的值将在显示时被插入字符串：
+
+```
+>>> template = (
+...     "Opposite = {opposite:0.1f}, "
+...     "Adjacent = {adjacent:0.2f}, "
+...     "Hypotenuse = {hypotenuse:0.3f}"
+... )
+>>> template.format(
+...     hypotenuse=(1.234**2 + 5.678**2)**0.5,
+...     adjacent=5.678,
+...     opposite=1.234
+... )
+'Opposite = 1.2, Adjacent = 5.68, Hypotenuse = 5.811'
+```
+
+在这个版本中，你通过关键字把参数传给 `.format()`。注意，你传递参数的顺序并不重要。只要关键字与格式说明符中花括号内的占位符匹配，Python 就会相应地替换它们。
+
+你不必把各个值作为关键字参数传递，可以遵循一种涉及 Python 字典的常见模式：
+
+```
+>>> data = {
+...     "opposite": 1.234,
+...     "adjacent": 5.678,
+...     "hypotenuse": (1.234**2 + 5.678**2) ** 0.5,
+... }
+
+>>> template = (
+...     "Opposite = {opposite:0.1f}, "
+...     "Adjacent = {adjacent:0.2f}, "
+...     "Hypotenuse = {hypotenuse:0.3f}"
+... )
+
+>>> template.format(**data)
+'Opposite = 1.2, Adjacent = 5.68, Hypotenuse = 5.811'
+```
+
+在你的代码中，你使用了解包运算符（`**`）把字典 `data` 传入 `.format()`。这会把你的每个字典键作为单独的命名参数传递，并把其每个值作为该命名参数的值。
+
+如你所见，这段代码正在接近你与 f-string 一起使用的语法。你可以把这提升到下一个层次，并创建你自己的数字格式化模板：
+
+```
+>>> num = "{:{align}{width}.{precision}f}"
+>>> print(
+...     num.format(
+...         123.236, align="<", width=8, precision=2
+...     )
+... )
+123.24
+```
+
+这一次，你通过把要格式化的数字连同一组命名参数传给 `.format()` 来构造格式说明符。这些被应用到你的 `num` 模板，然后该模板被用来格式化你的数字。
+
+当你使用 `.format()` 时，也可以在运行时动态定义格式说明符。假设你有几个单词，想把它们填充到比其长度大四个字符的宽度。下面的代码向你展示如何实现这一点：
+
+```
+>>> text = "Python is cool"
+>>> padded_words = [
+...     "{word:*^{length}}".format(word=word, length=len(word) + 4)
+...     for word in text.split()
+... ]
+
+>>> padded_words
+['**Python**', '**is**', '**cool**']
+```
+
+再一次，你构造格式说明符，以包含你将从 `.format()` 接收的参数名称。要格式化的单词被赋给 `word`，而动态计算的宽度被赋给 `length`。你通过把精度替换字段 `{length}` 嵌套在格式说明符中来实现这一点。星号（`*`）定义要使用的填充字符，而插入符号（`^`）确保输出居中。
+
+`padded_words` 列表是使用列表推导式创建的。对 `text` 变量的内容调用 `.split()` 方法，它按空格字符分离原始字符串，并产生一个包含其三个单词的列表。`for` 循环然后迭代其中每一个，并把它们传给 `.format()`。
+
+当 `.format()` 接收到每个 `word` 时，它的值被赋给变量 `word`，其长度加四个字符被赋给变量 `length`。然后这些变量被应用到格式说明符，以在 `padded_words` 中产生格式化版本。
+
+再次拿起你的思考帽。是时候进行更多挑战了。
+
+**练习：“字符串格式化挑战”**
+
+任务 8：在上一个例子中，你用围绕 `str.format()` 方法的代码产生了这个字符串列表 `['**Python**', '**is**', '**cool**']`。看看你能否用 f-string 语法重写它。
+
+任务 9：从 `numbers = [1234.56789, 123.456789, 12.3456789, 1.23456789]` 列表开始，看看你能否写一个格式说明符来产生第二个名为 `numbers_formatted` 的列表，其中包含 `["1,234.5679", "123.457", "12.35", "1.2"]`。
+
+如你所见，每个数字都被四舍五入，使小数点前的位数与小数点后的位数相同。
+
+你会在本教程随附的可下载材料中找到可能的解答。
+
+你在本教程中确实非常努力。现在是时候度假了。
+
+### 为国际使用格式化数字
+
+如果你需要编写将在国际上使用的代码，你需要确保数字是使用它们运行所在国家的区域设置来格式化的。这将确保你的数字和日期按照当地惯例格式化，以便被正确理解。要在代码中支持国际化，你可以使用 Python 的 `locale` 模块。
+
+`locale` 模块让你可以指定标准格式，例如千位分隔符、货币符号，等等。你通常不需要在计算机上显式设置这个，因为默认使用你的操作系统设置。然而，如果你想确保代码使用特定区域设置运行，你可以显式设置它。
+
+你可以用 `locale.getlocale()` 函数找出计算机当前正在使用的区域设置：
+
+```
+>>> import locale
+>>> locale.getlocale()
+('English_United Kingdom', '1252')
+```
+
+运行这段代码的计算机正在使用 `English_United Kingdom` 区域设置。`1252` 是 Windows 在编码每个英文字符时使用的字符编码。每个符号在内存中占用一个字节。自己运行这段代码以查看你的区域设置结果。
+
+如果你想根据计算机上的区域设置格式化数字，在格式说明符中使用 `n` 表示类型：
+
+```
+>>> f"{-1234.567:n}"
+'-1234.57'
+>>> f"{-1234.567:.2f}"
+'-1234.57'
+```
+
+如你所见，在使用区域设置 `('English_United Kingdom', '1252')` 的计算机上，`n` 格式说明符等价于使用 `.2f` 作为格式说明符。该区域设置规定句点（`.`）被用作小数点，而负号被放在数字左侧。
+
+要真正体会 `n` 做什么，你需要在一系列区域设置中运行它。幸运的是，`locale` 模块提供了一个 `setlocale()` 函数，让你可以做到这一点。只要你的操作系统支持你感兴趣的区域设置，你就可以更改数字的显示方式：
+
+```
+>>> sample_locales = [
+...     ("USA", "en_US.UTF-8"),
+...     ("Poland", "pl_PL.UTF-8"),
+...     ("UK", "en_GB.UTF-8"),
+...     ("Czech Republic", "cs_CZ.UTF-8"),
+...     ("Korea", "ko_KR.UTF-8"),
+...     ("Germany", "de_DE.UTF-8"),
+...     ("France", "fr_FR.UTF-8"),
+... ]
+
+>>> for name, loc in sample_locales:
+...     _ = locale.setlocale(category=locale.LC_ALL, locale=loc)
+...     print(
+...         f"{name} uses",
+...         f"{1234.567:n} and",
+...         f"{-1234.567:n}",
+...     )
+...
+USA uses 1,234.57 and -1,234.57
+Poland uses 1 234,57 and -1 234,57
+UK uses 1,234.57 and -1,234.57
+Czech Republic uses 1 234,57 and -1 234,57
+Korea uses 1,234.57 and -1,234.57
+Germany uses 1.234,57 and -1.234,57
+France uses 1 234,57 and -1 234,57
+```
+
+你创建了一个元组列表，每个元组包含一个国家名称和一个区域设置。每个区域设置值的格式为 `"language_territory.codeset"`。所以，`"en_US.UTF-8"` 指定使用美国英语，并且每个字符用 `UTF-8` 标准编码。
+
+你的 `for` 循环迭代 `sample_locales` 中的每个元组，并把它传入 `setlocale()` 函数的 `locale` 参数。这会在你的计算机上设置区域设置。你还把 `category` 参数设为 `LC_ALL`，以确保该区域设置被应用到所有类别，包括数字、日期和货币。最后，你截取该函数返回的区域设置名称，以防止它被你的 REPL 打印。
+
+一旦你的计算机设置了新的区域设置，`print()` 函数会向你展示每种设置如何影响样本中每个国家正数和负数的显示。再一次，一切都被四舍五入到两位小数。
+
+注意：你可能已经注意到英国区域设置的数字现在有分隔符。这是因为你已经把区域设置从 Microsoft Windows 使用的默认值设为了 `en_GB.UTF-8`。
+
+如果你需要对数字输出的格式化有更多控制，`locale` 提供了一个 `format_string()` 函数，它使用与你之前学过的类似的格式说明符代码：
+
+```
+>>> for name, loc in sample_locales:
+...     _ = locale.setlocale(category=locale.LC_ALL, locale=loc)
+...     print(
+...         f"{name} uses --> {locale.format_string(
+...             f="%10.2e", val=-123456.789, grouping=True
+...         )}"
+...     )
+...
+USA uses -->  -1.23e+05
+Poland uses -->  -1,23e+05
+UK uses -->  -1.23e+05
+Czech Republic uses -->  -1,23e+05
+Korea uses -->  -1.23e+05
+Germany uses -->  -1,23e+05
+France uses -->  -1,23e+05
+```
+
+在这里，你已经用科学记数法以当地形式显示了每个数字。要做到这一点，你把 `f="%10.2e"` 传入了 `format_string()`。使用这个函数时，你必须在格式前面加上一个字符串格式化运算符符号（`%`）。你还把 `grouping` 参数设为 `True`，以确保应用了千位分隔符。
+
+注意：当你使用 `"%10.2e"` 这种形式定义格式时，你使用的是一种与更现代的格式说明符所使用的语言相似、但不相同的格式化语言。这一次，你使用的是旧式的 printf 风格字符串格式化。
+
+如果你想显示货币，可以使用 `locale.currency()` 函数：
+
+```
+>>> for name, loc in sample_locales:
+...     _ = locale.setlocale(category=locale.LC_ALL, locale=loc)
+...     print(
+...         f"{name} uses",
+...         f"{locale.currency(val=123456.789, grouping=True)} and",
+...         f"{locale.currency(val=-123456.789, grouping=True)}",
+...     )
+...
+USA uses $123,456.79 and -$123,456.79
+Poland uses 123 456,79 zł and -123 456,79 zł
+UK uses £123,456.79 and -£123,456.79
+Czech Republic uses 123 456,79 Kč and -123 456,79 Kč
+Korea uses ₩123,457 and ₩123,457-
+Germany uses 123.456,79 € and -123.456,79 €
+France uses 123 456,79 € and -123 456,79 €
+```
+
+在这里，你可以看到不同货币在每个抽样国家中如何显示。你在 `currency()` 中使用 `val` 和 `grouping` 参数的方式，与你之前在 `format_string()` 中所做的相同。
+
+就是这样，你已经完成了。你现在对 Python 允许你在字符串中四舍五入数字的主要方式有了扎实的理解。
+
+
 ## [自定义字符串](https://realpython.com/inherit-python-str/)
+
+
+Python 的 `str` 类有许多有用的特性，可以在你处理文本或字符串时帮助你。然而，在某些情况下，所有这些出色的特性对你来说可能还不够。你可能需要创建自定义的类字符串类。要在 Python 中做到这一点，你可以直接从内置的 `str` 类继承，或者子类化位于 `collections` 模块中的 `UserString`。
+
+
+### 在 Python 中创建类字符串类
+
+内置的 `str` 类让你可以在 Python 中创建字符串。字符串是字符序列，你会在许多情况下使用它们，尤其是在处理文本数据时。不时地，Python 的 `str` 的标准功能可能不足以满足你的需求。所以，你可能想创建能解决你特定问题的自定义类字符串类。
+
+你通常会发现至少有两个创建自定义类字符串类的理由：
+
+1. 通过添加新功能来扩展常规字符串
+2. 修改标准字符串的功能
+
+你也可能面临需要同时扩展和修改字符串标准功能的情况。
+
+在 Python 中，你通常会使用以下技术之一来创建你的类字符串类。你可以直接从 Python 内置的 `str` 类继承，或者从 `collections` 中子类化 `UserString`。
+
+Python 字符串的一个相关特性是不可变性，这意味着你无法就地修改它们。所以，在选择创建你自己的自定义类字符串类的适当技术时，你需要考虑你想要的特性是否会影响不可变性。
+
+例如，如果你需要修改现有字符串方法的当前行为，那么子类化 `str` 大概就可以了。相比之下，如果你需要更改字符串的创建方式，那么从 `str` 继承将需要高级知识。你将必须重写 `.__new__()` 方法。在后一种情况下，从 `UserString` 继承可能会让你的生活更轻松，因为你不必触及 `.__new__()`。
+
+
+### 从 Python 内置的 `str` 类继承
+
+在很长一段时间里，直接从用 C 实现的 Python 类型继承是不可能的。Python 2.2 修复了这个问题。现在你可以子类化内置类型，包括 `str`。当你需要创建自定义的类字符串类时，这个新特性相当方便。
+
+通过直接从 `str` 继承，你可以扩展和修改这个内置类的标准行为。你也可以调整自定义类字符串类的实例化过程，以便在新实例就绪之前执行转换。
+
+### 扩展字符串的标准行为
+
+需要一个自定义类字符串类的一个例子是：当你需要用新行为扩展标准 Python 字符串时。例如，假设你需要一个类字符串类，它实现一个新方法来统计底层字符串中的单词数量。
+
+在这个例子中，你的自定义字符串将使用空白字符作为其默认单词分隔符。然而，它也应该允许你提供一个特定的分隔符字符。要编写一个满足这些需求的类，你可以这样做：
+
+```
+>>> class WordCountString(str):
+...     def words(self, separator=None):
+...         return len(self.split(separator))
+...
+```
+
+这个类直接从 `str` 继承。这意味着它提供与其父类相同的接口。
+
+在这个继承接口之上，你添加了一个名为 `.words()` 的新方法。这个方法接受一个 `separator` 字符作为参数，该参数会被传给 `.split()`。它的默认值是 `None`，这会按连续空白进行分割。然后你用目标分隔符调用 `.split()`，把底层字符串分割成单词。最后，你使用 `len()` 函数来确定单词数量。
+
+你可以这样在代码中使用这个类：
+
+```
+>>> sample_text = WordCountString(
+...     """Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime
+...     mollitia, molestiae quas vel sint commodi repudiandae consequuntur
+...     voluptatum laborum numquam blanditiis harum quisquam eius sed odit
+...     fugiat iusto fuga praesentium optio, eaque rerum! Provident similique
+...     accusantium nemo autem. Veritatis obcaecati tenetur iure eius earum
+...     ut molestias architecto voluptate aliquam nihil, eveniet aliquid
+...     culpa officia aut! Impedit sit sunt quaerat, odit, tenetur error,
+...     harum nesciunt ipsum debitis quas aliquid."""
+... )
+
+>>> sample_text.words()
+68
+```
+
+很酷！你的 `.words()` 方法工作正常。它把输入文本分割成单词，然后返回单词数量。你可以修改这个方法如何界定和处理单词，但当前实现对于这个演示性例子来说工作得还可以。
+
+在这个例子中，你没有修改 Python 的 `str` 的标准行为。你只是向自定义类添加了新行为。然而，也可以通过重写其任何默认方法来更改 `str` 的默认行为，正如你接下来将探索的。
+
+### 修改字符串的标准行为
+
+要学习如何在自定义类字符串类中修改 `str` 的标准行为，假设你需要一个始终以大写字母打印其字母的字符串类。你可以通过重写 `.__str__()` 特殊方法来做到这一点，该方法负责字符串对象如何被打印。
+
+下面是一个按你需要的方式行为的 `UpperPrintString` 类：
+
+```
+>>> class UpperPrintString(str):
+...     def __str__(self):
+...         return self.upper()
+...
+```
+
+同样，这个类从 `str` 继承。`__str__()` 方法返回底层字符串 `self` 的一个副本，其所有字母都是大写。要转换这些字母，你使用 `.upper()` 方法。
+
+要试用你的自定义类字符串类，继续运行下面的代码：
+
+```
+>>> sample_string = UpperPrintString("Hello, Pythonista!")
+
+>>> print(sample_string)
+HELLO, PYTHONISTA!
+
+>>> sample_string
+'Hello, Pythonista!'
+```
+
+当你打印一个 `UpperPrintString` 的实例时，你会在屏幕上得到大写字母的字符串。注意，原始字符串没有被修改或影响。你只更改了 `str` 的标准打印特性。
+
+### 调整 `str` 的实例化过程
+
+在这一节中，你将做一些不同的事情。你将创建一个类字符串类，它在生成最终字符串对象之前转换原始输入字符串。例如，假设你需要一个把它的所有字母存储为小写的类字符串类。要做到这一点，你将尝试重写类初始化器 `.__init__()`，并做类似这样的事情：
+
+```
+>>> class LowerString(str):
+...     def __init__(self, string):
+...         super().__init__(string.lower())
+...
+```
+
+在这段代码片段中，你提供了一个重写默认 `str` 初始化器的 `.__init__()` 方法。在这个 `.__init__()` 实现内部，你使用 `super()` 来访问父类的 `.__init__()` 方法。然后你对输入字符串调用 `.lower()`，在初始化当前字符串之前把它的所有字母转换成小写字母。
+
+然而，上面的代码并不工作，你将在下面的例子中确认这一点：
+
+```
+>>> sample_string = LowerString("Hello, Pythonista!")
+Traceback (most recent call last):
+    ...
+TypeError: object.__init__() takes exactly one argument...
+```
+
+由于 `str` 对象是不可变的，你无法在 `.__init__()` 中更改它们的值。这是因为该值是在对象创建期间设置的，而不是在对象初始化期间。在实例化过程中转换给定字符串值的唯一方法是重写 `.__new__()` 方法。
+
+做法如下：
+
+```
+>>> class LowerString(str):
+...     def __new__(cls, string):
+...         instance = super().__new__(cls, string.lower())
+...         return instance
+...
+
+>>> sample_string = LowerString("Hello, Pythonista!")
+>>> sample_string
+'hello, pythonista!'
+```
+
+在这个例子中，你的 `LowerString` 类重写了超类的 `.__new__()` 方法，以自定义实例的创建方式。在这种情况下，你在创建新的 `LowerString` 对象之前转换输入字符串。现在你的类按你需要的方式工作。它接受一个字符串作为输入，并把它存储为小写字符串。
+
+如果你需要在实例化时转换输入字符串，那么你将必须重写 `.__new__()`。这种技术将需要关于 Python 数据模型和特殊方法的高级知识。
+
+## 从 `collections` 中子类化 `UserString`
+
+让你可以创建自定义类字符串类的第二个工具是 `collections` 模块中的 `UserString` 类。这个类是内置 `str` 类型周围的一个包装器。它被设计用于在无法直接从内置 `str` 类继承时开发类字符串类。
+
+可以直接子类化 `str` 这一可能性意味着你对 `UserString` 的需求可能更少。然而，这个类在标准库中仍然可用，既为了方便，也为了向后兼容。在实践中，这个类也有一些可能有帮助的隐藏特性，正如你很快会学到的。
+
+`UserString` 最相关的特性是它的 `.data` 属性，它让你可以访问被包装的字符串对象。这个属性可以简化自定义字符串的创建，尤其是在你想要的自定义化会影响字符串可变性的情况下。
+
+在接下来的两节中，你将重温前面各节中的例子，但这一次你将子类化 `UserString` 而不是 `str`。作为开始，你将从扩展和修改 Python 字符串的标准行为入手。
+
+### 扩展和修改字符串的标准行为
+
+你可以不子类化内置的 `str` 类，而是通过从 `UserString` 类继承来实现 `WordCountString` 和 `UpperPrintString`。这个新实现将只要求你更改超类。你不必更改类的原始内部实现。
+
+下面是 `WordCountString` 和 `UpperPrintString` 的新版本：
+
+```
+>>> from collections import UserString
+
+>>> class WordCountString(UserString):
+...     def words(self, separator=None):
+...         return len(self.split(separator))
+...
+
+>>> class UpperPrintString(UserString):
+...     def __str__(self):
+...         return self.upper()
+...
+```
+
+这些新实现与原始实现之间的唯一区别是你现在从 `UserString` 继承。注意，从 `UserString` 继承要求你从 `collections` 模块导入该类。
+
+如果你用与之前相同的例子试用这些类，那么你会确认它们与基于 `str` 的等价类工作方式相同：
+
+```
+>>> sample_text = WordCountString(
+...     """Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime
+...     mollitia, molestiae quas vel sint commodi repudiandae consequuntur
+...     voluptatum laborum numquam blanditiis harum quisquam eius sed odit
+...     fugiat iusto fuga praesentium optio, eaque rerum! Provident similique
+...     accusantium nemo autem. Veritatis obcaecati tenetur iure eius earum
+...     ut molestias architecto voluptate aliquam nihil, eveniet aliquid
+...     culpa officia aut! Impedit sit sunt quaerat, odit, tenetur error,
+...     harum nesciunt ipsum debitis quas aliquid."""
+... )
+
+>>> sample_text.words()
+68
+
+>>> sample_string = UpperPrintString("Hello, Pythonista!")
+>>> print(sample_string)
+HELLO, PYTHONISTA!
+
+>>> sample_string
+'Hello, Pythonista!'
+```
+
+在这些例子中，你对 `WordCountString` 和 `UpperPrintString` 的新实现与旧实现工作方式相同。那么，为什么你应该使用 `UserString` 而不是 `str` 呢？到这一点为止，这样做没有明显的理由。然而，当你需要修改字符串的创建方式时，`UserString` 就会派上用场。
+
+### 调整 `UserString` 的实例化过程
+
+你可以通过从 `UserString` 继承来编写 `LowerString` 类。通过更改父类，你将能够在实例初始化器 `.__init__()` 中自定义初始化过程，而不必重写实例创建器 `.__new__()`。
+
+下面是你的新版本 `LowerString`，以及它在实践中如何工作：
+
+```
+>>> from collections import UserString
+
+>>> class LowerString(UserString):
+...     def __init__(self, string):
+...         super().__init__(string.lower())
+...
+
+>>> sample_string = LowerString("Hello, Pythonista!")
+>>> sample_string
+'hello, pythonista!'
+```
+
+在上面的例子中，你通过使用 `UserString` 而不是 `str` 作为超类，使得对输入字符串运行转换成为可能。这些转换之所以可能，是因为 `UserString` 是一个包装类，它把最终字符串存储在其 `.data` 属性中，而这才是真正的不可变对象。
+
+因为 `UserString` 是 `str` 类周围的一个包装器，它提供了一种灵活而直接的方式来创建具有可变行为的自定义字符串。由于该类的自然不可变条件，通过从 `str` 继承来提供可变行为是复杂的。
+
+在下一节中，你将使用 `UserString` 来创建一个模拟可变字符串数据类型的类字符串类。
+
+### 在你的类字符串类中模拟变更
+
+作为你为什么应该把 `UserString` 放在 Python 工具箱中的最后一个例子，假设你需要一个可变的类字符串类。换句话说，你需要一个可以就地修改的类字符串类。
+
+与列表和字典不同，字符串不提供 `.__setitem__()` 特殊方法，因为它们是不可变的。你的自定义字符串将需要这个方法，以允许你使用赋值语句按索引更新字符和切片。
+
+你的类字符串类也将需要更改常见字符串方法的标准行为。为了让这个例子简短，你将只修改 `.upper()` 和 `.lower()` 方法。最后，你将提供一个 `.sort()` 方法来就地排序你的字符串。
+
+标准字符串方法不会变更底层字符串。它们返回一个带有所需转换的新字符串对象。在你的自定义字符串中，你需要这些方法就地执行它们的更改。
+
+要达成所有这些目标，启动你最喜欢的代码编辑器，创建一个名为 `mutable_string.py` 的文件，并编写下面的代码：
+
+文件名：`mutable_string.py`
+
+```
+ 1from collections import UserString
+ 2
+ 3class MutableString(UserString):
+ 4    def __setitem__(self, index, value):
+ 5        data_as_list = list(self.data)
+ 6        data_as_list[index] = value
+ 7        self.data = "".join(data_as_list)
+ 8
+ 9    def __delitem__(self, index):
+10        data_as_list = list(self.data)
+11        del data_as_list[index]
+12        self.data = "".join(data_as_list)
+13
+14    def upper(self):
+15        self.data = self.data.upper()
+16
+17    def lower(self):
+18        self.data = self.data.lower()
+19
+20    def sort(self, key=None, reverse=False):
+21        self.data = "".join(sorted(self.data, key=key, reverse=reverse))
+```
+
+这段代码逐行如何工作：
+
+- 第 3 行从 `collections` 导入 `UserString`。
+- 第 5 行把 `MutableString` 创建为 `UserString` 的子类。
+- 第 6 行定义 `.__setitem__()`。每当你使用索引对一个序列运行赋值操作时，Python 就会调用这个特殊方法，比如 `sequence[0] = value`。这个 `.__setitem__()` 的实现把 `.data` 变成一个列表，用 `value` 替换 `index` 处的项，使用 `.join()` 构建最终字符串，并把它的值赋回给 `.data`。整个过程模拟一次就地转换或变更。
+- 第 11 行定义 `.__delitem__()`，这个特殊方法让你可以使用 `del` 语句按索引从可变字符串中移除字符。它的实现与 `.__setitem__()` 类似。在第 13 行，你使用 `del` 从临时列表中删除项。
+- 第 16 行重写 `UserString.upper()`，并对 `.data` 调用 `str.upper()`。然后它把结果存回 `.data`。同样，这最后一步操作模拟一次就地变更。
+- 第 19 行使用与 `.upper()` 中相同的技术重写 `UserString.lower()`。
+- 第 22 行定义 `.sort()`，它把内置的 `sorted()` 函数与 `str.join()` 方法结合起来，以创建原始字符串的一个已排序版本。注意，这个方法与 `list.sort()` 和内置的 `sorted()` 函数具有相同的签名。
+
+就是这样！你的可变字符串已经准备好了！要试用它，回到你的 Python shell 并运行下面的代码：
+
+```
+>>> from mutable_string import MutableString
+
+>>> sample_string = MutableString("ABC def")
+>>> sample_string
+'ABC def'
+
+>>> sample_string[4] = "x"
+>>> sample_string[5] = "y"
+>>> sample_string[6] = "z"
+>>> sample_string
+'ABC xyz'
+
+>>> del sample_string[3]
+>>> sample_string
+'ABCxyz'
+
+>>> sample_string.upper()
+>>> sample_string
+'ABCXYZ'
+
+>>> sample_string.lower()
+>>> sample_string
+'abcxyz'
+
+>>> sample_string.sort(reverse=True)
+>>> sample_string
+'zyxcba'
+```
+
+太棒了！你的新可变类字符串类按预期工作。它允许你就地修改底层字符串，就像你对一个可变序列所做的那样。注意，这个例子只覆盖了少数字符串方法。你可以尝试其他方法，并继续为你的类提供新的可变性特性。
+
 
 
 
