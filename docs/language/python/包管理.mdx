@@ -1,0 +1,2715 @@
+---
+title: 包管理
+sidebar_position: 20
+---
+
+
+## [Python 中的绝对导入与相对导入](https://realpython.com/absolute-vs-relative-python-imports/)
+
+项目里只要不止一个文件，就几乎一定会用到 `import`。即使已经写过几个项目，导入也很容易让人困惑。本文说明绝对导入和相对导入的区别，以及各自的利弊。
+
+要理解导入，先要分清模块和包：
+
+- **模块**是扩展名为 `.py` 的文件。
+- **包**是里面放着模块的文件夹。在 Python 2 里，包还必须包含 `__init__.py`。
+
+一个模块里的代码要使用另一个模块或包里的代码时，就把它导入进来。
+
+### 导入是怎样工作的
+
+以导入模块 `abc` 为例：
+
+```python
+import abc
+```
+
+Python 会按下面的顺序查找：
+
+1. 先在 `sys.modules` 里查名字 `abc`。这是已经导入过的模块缓存。
+2. 缓存里没有，就到内置模块里找。这些模块随 Python 预装，位于标准库。
+3. 内置模块里也没有，就按 `sys.path` 列出的目录继续找。这个列表通常包含当前目录，而且当前目录会最先被搜索。
+
+找到模块后，Python 把它绑定到局部作用域里的一个名字上。于是当前文件里可以使用 `abc`，不会抛出 `NameError`。
+
+如果始终找不到这个名字，就会得到 `ModuleNotFoundError`。
+
+**安全方面要注意：** Python 的导入系统因为很灵活，也带来明显的安全风险。例如模块缓存是可写的，有可能借导入系统覆盖 Python 的核心功能；从第三方包导入，也可能让应用暴露在安全威胁之下。
+
+两份延伸材料：Anthony Shaw 的 *10 common security gotchas in Python and how to avoid them*（第 5 点讨论导入系统），以及 Talk Python 播客第 168 集 *10 Python security holes and how to plug them*（大约 27:15 开始谈导入）。
+
+### 导入语句的语法
+
+包和模块都可以导入。导入一个包，本质上是把该包的 `__init__.py` 当作模块导入。也可以从包或模块里导入特定对象。
+
+常见有两种写法。第一种是直接导入资源：
+
+```python
+import abc
+```
+
+这里的 `abc` 可以是包，也可以是模块。
+
+第二种是从另一个包或模块中导入资源：
+
+```python
+from abc import xyz
+```
+
+这里的 `xyz` 可以是模块、子包，或对象（例如类、函数）。
+
+还可以在导入时重命名：
+
+```python
+import abc as other_name
+```
+
+这样，脚本里导入的 `abc` 会被改名为 `other_name`。之后必须用 `other_name` 来引用，否则无法识别。
+
+### 导入语句的风格
+
+[PEP 8](https://peps.python.org/pep-0008/#imports) 对导入有几条约定，概括如下：
+
+1. 导入应写在文件顶部，位于模块注释和文档字符串之后。
+2. 按所导入内容分成三组：
+   - 标准库导入（Python 内置模块）
+   - 相关的第三方导入（已安装、不属于当前应用的模块）
+   - 本地应用导入（属于当前应用的模块）
+3. 每一组之间用一个空行隔开。
+
+每一组内部按字母顺序排列也是好习惯，文件里导入很多时更容易找到某一条。
+
+示例：
+
+```python
+"""Illustration of good import statement styling.
+
+Note that the imports come after the docstring.
+
+"""
+
+# Standard library imports
+import datetime
+import os
+
+# Third party imports
+from flask import Flask
+from flask_restful import Api
+from flask_sqlalchemy import SQLAlchemy
+
+# Local application imports
+from local_module import local_class
+from local_package import local_function
+```
+
+上面的导入分成三组，组与组之间有空行，组内按字母顺序排列。
+
+### 绝对导入
+
+绝对导入用从项目根目录出发的完整路径，指明要导入的资源。
+
+#### 语法与实例
+
+假设目录结构如下：
+
+```text
+└── project
+    ├── package1
+    │   ├── module1.py
+    │   └── module2.py
+    └── package2
+        ├── __init__.py
+        ├── module3.py
+        ├── module4.py
+        └── subpackage1
+            └── module5.py
+```
+
+`project` 下有 `package1` 和 `package2`。`package1` 里是 `module1.py` 和 `module2.py`。`package2` 里有 `module3.py`、`module4.py` 和 `__init__.py`，还有子目录 `subpackage1`，其中是 `module5.py`。
+
+再假设：
+
+1. `package1/module2.py` 里有函数 `function1`。
+2. `package2/__init__.py` 里有类 `class1`。
+3. `package2/subpackage1/module5.py` 里有函数 `function2`。
+
+绝对导入可以这样写：
+
+```python
+from package1 import module1
+from package1.module2 import function1
+from package2 import class1
+from package2.subpackage1.module5 import function2
+```
+
+每个包或文件都要从顶层包目录写出详细路径。这和文件路径类似，只是用点（`.`）代替斜杠（`/`）。
+
+#### 绝对导入的利弊
+
+绝对导入清晰、直接，看语句就能知道资源在哪里。导入语句所在位置变了，绝对导入仍然有效。PEP 8 明确推荐绝对导入。
+
+目录结构变复杂时，绝对导入会变得很长，例如：
+
+```python
+from package1.subpackage2.subpackage3.subpackage4.module5 import function6
+```
+
+这种情况下，相对导入是一种替代。
+
+### 相对导入
+
+相对导入根据当前位置（也就是这条导入语句所在的位置）来指定要导入的资源。相对导入分隐式和显式两种。隐式相对导入在 Python 3 中已弃用，原文不再讨论。
+
+#### 语法与实例
+
+写法同时取决于当前位置，以及要导入的模块、包或对象的位置。例如：
+
+```python
+from .some_module import some_class
+from ..some_package import some_function
+from . import some_class
+```
+
+每条语句里至少有一个点。相对导入用点号表示位置：
+
+- 一个点：被引用的模块或包与当前位置在同一目录。
+- 两个点：在当前位置的父目录，也就是上一级目录。
+- 三个点：在祖父目录。
+- 以此类推。
+
+这和类 Unix 系统里的路径写法是同一套思路。
+
+仍用前面的目录，以及同样的文件内容：`function1` 在 `package1/module2.py`，`class1` 在 `package2/__init__.py`，`function2` 在 `package2/subpackage1/module5.py`。
+
+把 `function1` 导入 `package1/module1.py`：
+
+```python
+# package1/module1.py
+
+from .module2 import function1
+```
+
+这里只用一个点，因为 `module2.py` 和当前模块 `module1.py` 在同一目录。
+
+把 `class1` 和 `function2` 导入 `package2/module3.py`：
+
+```python
+# package2/module3.py
+
+from . import class1
+from .subpackage1.module5 import function2
+```
+
+第一条里的单个点表示从当前包导入 `class1`。导入包，本质上就是把该包的 `__init__.py` 当作模块导入。第二条仍用一个点，因为 `subpackage1` 和当前模块 `module3.py` 在同一目录。
+
+#### 相对导入的利弊
+
+相对导入很简短。视当前位置而定，前面那条很长的绝对导入可以写成：
+
+```python
+from ..subpackage4.module5 import function6
+```
+
+相对导入也容易变乱，尤其是多人协作、目录结构很可能变动的项目。它也不如绝对导入易读，不容易看出被导入资源的位置。
+
+总结:一般应优先使用绝对导入；只有路径太复杂、语句会过长时，才改用相对导入。
+
+下面是对 [Python's `__all__`: Packages, Modules, and Wildcard Imports](https://realpython.com/python-all-attribute/)（Leodanis Pozo Ramos，2024-03-04 更新）的中文翻译。代码、文件名和交互示例保持原文；测验与文末评论提示未纳入。
+
+## [Python 的 `__all__`：包、模块与通配符导入](https://realpython.com/python-all-attribute/)
+
+Python 有一种叫作通配符导入的写法，形如 `from module import *`。这种导入能把一个模块里的全部对象迅速放进你的命名空间。不过，对包使用这种导入时容易让人困惑，因为不清楚你想导入的是子包、模块，还是对象。Python 用 `__all__` 变量来处理这个问题。
+
+`__all__` 是一个字符串列表，其中每个字符串表示你希望暴露给通配符导入的变量、函数、类或模块的名字。
+
+
+### 在 Python 中导入对象
+
+创建 Python 项目或应用时，你需要一种方式来访问标准库或第三方库中的代码，也需要从构成项目的多个文件中访问自己的代码。Python 的导入系统就是完成这些事的机制。
+
+导入系统让你能以不同方式取得对象。你可以使用：
+
+- 显式导入
+- 通配符导入
+
+接下来的几节会介绍这两种做法的基础：每种情况下可用的不同语法，以及执行一条 `import` 语句后的结果。
+
+#### 显式导入
+
+在 Python 中，当你需要从模块取得某个特定对象，或从包取得某个特定模块时，可以使用显式 `import` 语句。这种语句把目标对象带入当前命名空间，以便在代码中使用。
+
+按名字导入模块时，可以用下面的语法：
+
+```python
+import module [as name]
+```
+
+这条语句按名字导入模块。该模块必须位于 Python 的导入路径中。导入路径是一列位置，基于路径的查找器在你执行导入时会在这些位置中搜索。
+
+方括号中的部分是可选的，用来为导入的名字创建别名。这种做法有助于避免代码中的名字冲突。
+
+例如，假设你有下面这个模块：
+
+文件名：`calculations.py`
+
+```python
+def add(a, b):
+    return float(a + b)
+
+def subtract(a, b):
+    return float(a - b)
+
+def multiply(a, b):
+    return float(a * b)
+
+def divide(a, b):
+    return float(a / b)
+```
+
+这个示例模块提供了做基本运算的函数。所在模块名为 `calculations.py`。要导入这个模块并在代码中使用这些函数，请在保存该文件的同一目录中启动一个 REPL 会话。
+
+然后运行下面的代码：
+
+```python
+>>> import calculations
+
+>>> calculations.add(2, 4)
+6.0
+>>> calculations.subtract(8, 4)
+4.0
+>>> calculations.multiply(5, 2)
+10.0
+>>> calculations.divide(12, 2)
+6.0
+```
+
+这段代码开头的 `import` 语句把模块名带入当前命名空间。要使用 `calculations` 中的函数或任何其他对象，需要用点号写出完全限定名。
+
+注意：可以用下面的语法为 `calculations` 创建别名：
+
+```python
+import calculations as calc
+```
+
+这种做法可以避免代码中的名字冲突。在某些场合，用较短的别名来减少书写限定名时要打的字符，也是常见做法。
+
+例如，如果你熟悉 NumPy 和 pandas 这类库，就会知道下面这种导入很常见：
+
+```python
+import numpy as np
+import pandas as pd
+```
+
+导入模块时使用较短的别名，便于借助限定名来使用它们的内容。
+
+你也可以用类似的语法导入 Python 包：
+
+```python
+import package [as name]
+```
+
+这时，Python 会把该包的 `__init__.py` 文件的内容加载到当前命名空间。如果该文件导出了对象，这些对象就可以使用。
+
+最后，如果你想更明确地指定导入当前命名空间的内容，可以使用下面的语法：
+
+```python
+from module import name [as name]
+```
+
+用这条 `import` 语句，可以从给定模块导入特定的名字。当你只需要一个定义了很多对象的长模块中的少数几个名字，或者预计代码中不会发生名字冲突时，推荐使用这种方式。
+
+继续以 `calculations` 模块为例，可以只导入需要的函数：
+
+```python
+>>> from calculations import add
+
+>>> add(2, 4)
+6.0
+```
+
+这个例子里你只用到 `add()` 函数。`from module import name` 语法让你显式导入目标名字。此时，其余函数以及模块本身都不会出现在你的命名空间或作用域中。
+
+#### 对模块使用通配符导入
+
+处理 Python 模块时，通配符导入是一种一次取得模块中全部公开名字的导入。语法如下：
+
+```python
+from module import *
+```
+
+“通配符导入”这个名称来自语句末尾的星号，它表示你要从 `module` 导入全部对象。
+
+回到终端窗口，重新启动 REPL 会话，然后运行下面的代码：
+
+```python
+>>> from calculations import *
+
+>>> dir()
+[
+    ...
+    'add',
+    'divide',
+    'multiply',
+    'subtract'
+]
+```
+
+这段代码首先执行通配符导入。这次导入使 `calculations` 模块中的全部名字可用，并把它们带入当前命名空间。内置函数 `dir()` 用来查看当前命名空间中有哪些名字。从输出可以确认，`calculations` 中的全部函数现在都可用。
+
+当你完全确定需要某个模块所定义的全部对象时，通配符导入是一种快捷办法。实践中这种情况很少见，结果往往是用不需要的对象和名字把命名空间塞满。
+
+PEP 8 明确不鼓励使用通配符导入，原文说：
+
+> 应当避免通配符导入（`from import *`），因为它们使命名空间中存在哪些名字变得不明确，既让读者困惑，也让许多自动化工具困惑。通配符导入有一种站得住脚的用途：把内部接口重新发布为公共 API 的一部分（例如，用一个可选加速模块中的定义覆盖某个接口的纯 Python 实现，而事先并不确切知道哪些定义会被覆盖）。（来源：PEP 8）
+
+通配符导入的主要缺点是，你无法控制被导入的对象，也不能有选择地导入。因此，你可能让代码的使用者感到困惑，并用多余的对象弄乱他们的命名空间。
+
+尽管通配符导入不受鼓励，一些库和工具仍然使用它们。例如，搜索用 Tkinter 构建的应用时，你会发现许多示例使用这种形式：
+
+```python
+from tkinter import *
+```
+
+这条导入让你能访问 `tkinter` 模块中定义的全部对象。刚开始学习如何使用这个工具时，这相当方便。
+
+你还会发现，许多其他工具和第三方库在文档的代码示例中使用通配符导入，这没有问题。但在实际项目中，你应当避免这种导入。
+
+实践中，你无法控制代码使用者会如何管理他们的导入。因此，最好让你的代码为通配符导入做好准备。后面几节会说明怎么做。首先，来看对包使用通配符导入。
+
+#### 通配符导入与非公开名字
+
+Python 有一套成熟的命名约定，用来告诉代码使用者：模块中的某个名字是供内部使用，还是供外部使用。
+
+如果对象的名字以单个前导下划线开头，这个名字就被视为非公开的，只供内部使用。相反，如果名字以小写或大写字母开头，这个名字就是公开的，因此属于模块的公共 API。
+
+注意：在 Python 中，定义标识符或名字时，可以使用大写和小写字母、下划线（`_`），以及数字 `0` 到 `9`。名字的第一个字符不能是数字。
+
+模块中有非公开名字时，应当知道通配符导入不会导入这些名字。假设你有下面这个模块：
+
+文件名：`shapes.py`
+
+```python
+from math import pi as _pi
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = _validate(radius)
+
+    def area(self):
+        return _pi * self.radius**2
+
+class Square:
+    def __init__(self, side):
+        self.side = _validate(side)
+
+    def area(self):
+        return self.side**2
+
+def _validate(value):
+    if not isinstance(value, int | float) or value <= 0:
+        raise ValueError("positive number expected")
+    return value
+```
+
+这个模块里有两个非公开对象 `_pi` 和 `_validate()`。你能看出来，是因为它们的名字有前导下划线。如果有人对这个模块执行通配符导入，非公开名字不会被导入：
+
+```python
+>>> from shapes import *
+
+>>> dir()
+[
+    'Circle',
+    'Square',
+    ...
+]
+```
+
+看一下 `dir()` 的输出，你会注意到当前命名空间里只有 `Circle` 和 `Square` 这两个类。非公开对象 `_pi` 和 `_validate()` 不可用。所以，通配符导入不会导入非公开名字。
+
+#### 对包使用通配符导入
+
+到这里，你已经知道通配符导入如何作用于模块。这种导入也可以用于包。语法相同，只是要用包名而不是模块名：
+
+```python
+from package import *
+```
+
+那么，运行这种导入时会发生什么？你也许以为，这次导入会让 Python 搜索文件系统，找出包中存在的模块和子包，然后把它们导入。
+
+然而，这种文件系统搜索可能耗时很长。此外，导入模块可能带来不想要的副作用，因为导入一个模块时，该模块中所有可执行代码都会运行。
+
+由于这些潜在问题，Python 提供了 `__all__` 这个特殊变量，让你可以显式定义：在给定包中，希望暴露给通配符导入的模块列表。下一节会讨论细节。
+
+### 用 `__all__` 让包为通配符导入做好准备
+
+Python 在处理对包的通配符导入时有两种不同行为。两种行为都取决于包的 `__init__.py` 文件中是否存在 `__all__` 变量。
+
+- 如果 `__init__.py` 没有定义 `__all__`，那么对这个包执行通配符导入时，什么都不会导入。
+- 如果 `__init__.py` 定义了 `__all__`，那么其中列出的对象会被导入。
+
+为说明第一种行为，创建一个名为 `shapes/` 的新文件夹。在该文件夹中创建以下文件：
+
+```text
+shapes/
+├── __init__.py
+├── circle.py
+├── square.py
+└── utils.py
+```
+
+暂时让 `__init__.py` 保持为空。把 `shapes.py` 中的代码拆分到其余文件里。做法如下：
+
+文件名：`shapes/circle.py`
+
+```python
+from math import pi as _pi
+
+from shapes.utils import validate
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = validate(radius)
+
+    def area(self):
+        return _pi * self.radius**2
+```
+
+文件名：`shapes/square.py`
+
+```python
+from shapes.utils import validate
+
+class Square:
+    def __init__(self, side):
+        self.side = validate(side)
+
+    def area(self):
+        return self.side**2
+```
+
+文件名：`shapes/utils.py`
+
+```python
+def validate(value):
+    if not isinstance(value, int | float) or value <= 0:
+        raise ValueError("positive number expected")
+    return value
+```
+
+在这个示例包中，`__init__.py` 没有定义 `__all__` 变量。因此，如果对这个包执行通配符导入，不会有任何名字进入你的命名空间：
+
+```python
+>>> from shapes import *
+
+>>> dir()
+[
+    '__annotations__',
+    '__builtins__',
+    ...
+]
+```
+
+在这个例子中，`dir()` 显示通配符导入没有把任何名字带入当前命名空间。`circle`、`square` 和 `utils` 模块都不在命名空间中。
+
+如果包中没有定义 `__all__`，语句 `from package import *` 不会把目标包中的全部模块导入当前命名空间。此时，这条导入语句只是确保该包已被导入，并运行 `__init__.py` 中的任何代码。
+
+如果想让 Python 包为通配符导入做好准备，就需要在包的 `__init__.py` 文件中定义 `__all__` 变量。`__all__` 应当是一个字符串列表，包含当有人使用通配符导入时你希望从包中导出的那些名字。
+
+把下面这一行加进该文件：
+
+文件名：`shapes/__init__.py`
+
+```python
+__all__ = ["circle", "square"]
+```
+
+在 `__init__.py` 中定义 `__all__`，就确定了通配符导入会带入命名空间的模块名。这里你只想从包中导出 `circle` 和 `square` 模块。
+
+现在在交互会话中运行下面的代码：
+
+```python
+>>> from shapes import *
+
+>>> dir()
+[
+    ...
+    'circle',
+    'square'
+]
+```
+
+现在，对 `shapes` 包执行通配符导入时，`circle` 和 `square` 模块会进入你的命名空间。注意 `utils` 模块不可用，因为你没有把它列在 `__all__` 里。
+
+作为包的作者，由你来建立这个列表并保持它是最新的。发布包的新版本时，让列表保持最新至关重要。这里还要注意：如果 `__all__` 包含未定义的名字，你会得到 `AttributeError` 异常。
+
+注意：定义 `__all__` 时必须意识到，模块可能被局部定义的名字遮蔽。例如，如果在 `__init__.py` 中添加了一个 `square()` 函数，这个函数会遮蔽 `square` 模块。
+
+最后，如果把 `__all__` 定义为空列表，那么包中不会导出任何东西。这和在包中不定义 `__all__` 效果一样。
+
+### 用 `__all__` 从模块和包中暴露名字
+
+你已经知道，对模块执行通配符导入时，会导入该模块中所有公开的常量、变量、函数、类和其他对象。有时这种行为没问题。但在某些情况下，你需要对模块导出的内容做精细控制。`__all__` 也可以用于这个目的。
+
+`__all__` 的另一个有用场景是：需要从包中导出特定的名字或对象。这时也可以用一种略有不同的方式使用 `__all__`。
+
+接下来几节将说明：如何用 `__all__` 控制模块导出哪些名字，以及如何从包中导出特定名字。
+
+#### 来自模块的名字
+
+可以用 `__all__` 变量显式控制模块向通配符导入暴露哪些名字。从这个意义上说，`__all__` 让你确立模块的公共接口或 API。这种技术也是一种明确传达模块 API 是什么的方式。
+
+如果模块很大、公开名字很多，可以用 `__all__` 建立可导出名字的列表，这样通配符导入就不会污染代码使用者的命名空间。
+
+一般而言，模块可以有几种不同类型的名字：
+
+- 公开名字是模块公共接口的一部分。
+- 非公开名字只供内部使用。
+- 导入的名字是模块作为公开或非公开名字导入进来的名字。
+
+如你所知，公开名字是以小写或大写字母开头的名字。非公开名字是以单个前导下划线开头的名字。
+
+最后，导入的名字是你在模块中作为公开名字导入的那些名字。这些名字也会从该模块被导出。所以，许多代码库中会看到这样的导入：
+
+```python
+import sys as _sys
+```
+
+这个例子把 `sys` 模块导入为 `_sys`。`as` 说明符让你为导入的对象创建别名。这里的别名是一个非公开名字。在导入语句上加上这一点，就可以在有人对该模块使用通配符导入时，阻止 `sys` 被导出。
+
+因此，如果不想从模块导出已导入的对象，就使用 `as` 说明符，并为导入的对象使用非公开别名。
+
+理想情况下，`__all__` 列表应当只包含在所在模块中定义的公开名字。例如，假设你有下面这个模块，其中的函数和类用于发起 HTTP 请求：
+
+文件名：`webreader.py`
+
+```python
+import requests
+
+__all__ = ["get_page_content", "WebPage"]
+
+BASE_URL = "http://example.com"
+
+def get_page_content(page):
+    return _fetch_page(page).text
+
+def _fetch_page(page):
+    url = f"{BASE_URL}/{page}"
+    return requests.get(url)
+
+class WebPage:
+    def __init__(self, page):
+        self.response = _fetch_page(page)
+
+    def get_content(self):
+        return self.response.text
+```
+
+在这个示例模块中，你导入了 `requests` 库。接下来定义 `__all__` 变量。这里 `__all__` 包含 `get_page_content()` 函数和 `WebPage` 类，它们都是公开名字。
+
+注意：要使上面的示例正常工作，当前 Python 环境中需要安装 `requests` 库。
+
+注意，辅助函数 `_fetch_page()` 只供内部使用，所以你不想把它暴露给通配符导入。另外，你也不想把常量 `BASE_URL` 或导入的 `requests` 模块暴露给通配符导入。
+
+这个模块对通配符导入的响应如下：
+
+```python
+>>> from webreader import *
+
+>>> dir()
+[
+    'WebPage',
+    ...
+    'get_page_content'
+]
+```
+
+对 `webreader` 模块执行通配符导入时，只有 `__all__` 中列出的名字会被导入。现在把定义 `__all__` 的那一行注释掉，重新启动 REPL 会话，再执行一次导入：
+
+```python
+>>> from webreader import *
+
+>>> dir()
+[
+    'BASE_URL',
+    'WebPage',
+    ...
+    'get_page_content',
+    'requests'
+]
+```
+
+看一下 `dir()` 的输出就会发现，现在模块导出了所有公开名字，包括 `BASE_URL`，甚至包括导入的 `requests` 库。
+
+`__all__` 变量让你完全控制模块向通配符导入暴露的内容。不过要注意，`__all__` 并不阻止你用显式导入从模块导入特定名字：
+
+```python
+>>> from webreader import _fetch_page
+
+>>> dir()
+[
+    ...
+    '_fetch_page'
+]
+```
+
+注意，可以用显式导入从给定模块带入任何名字，甚至包括上面例子中 `_fetch_page()` 这样的非公开名字。
+
+#### 来自包的名字
+
+上一节说明了如何用 `__all__` 定义哪些对象暴露给通配符导入。有时你想在包这一层做类似的事。如果想控制包向通配符导入暴露的对象和名字，可以在包的 `__init__.py` 文件中这样做：
+
+文件名：`package/__init__.py`
+
+```python
+from module_0 import name_0, name_1, name_2, name_3
+from module_1 import name_4, name_5, name_6
+
+__all__ = [
+    "name_0",
+    "name_1",
+    "name_2",
+    "name_3",
+    "name_4",
+    "name_5",
+    "name_6",
+]
+```
+
+这些 `import` 语句告诉 Python 从包中的各个模块取得名字。然后在 `__all__` 中把导入的名字列为字符串。当你有一个包含许多模块的包，又想为导入提供一条直接路径时，这种技术很合适。
+
+作为这种技术在实践中如何工作的例子，回到 `shapes` 包，按下面的代码更新 `__init__.py`：
+
+文件名：`shapes/__init__.py`
+
+```python
+from shapes.circle import Circle
+from shapes.square import Square
+
+__all__ = ["Circle", "Square"]
+```
+
+这次更新中，你加了两条显式导入，从各自的模块取得 `Circle` 和 `Square` 类。然后把类名作为字符串加入 `__all__` 变量。
+
+现在这个包对通配符导入的响应如下：
+
+```python
+>>> from shapes import *
+
+>>> dir()
+[
+    'Circle',
+    'Square',
+    ...
+]
+```
+
+你的 `shapes` 包把 `Circle` 和 `Square` 类暴露给通配符导入。这些类就是你定义为包的公共接口的内容。注意，这种技术让你能直接访问那些原本必须通过限定名才能导入的名字。
+
+### 探索 Python 中 `__all__` 的其他用途
+
+除了让你控制模块和包向通配符导入暴露的内容之外，`__all__` 变量还可以服务于其他目的。你可以用 `__all__` 遍历构成包或模块公共接口的名字和对象。需要暴露双下划线名字时，也可以利用 `__all__`。
+
+#### 遍历包的接口
+
+因为 `__all__` 通常是一个 `list` 对象，你可以用它来遍历构成模块接口的对象。使用 `__all__` 相对于 `dir()` 的好处是：包的作者已经显式定义了他们认为属于包的公共接口的名字。如果遍历 `__all__`，就不需要像遍历 `dir(module)` 时那样滤掉非公开名字。
+
+例如，假设你有一个模块，其中有几个接口相同的相似类。下面是一个示意例子：
+
+文件名：`vehicles.py`
+
+```python
+__all__ = ["Car", "Truck"]
+
+class Car:
+    def start(self):
+        print("The car is starting")
+
+    def drive(self):
+        print("The car is driving")
+
+    def stop(self):
+        print("The car is stopping")
+
+class Truck:
+    def start(self):
+        print("The truck is starting")
+
+    def drive(self):
+        print("The truck is driving")
+
+    def stop(self):
+        print("The truck is stopping")
+```
+
+这个模块里有两个表示车辆的类。它们共享同一套接口，因此可以在相似的地方使用。你还定义了 `__all__` 变量，把这两个类列为字符串。
+
+现在假设你想在循环中使用这些类。怎么做？可以像下面这样使用 `__all__`：
+
+```python
+>>> import vehicles
+
+>>> for v in vehicles.__all__:
+...     vehicle = getattr(vehicles, v)()
+...     vehicle.start()
+...     vehicle.drive()
+...     vehicle.stop()
+...
+The car is starting
+The car is driving
+The car is stopping
+The truck is starting
+The truck is driving
+The truck is stopping
+```
+
+这个例子中，你首先导入 `vehicles` 模块。然后对 `__all__` 变量开始一个 `for` 循环。因为 `__all__` 是字符串列表，可以用内置函数 `getattr()` 从 `vehicles` 访问指定的对象。这样，你就遍历了构成该模块公共 API 的那些类。
+
+#### 访问非公开名字和双下划线名字
+
+编写模块和包时，有时会使用以双下划线开头和结尾的模块级名字。这些名字通常称为 dunder 名字。有几个 dunder 常量，例如 `__version__` 和 `__author__`，你可能需要把它们暴露给通配符导入。
+
+记住，默认行为是这些名字不会被导入，因为它们以前导下划线开头。要绕过这个问题，可以把这些名字显式列在 `__all__` 变量中。
+
+为说明这种做法，回到 `webreader.py`，按下面的代码更新它：
+
+文件名：`webreader.py`
+
+```python
+import requests
+
+__version__ = "1.0.0"
+__author__ = "Real Python"
+
+__all__ = ["get_page_content", "WebPage", "__version__", "__author__"]
+
+BASE_URL = "http://example.com"
+
+def get_page_content(page):
+    return _fetch_page(page).text
+
+# ...
+```
+
+这次更新中，你定义了两个使用 dunder 名字的模块级常量。第一个常量提供模块的版本信息，第二个常量保存作者名。
+
+对这个模块的通配符导入工作方式如下：
+
+```python
+>>> from webreader import *
+
+>>> dir()
+[
+    'WebPage',
+    ...
+    '__author__',
+    ...
+    '__version__',
+    'get_page_content'
+]
+```
+
+现在，当有人对 `webreader` 模块使用通配符导入时，这些 dunder 变量会被导入他们的命名空间。
+
+### 在 Python 中使用 `__all__`：好处与最佳实践
+
+到这里，你已经对 `__all__` 变量以及如何在代码中使用它有了很多了解。虽然你并非必须使用 `__all__`，但它让你完全控制包和模块向通配符导入暴露的内容。
+
+`__all__` 变量也是一种向包和模块的使用者传达信息的方式：你的代码中哪些部分应当被当作公共接口来使用。
+
+下面简要概括 `__all__` 能提供的主要好处：
+
+- **控制向通配符导入暴露的内容：** 使用 `__all__` 可以显式指定包和模块的公共接口。这种做法可以防止从模块外部意外使用那些不该被使用的对象。它在模块的内部实现与公共 API 之间提供了一条清晰的边界。
+- **提高可读性：** 使用 `__all__` 让其他开发者无需检视整个代码库，就能很快了解哪些对象构成代码的 API。这提高了代码可读性并节省时间，对包含多个模块的较大项目尤其如此。
+- **减少命名空间杂乱：** 使用 `__all__` 可以列出要暴露给通配符导入的名字。这样，你就能防止其他开发者用不必要或相互冲突的名字污染他们的命名空间。
+
+尽管 Python 不鼓励通配符导入，你也无法控制代码使用者在使用代码时会做什么。因此，使用 `__all__` 是限制对你的代码的错误用法的一种好办法。
+
+下面是在代码中使用 `__all__` 的一组最佳实践：
+
+- 尽量总是在包和模块中定义 `__all__`。这个变量让你显式控制其他开发者可以用通配符导入导入什么。
+- 把 `__all__` 当作显式定义包和模块公共接口的工具来用。这种做法向其他开发者说清楚：哪些对象打算供外部使用，哪些只供内部使用。
+- 让 `__all__` 保持聚焦。`__all__` 变量不应当包含模块中的每一个对象，只包含属于公共 API 的那些。
+- 把 `__all__` 与良好的文档一起使用。关于公共 API 中每个对象的预期用途和行为的清晰文档，是对 `__all__` 最好的补充。
+- 在所有包和模块中一致地使用 `__all__`。这种做法让其他开发者更好地理解如何使用你的代码。
+- 定期复查并更新 `__all__`。`__all__` 变量应当始终反映代码 API 的最新变化。定期维护 `__all__` 能确保代码保持干净、可用。
+
+最后要记住，`__all__` 只影响通配符导入。如果代码的使用者从包或模块导入某个特定对象，那么即使你没有把它列在 `__all__` 中，该对象也会被导入。
+
+
+
+接着上一节的 `csv_importer.py`，从被截断的地方继续译完。
+
+```python
+37        # Create a dict with each field
+38        values = zip(*(row.values() for row in data))
+39        fields = dict(zip(fieldnames, values))
+40
+41        # Add the data to the module
+42        module.__dict__.update(fields)
+43        module.__dict__["data"] = data
+44        module.__dict__["fieldnames"] = fieldnames
+45        module.__file__ = str(self.csv_path)
+46
+47    def __repr__(self):
+48        """Nice representation of the class"""
+49        return f"{self.__class__.__name__}({str(self.csv_path)!r})"
+50
+51def _identifier(var_str):
+52    """Create a valid identifier from a string
+53
+54    See https://stackoverflow.com/a/3305731
+55    """
+56    return re.sub(r"\W|^(?=\d)", "_", var_str)
+57
+58# Add the CSV importer at the end of the list of finders
+59sys.meta_path.append(CsvImporter)
+```
+
+这个例子里的代码相当多。幸运的是，大部分工作是在 `.find_spec()` 和 `.exec_module()` 中完成的。让我们更仔细地看它们。
+
+如你先前所见，`.find_spec()` 负责查找模块。这里你要找的是 CSV 文件，所以创建一个带 `.csv` 后缀的文件名。`name` 包含被导入模块的完整名字。例如，如果你使用 `from data import employees`，那么 `name` 将是 `data.employees`。在这种情况下，文件名将是 `employees.csv`。
+
+对于顶层导入，`path` 将是 `None`。这时，你在完整的导入路径中查找 CSV 文件，其中会包括当前工作目录。如果你是在一个包内导入 CSV 文件，那么 `path` 会被设为该包的路径或若干路径。如果你找到匹配的 CSV 文件，就返回一个模块 spec。这个模块 spec 告诉 Python 用 `CsvImporter` 来加载该模块。
+
+CSV 数据由 `.exec_module()` 加载。你可以用标准库中的 `csv.DictReader` 做文件的实际解析。和 Python 中的大多数东西一样，模块由字典支撑。把 CSV 数据加进 `module.__dict__`，就使它作为该模块的属性可用。
+
+例如，在第 44 行把 `fieldnames` 加进模块字典，就允许你这样列出 CSV 文件中的字段名：
+
+```python
+>>> employees.fieldnames
+('name', 'department', 'birthday_month')
+```
+
+一般而言，CSV 字段名可以包含空格以及其他不允许出现在 Python 属性名中的字符。在把字段作为模块上的属性添加之前，你用正则表达式清理字段名。这是在从第 51 行开始的 `_identifier()` 中完成的。
+
+你可以在上面的 `birthday_month` 字段名中看到这种效果的一个例子。如果看原始 CSV 文件，你会看到表头写的是 `birthday month`，用的是空格而不是下划线。
+
+把这个 `CsvImporter` 挂进 Python 导入系统后，你会免费得到相当多的功能。例如，模块缓存会确保数据文件只被加载一次。
+
+## [导入技巧与窍门](https://realpython.com/python-import/)
+
+为了圆满结束本教程，你会看到几条关于如何处理时不时出现的某些情形的提示。你会看到如何处理缺失的包、循环导入，甚至存放在 ZIP 文件里的包。
+
+### 跨 Python 版本处理包
+
+有时你需要处理名字随 Python 版本而不同的包。你已经见过一个例子：`importlib.resources` 只从 Python 3.7 起可用。在更早的 Python 版本中，你需要安装并使用 `importlib_resources`。
+
+只要该包的不同版本是兼容的，你就可以用 `as` 重命名包来处理：
+
+```python
+try:
+    from importlib import resources
+except ModuleNotFoundError:
+    import importlib_resources as resources
+```
+
+在其余代码中，你可以引用 `resources`，而不必担心用的是 `importlib.resources` 还是 `importlib_resources`。
+
+通常，用 `try...except` 语句弄清该用哪个版本最容易。另一种选择是检查 Python 解释器的版本。不过，如果你需要更新版本号，这可能会增加一些维护成本。
+
+你可以把前一个例子改写成：
+
+```python
+import sys
+if sys.version_info >= (3, 7):
+    from importlib import resources
+else:
+    import importlib_resources as resources
+```
+
+这会在 Python 3.7 及更新版本上使用 `importlib.resources`，而在更旧的 Python 版本上回退到 `importlib_resources`。关于如何检查正在运行的是哪个 Python 版本，见 `flake8-2020` 项目中良好且面向未来的建议。
+
+### 处理缺失的包：使用替代品
+
+下面这个用例与前一个例子密切相关。假设某个包有一个兼容的重新实现。这个重新实现优化得更好，所以如果它可用，你就想用它。然而，原始包更容易获得，性能也尚可接受。
+
+一个这样的例子是 `quicktions`，它是标准库中 `fractions` 的优化版本。你可以像前面处理不同包名那样处理这些偏好：
+
+```python
+try:
+    from quicktions import Fraction
+except ModuleNotFoundError:
+    from fractions import Fraction
+```
+
+如果 `quicktions` 可用就使用它，否则回退到 `fractions`。
+
+另一个类似的例子是 UltraJSON 包，一个超快的 JSON 编码器和解码器，可以用来替代标准库中的 `json`：
+
+```python
+try:
+    import ujson as json
+except ModuleNotFoundError:
+    import json
+```
+
+通过把 `ujson` 重命名为 `json`，你就不必担心实际导入的是哪个包。
+
+### 处理缺失的包：改用 Mock
+
+第三个相关例子是添加一个提供“有则更好”、但对应用并非严格必要的功能的包。这同样可以用在导入上加 `try...except` 来解决。额外的挑战是：如果这个可选包不可用，你将用什么来替换它。
+
+举一个具体例子。假设你用 Colorama 在控制台中添加彩色文本。Colorama 主要由一些特殊的字符串常量组成，打印时会加上颜色：
+
+```python
+>>> import colorama
+>>> colorama.init(autoreset=True)
+
+>>> from colorama import Back, Fore
+>>> Fore.RED
+'\x1b[31m'
+
+>>> print(f"{Fore.RED}Hello Color!")
+Hello Color!
+
+>>> print(f"{Back.RED}Hello Color!")
+Hello Color!
+```
+
+不幸的是，上面的例子里颜色并没有渲染出来。在你的终端里，它看起来会大致是这样。
+
+在开始使用 Colorama 的颜色之前，你应当调用 `colorama.init()`。把 `autoreset` 设为 `True` 意味着颜色指令会在字符串末尾自动重置。如果你想一次只给一行上色，这是一个有用的设置。
+
+如果你宁愿让全部输出都是（例如）蓝色，可以让 `autoreset` 为 `False`，并在脚本开头加上 `Fore.BLUE`。可用的颜色如下：
+
+```python
+>>> from colorama import Fore
+>>> sorted(c for c in dir(Fore) if not c.startswith("_"))
+['BLACK', 'BLUE', 'CYAN', 'GREEN', 'LIGHTBLACK_EX', 'LIGHTBLUE_EX',
+ 'LIGHTCYAN_EX', 'LIGHTGREEN_EX', 'LIGHTMAGENTA_EX', 'LIGHTRED_EX',
+ 'LIGHTWHITE_EX', 'LIGHTYELLOW_EX', 'MAGENTA', 'RED', 'RESET',
+ 'WHITE', 'YELLOW']
+```
+
+你也可以用 `colorama.Style` 控制文本样式。可以在 `DIM`、`NORMAL` 和 `BRIGHT` 之间选择。
+
+最后，`colorama.Cursor` 提供控制光标位置的代码。你可以用它显示正在运行的脚本的进度或状态。下面的例子显示从 `10` 开始的倒计时：
+
+```python
+# countdown.py
+
+import colorama
+from colorama import Cursor, Fore
+import time
+
+colorama.init(autoreset=True)
+countdown = [f"{Fore.BLUE}{n}" for n in range(10, 0, -1)]
+countdown.append(f"{Fore.RED}Lift off!")
+
+print(f"{Fore.GREEN}Countdown starting:\n")
+for count in countdown:
+    time.sleep(1)
+    print(f"{Cursor.UP(1)}{count} ")
+```
+
+注意计数器如何停在原地，而不是像通常那样打印在分开的各行上。
+
+让我们回到手头的任务。对许多应用来说，给控制台输出加颜色很酷，但并不关键。为了避免给应用再增加一个依赖，你只想在系统上有 Colorama 时才使用它，没有时也不要让应用崩溃。
+
+要做到这一点，你可以从测试及其对 mock 的使用中获得启发。mock 可以代替另一个对象，同时让你控制它的行为。下面是一次对 Colorama 做 mock 的朴素尝试：
+
+```python
+>>> from unittest.mock import Mock
+>>> colorama = Mock()
+>>> colorama.init(autoreset=True)
+<Mock name='mock.init()' id='139887544431728'>
+
+>>> Fore = Mock()
+>>> Fore.RED
+<Mock name='mock.RED' id='139887542331320'>
+
+>>> print(f"{Fore.RED}Hello Color!")
+<Mock name='mock.RED' id='139887542331320'>Hello Color!
+```
+
+这并不完全奏效，因为 `Fore.RED` 被表示成一个会弄乱输出的字符串。你想要的是创建一个始终渲染为空字符串的对象。
+
+可以改变 `Mock` 对象上 `.__str__()` 的返回值。不过在这个例子里，自己写一个 mock 更方便：
+
+```python
+# optional_color.py
+
+try:
+    from colorama import init, Back, Cursor, Fore, Style
+except ModuleNotFoundError:
+    from collections import UserString
+
+    class ColoramaMock(UserString):
+        def __call__(self, *args, **kwargs):
+            return self
+        def __getattr__(self, key):
+            return self
+
+    init = ColoramaMock("")
+    Back = Cursor = Fore = Style = ColoramaMock("")
+```
+
+`ColoramaMock("")` 是一个空字符串，被调用时也会返回这个空字符串。这实际上给了我们一个 Colorama 的重新实现，只是没有颜色。
+
+最后的技巧是 `.__getattr__()` 返回它自身，于是 `Back`、`Fore`、`Style` 和 `Cursor` 上作为属性的所有颜色、样式和光标移动也都被 mock 了。
+
+`optional_color` 模块被设计成 Colorama 的直接替代品，所以你可以用查找替换来更新倒计时例子：
+
+```python
+# countdown.py
+
+import optional_color
+from optional_color import Cursor, Fore
+import time
+
+optional_color.init(autoreset=True)
+countdown = [f"{Fore.BLUE}{n}" for n in range(10, 0, -1)]
+countdown.append(f"{Fore.RED}Lift off!")
+
+print(f"{Fore.GREEN}Countdown starting:\n")
+for count in countdown:
+    time.sleep(1)
+    print(f"{Cursor.UP(1)}{count} ")
+```
+
+如果你在一个没有 Colorama 的系统上运行这个脚本，它仍然能工作，但看起来可能没那么漂亮。
+
+安装了 Colorama 之后，你应当看到与前面相同的结果。
+
+### 把脚本当作模块导入
+
+脚本和库模块的一个区别是：脚本通常会做某件事，而库提供功能。脚本和库都住在普通的 Python 文件里，就 Python 而言，它们之间没有区别。
+
+区别在于文件打算如何被使用：是用 `python file.py` 执行，还是在另一个脚本里用 `import file` 导入？
+
+有时你会有一个既可作为脚本、又可作为库工作的模块。你可以尝试把模块重构为两个不同的文件。
+
+标准库中的一个例子是 `json` 包。你通常把它当作库使用，但它也捆绑了一个可以把 JSON 文件排版得更美观的脚本。假设你有下面这个 `colors.json` 文件：
+
+```json
+{"colors": [{"color": "blue", "category": "hue", "type": "primary",
+"code": {"rgba": [0,0,255,1], "hex": "#00F"}}, {"color": "yellow",
+"category": "hue", "type": "primary", "code": {"rgba": [255,255,0,1],
+"hex": "#FF0"}}]}
+```
+
+由于 JSON 常常只由机器读取，许多 JSON 文件并没有以可读的方式格式化。事实上，JSON 文件由一行非常长的文本组成是相当常见的。
+
+`json.tool` 是一个脚本，它使用 `json` 库把 JSON 格式化得更可读：
+
+```text
+$ python -m json.tool colors.json --sort-keys
+{
+    "colors": [
+        {
+            "category": "hue",
+            "code": {
+                "hex": "#00F",
+                "rgba": [
+                    0,
+                    0,
+                    255,
+                    1
+                ]
+            },
+            "color": "blue",
+            "type": "primary"
+        },
+        {
+            "category": "hue",
+            "code": {
+                "hex": "#FF0",
+                "rgba": [
+                    255,
+                    255,
+                    0,
+                    1
+                ]
+            },
+            "color": "yellow",
+            "type": "primary"
+        }
+    ]
+}
+```
+
+现在 JSON 文件的结构变得不那么难把握了。你可以用 `--sort-keys` 选项按字母顺序排列键。
+
+虽然把脚本和库拆开是好的实践，Python 有一种惯用法，使得可以把一个模块同时当作脚本和库来对待。如前所述，特殊的 `__name__` 模块变量的值是在运行时根据该模块是被导入还是作为脚本运行来设置的。
+
+让我们试一试。创建下面的文件：
+
+```python
+# name.py
+
+print(__name__)
+```
+
+如果你运行这个文件，会看到 `__name__` 被设为特殊值 `__main__`：
+
+```text
+$ python name.py
+__main__
+```
+
+然而，如果你导入该模块，`__name__` 会被设为模块的名字：
+
+```python
+>>> import name
+name
+```
+
+下面的模式利用了这种行为：
+
+```python
+def main():
+    ...
+
+if __name__ == "__main__":
+    main()
+```
+
+让我们在一个更大的例子中使用它。为了试图让你保持年轻，下面的脚本会把任何“老”年龄（`25` 或以上）替换成 `24`：
+
+```python
+ 1# feel_young.py
+ 2
+ 3def make_young(text):
+ 4    words = [replace_by_age(w) for w in text.split()]
+ 5    return " ".join(words)
+ 6
+ 7def replace_by_age(word, new_age=24, age_range=(25, 120)):
+ 8    if word.isdigit() and int(word) in range(*age_range):
+ 9        return str(new_age)
+10    return word
+11
+12if __name__ == "__main__":
+13    text = input("Tell me something: ")
+14    print(make_young(text))
+```
+
+你可以把它作为脚本运行，它会交互地把你输入的年龄变年轻：
+
+```text
+$ python feel_young.py
+Tell me something: Forever young - Bob is 79 years old
+Forever young - Bob is 24 years old
+```
+
+你也可以把这个模块当作可导入的库来使用。第 12 行的 `if` 测试确保导入该库时没有副作用。只会定义函数 `make_young()` 和 `replace_by_age()`。例如，你可以这样使用这个库：
+
+```python
+>>> from feel_young import make_young
+
+>>> headline = "Twice As Many 100-Year-Olds"
+>>> make_young(headline)
+'Twice As Many 24-Year-Olds'
+```
+
+如果没有这个 `if` 测试的保护，导入就会触发交互式的 `input()`，使 `feel_young` 很难当作库来使用。
+
+### 从 ZIP 文件运行 Python 脚本
+
+Python 一个稍微冷门的特性是，它可以运行打包进 ZIP 文件的脚本。主要优点是你可以把一个完整的包作为单个文件分发。
+
+不过要注意，这仍然要求系统上安装了 Python。如果你想把 Python 应用作为独立的可执行文件分发，见 *Using PyInstaller to Easily Distribute Python Applications*。
+
+如果你给 Python 解释器一个 ZIP 文件，它会在 ZIP 归档内寻找名为 `__main__.py` 的文件，提取它并运行。作为一个基本例子，创建下面的 `__main__.py` 文件：
+
+```python
+# __main__.py
+
+print(f"Hello from {__file__}")
+```
+
+运行它时会打印一条消息：
+
+```text
+$ python __main__.py
+Hello from __main__.py
+```
+
+现在把它加进一个 ZIP 归档。你也许可以在命令行上这样做：
+
+```text
+$ zip hello.zip __main__.py
+  adding: __main__.py (stored 0%)
+```
+
+在 Windows 上，你可以改用点选操作。在文件资源管理器中选中该文件，然后右键并选择“发送到 → 压缩(zipped)文件夹”。
+
+由于 `__main__` 不是一个很有描述性的名字，你把 ZIP 文件命名为 `hello.zip`。现在可以直接用 Python 调用它：
+
+```text
+$ python hello.zip
+Hello from hello.zip/__main__.py
+```
+
+注意你的脚本知道自己住在 `hello.zip` 里面。此外，ZIP 文件的根会被加进 Python 的导入路径，这样你的脚本就可以导入同一个 ZIP 文件内的其他模块。
+
+回想前面那个基于人口数据创建问答的例子。可以把整个应用作为单个 ZIP 文件分发。`importlib.resources` 会确保在需要时从 ZIP 归档中提取数据文件。
+
+该应用由以下文件组成：
+
+```text
+population_quiz/
+│
+├── data/
+│   ├── __init__.py
+│   └── WPP2019_TotalPopulationBySex.csv
+│
+└── population_quiz.py
+```
+
+你可以像上面那样把这些文件加进一个 ZIP 文件。不过，Python 自带一个叫 `zipapp` 的工具，它简化了把应用打包进 ZIP 归档的过程。用法如下：
+
+```text
+$ python -m zipapp population_quiz -m population_quiz:main
+```
+
+这条命令本质上做两件事：创建一个入口点，并打包你的应用。
+
+记住，你需要 ZIP 归档内有一个 `__main__.py` 文件作为入口点。如果你用 `-m` 选项提供关于应用应当如何启动的信息，`zipapp` 就会为你创建这个文件。在这个例子中，生成的 `__main__.py` 看起来是这样：
+
+```python
+# -*- coding: utf-8 -*-
+import population_quiz
+population_quiz.main()
+```
+
+这个 `__main__.py` 与 `population_quiz` 目录的内容一起，被打包进一个名为 `population_quiz.pyz` 的 ZIP 归档。`.pyz` 后缀表明这是一个包进 ZIP 归档的 Python 文件。
+
+注意：默认情况下，`zipapp` 不压缩任何文件。它只是把它们打包进单个文件。你也可以通过加上 `-c` 选项，让 `zipapp` 压缩这些文件。
+
+不过，这个特性只在 Python 3.7 及以后可用。更多信息见 `zipapp` 文档。
+
+在 Windows 上，`.pyz` 文件应当已经被注册为 Python 文件。在 Mac 和 Linux 上，你可以让 `zipapp` 通过使用 `-p` 解释器选项并指定使用哪个解释器，来创建可执行文件：
+
+```text
+$ python -m zipapp population_quiz -m population_quiz:main \
+>   -p "/usr/bin/env python"
+```
+
+`-p` 选项添加一个 shebang（`#!`），告诉操作系统如何运行该文件。此外，它使 `.pyz` 文件可执行，这样你只需键入它的名字就能运行：
+
+```text
+$ ./population_quiz.pyz
+Reading population data for 2020, Medium scenario
+
+Question 1:
+1. Timor-Leste
+2. Viet Nam
+3. Bermuda
+
+Which country has the largest population?
+```
+
+注意文件名前的 `./`。这是 Mac 和 Linux 上运行当前目录中可执行文件的一个典型技巧。如果你把文件移到 `PATH` 上的某个目录，或者你在使用 Windows，那么应当可以只用文件名：`population_quiz.pyz`。
+
+注意：在 Python 3.6 及更早版本上，前一条命令会失败，消息说它在 `data` 目录中找不到人口数据资源。这是由于 `zipimport` 中的一个限制。
+
+一种变通办法是提供 `population_quiz.pyz` 的绝对路径。在 Mac 和 Linux 上，你可以用下面这个技巧：
+
+```text
+$ `pwd`/population_quiz.pyz
+```
+
+`pwd` 命令会展开为当前目录的路径。
+
+让我们通过看使用 `importlib.resources` 的一个不错效果来结束本节。记住你用下面的代码打开数据文件：
+
+```python
+from importlib import resources
+
+with resources.open_text("data", "WPP2019_TotalPopulationBySex.csv") as fid:
+    ...
+```
+
+一种更常见的打开数据文件的方式，是根据模块的 `__file__` 属性来定位它们：
+
+```python
+import pathlib
+
+DATA_DIR = pathlib.Path(__file__).parent / "data"
+with open(DATA_DIR / "WPP2019_TotalPopulationBySex.csv") as fid:
+    ...
+```
+
+这种方法通常工作得很好。然而，当你的应用被打包进 ZIP 文件时，它就垮掉了：
+
+```text
+$ python population_quiz.pyz
+Reading population data for 2020, Medium scenario
+Traceback (most recent call last):
+  ...
+NotADirectoryError: 'population_quiz.pyz/data/WPP2019_TotalPopulationBySex.csv'
+```
+
+你的数据文件在 ZIP 归档里面，所以 `open()` 无法打开它。另一方面，`importlib.resources` 会先把数据提取到一个临时文件，然后再打开它。
+
+### 处理循环导入
+
+当两个或更多模块互相导入时，就发生了循环导入。更具体地说，设想模块 `yin` 使用 `import yang`，而模块 `yang` 同样导入 `yin`。
+
+Python 的导入系统在一定程度上是为处理导入循环而设计的。例如，下面的代码——虽然不是很有用——运行得很好：
+
+```python
+# yin.py
+
+print(f"Hello from yin")
+import yang
+print(f"Goodbye from yin")
+
+# yang.py
+
+print(f"Hello from yang")
+import yin
+print(f"Goodbye from yang")
+```
+
+在交互解释器中尝试导入 `yin`，也会导入 `yang`：
+
+```python
+>>> import yin
+Hello from yin
+Hello from yang
+Goodbye from yang
+Goodbye from yin
+```
+
+注意 `yang` 是在导入 `yin` 的中途被导入的，精确地说是在 `yin` 源代码中的 `import yang` 语句处。这没有陷入无尽递归，原因是我们的老朋友模块缓存。
+
+当你键入 `import yin` 时，对 `yin` 的引用甚至在 `yin` 被加载之前就被加进了模块缓存。当 `yang` 稍后试图导入 `yin` 时，它只是使用模块缓存中的那个引用。
+
+你也可以有做稍微更有用的事的模块。如果你在模块中定义属性和函数，一切仍然能工作：
+
+```python
+# yin.py
+
+print(f"Hello from yin")
+import yang
+number = 42
+
+def combine():
+    return number + yang.number
+
+print(f"Goodbye from yin")
+
+# yang.py
+
+print(f"Hello from yang")
+import yin
+number = 24
+
+def combine():
+    return number + yin.number
+
+print(f"Goodbye from yang")
+```
+
+导入 `yin` 的工作方式与前面相同：
+
+```python
+>>> import yin
+Hello from yin
+Hello from yang
+Goodbye from yang
+Goodbye from yin
+```
+
+与递归导入相关的问题，是在你于导入时实际使用另一个模块、而不是仅仅定义以后才会使用另一个模块的函数时，才开始冒出来的。给 `yang.py` 加一行：
+
+```python
+# yin.py
+
+print(f"Hello from yin")
+import yang
+number = 42
+
+def combine():
+    return number + yang.number
+
+print(f"Goodbye from yin")
+
+# yang.py
+
+print(f"Hello from yang")
+import yin
+number = 24
+
+def combine():
+    return number + yin.number
+
+print(f"yin and yang combined is {combine()}")
+print(f"Goodbye from yang")
+```
+
+现在 Python 被这次导入搞糊涂了：
+
+```python
+>>> import yin
+Hello from yin
+Hello from yang
+Traceback (most recent call last):
+  ...
+  File ".../yang.py", line 8, in combine
+    return number + yin.number
+AttributeError: module 'yin' has no attribute 'number'
+```
+
+错误消息起初可能看起来有点令人困惑。回头看源代码，你可以确认 `number` 是在 `yin` 模块中定义的。
+
+问题在于，在 `yang` 被导入的那个时刻，`number` 在 `yin` 中还没有定义。因此，对 `combine()` 的调用用到了 `yin.number`。
+
+雪上加霜的是，导入 `yang` 不会有任何问题：
+
+```python
+>>> import yang
+Hello from yang
+Hello from yin
+Goodbye from yin
+yin and yang combined is 66
+Goodbye from yang
+```
+
+到 `yang` 调用 `combine()` 的时候，`yin` 已经完全导入，`yin.number` 也已妥当地定义。作为最后一twist，由于你前面看到的模块缓存，如果你先做一些其他导入，`import yin` 也许能工作：
+
+```python
+>>> import yang
+Hello from yang
+Hello from yin
+Goodbye from yin
+yin and yang combined is 66
+Goodbye from yang
+
+>>> yin
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'yin' is not defined
+
+>>> import yin
+>>> yin.combine()
+66
+```
+
+那么，如何避免被循环导入拖住并搞糊涂？两个或更多模块互相导入，常常是一个信号，表明你可以改进模块的设计。
+
+往往，修复循环导入最容易的时机是在你实现它们之前。如果你在架构草图中看到循环，就更仔细地看一看，并尝试打破这些循环。
+
+尽管如此，有时引入导入循环是合理的。如你上面所见，只要你的模块只定义属性、函数、类等等，这就不是问题。第二条提示——这也是好的设计实践——是让模块在导入时没有副作用。
+
+如果你确实需要带有导入循环和副作用的模块，还有另一条出路：在函数内部局部地做导入。
+
+注意在下面的代码中，`import yang` 是在 `combine()` 内部完成的。这有两个后果。首先，`yang` 只在 `combine()` 函数内部可用。更重要的是，直到你在 `yin` 已被完全导入之后调用 `combine()`，这次导入才会发生：
+
+```python
+# yin.py
+
+print(f"Hello from yin")
+number = 42
+
+def combine():
+    import yang
+    return number + yang.number
+
+print(f"Goodbye from yin")
+
+# yang.py
+
+print(f"Hello from yang")
+import yin
+number = 24
+
+def combine():
+    return number + yin.number
+
+print(f"yin and yang combined is {combine()}")
+print(f"Goodbye from yang")
+```
+
+现在导入和使用 `yin` 都没有问题：
+
+```python
+>>> import yin
+Hello from yin
+Goodbye from yin
+
+>>> yin.combine()
+Hello from yang
+yin and yang combined is 66
+Goodbye from yang
+66
+```
+
+注意，事实上直到你调用 `combine()`，`yang` 才被导入。关于循环导入的另一种视角，见 Fredrik Lundh 的经典笔记。
+
+### 剖析导入
+
+导入若干模块和包时的一个顾虑是，这会增加脚本的启动时间。取决于你的应用，这可能关键，也可能不关键。
+
+自 Python 3.7 发布以来，你有了一种快速了解导入包和模块要花多少时间的办法。Python 3.7 支持 `-X importtime` 命令行选项，它测量并打印每个模块导入所花的时间：
+
+```text
+$ python -X importtime -c "import datetime"
+import time: self [us] | cumulative | imported package
+...
+import time:        87 |         87 |   time
+import time:       180 |        180 |   math
+import time:       234 |        234 |   _datetime
+import time:       820 |       1320 | datetime
+```
+
+`cumulative` 列按包显示导入的累计时间（以微秒计）。你可以这样读这份清单：Python 花了 `1320` 微秒来完整导入 `datetime`，其中还涉及导入 `time`、`math` 以及 C 实现 `_datetime`。
+
+`self` 列显示只导入给定模块本身所花的时间，不包括任何递归导入。你可以看到 `time` 花了 `87` 微秒来导入，`math` 花了 `180`，`_datetime` 花了 `234`，而 `datetime` 本身的导入花了 `820` 微秒。全部加起来，累计时间为 `1320` 微秒（在舍入误差之内）。
+
+看一下 Colorama 那一节中的 `countdown.py` 例子：
+
+```text
+$ python3.7 -X importtime countdown.py
+import time: self [us] | cumulative | imported package
+...
+import time:       644 |       7368 |       colorama.ansitowin32
+import time:       310 |      11969 |     colorama.initialise
+import time:       333 |      12301 |   colorama
+import time:       297 |      12598 | optional_color
+import time:       119 |        119 | time
+```
+
+在这个例子中，导入 `optional_color` 花了将近 0.013 秒。其中大部分时间花在导入 Colorama 及其依赖上。`self` 列显示的是不包括嵌套导入的导入时间。
+
+作为一个极端例子，考虑前面的 `population` 单例。因为它要加载一个很大的数据文件，导入它极其缓慢。要测试这一点，你可以用 `-c` 选项把 `import population` 作为脚本运行：
+
+```text
+$ python3.7 -X importtime -c "import population"
+import time: self [us] | cumulative | imported package
+...
+import time:      4933 |     322111 |   matplotlib.pyplot
+import time:      1474 |       1474 |     typing
+import time:       420 |       1894 |   importlib.resources
+Reading population data for Medium scenario
+import time:   1593774 |    1921024 | population
+```
+
+在这种情况下，导入 `population` 花了将近 2 秒，其中约 1.6 秒花在模块本身，主要是加载数据文件。
+
+`-X importtime` 是优化导入的好工具。如果你需要对代码做更一般的监测和优化，见 *Python Timer Functions: Three Ways to Monitor Your Code*。
+
+关于 Python 导入系统最权威的来源是官方文档：
+
+- [The import system](https://docs.python.org/reference/import.html)
+- [`importlib` 包](https://docs.python.org/library/importlib.html)
+- [PEP 420：隐式命名空间包](https://www.python.org/dev/peps/pep-0420/)
+- [Importing modules](https://docs.python.org/library/modules.html)
+
+
+
+
+
+## [认识 Zip 导入](https://realpython.com/python-zip-import/)
+
+从 Python 2.3 起，可以直接从 ZIP 里导入模块和包。这个能力叫 **Zip imports**，最常见的用途是把一整套代码打成单个文件再分发。
+
+它来自 [PEP 273](https://peps.python.org/pep-0273/)。[PEP 302](https://peps.python.org/pep-0302/) 又加了导入钩子，让标准库内置支持这件事。只要 ZIP 出现在模块搜索路径 `sys.path` 里，`import` 就会去里面找代码。
+
+`sys.path` 是一份目录和 ZIP 路径的列表。执行 `import` 时，解释器按这个列表逐项查找。
+
+`.pyo` 从 Python 3.5 起不再使用，见 [PEP 488](https://peps.python.org/pep-0488/)。
+
+### 自己做可导入的 ZIP
+
+标准库 `zipfile` 里有两个相关类：
+
+- `ZipFile`：通用 ZIP 读写。
+- `PyZipFile`：继承自 `ZipFile`，专门用来打包可导入的 Python 代码。
+
+两者的主要差别：
+
+1. `PyZipFile` 的构造函数有可选参数 `optimize`，可以在打包前把源码编译成字节码。
+2. `PyZipFile.writepy()` 接受一个模块或包，把它写进目标 ZIP。
+
+`optimize` 默认是 `-1`：先把 `.py` 编译成 `.pyc`，再放进压缩包。导入时就不用再编译一遍，更快。
+
+#### 把模块打进 ZIP
+
+假设有 `hello.py`：
+
+```python
+"""Print a greeting message."""
+# hello.py
+
+def greet(name="World"):
+    print(f"Hello, {name}! Welcome to Real Python!")
+```
+
+用 `writepy()` 打包：
+
+```python
+>>> import zipfile
+
+>>> with zipfile.PyZipFile("hello.zip", mode="w") as zip_module:
+...     zip_module.writepy("hello.py")
+...
+
+>>> with zipfile.PyZipFile("hello.zip", mode="r") as zip_module:
+...     zip_module.printdir()
+...
+File Name                                             Modified             Size
+hello.pyc                                      2021-10-18 05:40:04          313
+```
+
+当前目录会得到 `hello.zip`。`writepy()` 把 `hello.py` 编译成 `hello.pyc` 再存进去，所以目录里看到的是 `.pyc`。
+
+`PyZipFile` 默认不压缩，只是把文件放进 ZIP 容器。要压缩的话，构造时传入 `compression`。目前支持 Deflate、bzip2、LZMA。教程里用默认值 `ZIP_STORED`（不压缩）。压缩会拖慢导入，后面会讲到。
+
+也可以用普通压缩工具手工把 `.py` 和 `.pyc` 打进去。如果包里只有 `.py`、没有对应的 `.pyc`，第一次从该 ZIP 导入时 Python 会现场编译。它**不会**把新生成的 `.pyc` 写回 ZIP，所以下次导入还要再编译一次，导入会变慢。
+
+`writepy()` 的第一个参数也可以是目录。如果这个目录不是包，方法会扫描其中的 `.py`，编译成 `.pyc`，放到 ZIP 顶层。扫描**不递归**，子目录里的源文件不会被收进去。
+
+`optimize` 还可以设成：
+
+| 值 | 效果 |
+| --- | --- |
+| `0` | 不做优化 |
+| `1` | 去掉 `assert` |
+| `2` | 去掉 `assert` 和文档字符串 |
+
+#### 把包打进 ZIP
+
+目录如果是普通目录，`writepy()` 只收顶层 `.py`。如果是包（有 `__init__.py`），它会编译包里的 `.py`，并保留包的目录结构。
+
+目录可以是这样：
+
+```text
+hello/
+├── __init__.py
+└── hello.py
+```
+
+打包：
+
+```python
+>>> import zipfile
+
+>>> with zipfile.PyZipFile("hello_pkg.zip", mode="w") as zip_pkg:
+...     zip_pkg.writepy("hello")
+...
+
+>>> with zipfile.PyZipFile("hello_pkg.zip", mode="r") as zip_pkg:
+...     zip_pkg.printdir()
+...
+File Name                                             Modified             Size
+hello/__init__.pyc                             2021-10-18 05:56:00          110
+hello/hello.pyc                                2021-10-18 05:56:00          319
+```
+
+#### Zip 导入的限制
+
+用 ZIP 分发代码时要注意：
+
+- 不能从 ZIP 里加载动态文件，例如 `.pyd`、`.dll`、`.so`。
+- 包里如果是 `.py`，导入性能会差一截。
+- 压缩过的 ZIP 在没有解压库时会导入失败。
+
+ZIP 里可以放任何文件，但导入时只会读 `.py`、`.pyw`、`.pyc`、`.pyo`。C 扩展和共享库放在 ZIP 里加载不了。变通办法是先解压到文件系统再加载，这会带来临时文件、错误处理和安全风险。
+
+如果归档里是 `.py`，Python 会为了完成导入而编译，但不会把 `.pyc` 存回去，导入会反复付出编译成本。
+
+压缩包还要求环境里有 `zlib`，否则会报缺少 `zlib`。解压本身也增加开销。所以教程里用的是未压缩的 ZIP。
+
+### 从 ZIP 导入代码
+
+ZIP 必须出现在 `sys.path` 里，解释器才会从里面导入。`sys.path` 通常包括：
+
+- 正在运行的脚本所在目录
+- 交互式启动时的当前目录
+- 环境变量 `PYTHONPATH`（如果设了）
+- 随本次 Python 安装而定的目录列表
+- 路径配置文件（`.pth`）里列出的目录
+
+往 `sys.path` 里加 ZIP 有三种做法：
+
+| 方式 | 作用范围 |
+| --- | --- |
+| `list.insert()`、`append()`、`extend()` | 当前这段正在写、正在跑的代码 |
+| 环境变量 `PYTHONPATH` | 本机上、当前环境下启动的各个解释器 |
+| `.pth` 路径配置文件 | 放置了该 `.pth` 的那一个解释器 |
+
+#### 在代码里改 `sys.path`
+
+`sys.path` 就是普通列表。一般用 `insert(0, item)`，把新路径插到最前面，让它优先于已有项，名字冲突时可以盖住同名模块。
+
+路径要换成你机器上的真实路径：
+
+```python
+>>> import sys
+
+>>> sys.path.insert(0, "/path/to/hello.zip")
+
+>>> sys.path[0]
+'/path/to/hello.zip'
+
+>>> import hello
+
+>>> hello.greet("Pythonista")
+Hello, Pythonista! Welcome to Real Python!
+```
+
+包也一样，但导入要按包来写：
+
+```python
+>>> import sys
+
+>>> sys.path.insert(0, "/path/to/hello_pkg.zip")
+
+>>> from hello import hello
+
+>>> hello.greet("Pythonista")
+Hello, Pythonista! Welcome to Real Python!
+```
+
+`append()` 加到列表末尾。前面如果已经有同名 `hello`，解释器会用前面的那个，不会用你新加的 ZIP：
+
+```python
+>>> import sys
+
+>>> sys.path.append("/path/to/hello.zip")
+
+>>> sys.path[-1]
+'/path/to/hello.zip'
+
+>>> from hello import greet
+>>> greet("Pythonista")
+Hello, Pythonista! Welcome to Real Python!
+```
+
+多个文件可以循环 `append()`，也可以一次 `extend()`。两者都加在末尾，已有同名模块会优先。
+
+#### 用 `PYTHONPATH` 做成系统级可用
+
+希望任何脚本都能导入这个 ZIP 时，把它放进环境变量 `PYTHONPATH`。格式和 `PATH` 一样，条目之间用 `os.pathsep`：Unix（Linux、macOS）是冒号 `:`，Windows 是分号 `;`。
+
+Linux / macOS，只对当前终端会话有效：
+
+```bash
+$ export PYTHONPATH="$PYTHONPATH:/path/to/hello.zip"
+```
+
+Bash 用户可以把下面这段放进 `.bashrc`，以后每次开终端都生效：
+
+```bash
+# .bashrc
+
+if [ -f /path/to/hello.zip ]; then
+    export PYTHONPATH="$PYTHONPATH:/path/to/hello.zip"
+fi
+```
+
+然后再开解释器：
+
+```python
+>>> import sys
+
+>>> sys.path
+[..., '/path/to/hello.zip', ...]
+```
+
+注意它通常不在 `sys.path` 最前面。更靠前的同名模块会优先被导入。
+
+Windows 的 `cmd.exe`：
+
+```bat
+C:\> set PYTHONPATH=%PYTHONPATH%;C:\path\to\hello.zip
+```
+
+这条也只在当前命令行窗口有效。要永久设置，需要改 Windows 的用户或系统环境变量。
+
+`PYTHONPATH` 里列出的不存在的目录和 ZIP，Python 会悄悄忽略。
+
+#### 用 `.pth` 只作用于某一个解释器
+
+只想让某一个 Python 能导入这个 ZIP、其他项目看不到时，用路径配置文件。`.pth` 里每行一个目录或 ZIP 路径，该解释器每次启动都会把这些路径加进 `sys.path`。
+
+格式：
+
+- 每行一条路径。
+- 空行和以 `#` 开头的行会被跳过。
+- 以 `import` 开头的行会被执行。
+
+文件要放到 site 目录里，解释器才会读到。当前环境的 site 目录可以用 `site.getusersitepackages()` 查。没有管理员权限时，用用户 site 目录 `site.USER_SITE`。这个目录如果还不存在，按它要求的路径自己建即可。
+
+原文在 Ubuntu 上给系统 Python 3 建文件的例子：
+
+```bash
+$ sudo nano /usr/lib/python3/dist-packages/hello.pth
+```
+
+文件里写上 `hello.zip` 的路径，保存后，再用这个系统解释器启动，`sys.path` 里就会有它。
+
+`.pth` 里不存在的路径不会被加入；重复条目也只加一次。
+
+### `zipimport`：Zip 导入背后的模块
+
+`sys.path` 里某一项是 ZIP 路径时，内置导入机制会自动用标准库 `zipimport`。也可以在代码里直接用它，这样不必先把 ZIP 加进搜索路径。
+
+#### `zipimporter` 的基本用法
+
+核心类是 `zipimporter`。传入 ZIP 路径，得到一个 importer：
+
+```python
+>>> from zipimport import zipimporter
+
+>>> importer = zipimporter("/path/to/hello.zip")
+
+>>> importer.is_package("hello")
+False
+
+>>> importer.get_filename("hello")
+'/path/to/hello.zip/hello.pyc'
+
+>>> hello = importer.load_module("hello")
+>>> hello.__file__
+'/path/to/hello.zip/hello.pyc'
+
+>>> hello.greet("Pythonista")
+Hello, Pythonista! Welcome to Real Python!
+```
+
+- `is_package(name)`：名字是包则返回 `True`，否则 `False`。
+- `get_filename(name)`：返回归档内该模块的 `.__file__` 路径。
+- `load_module(name)`：把模块载入并返回引用，之后可以正常调用里面的对象。
+
+补充一点原文写于 2021 年、现在需要知道的变化：`zipimporter.load_module()` 在较新的 Python 里已弃用。当前推荐先 `find_spec()`，再对得到的 module spec 调用 `exec_module()`。教程里的插件示例仍按当时的 `load_module()` 来写。
+
+#### 用 `zipimport` 做插件系统
+
+每个插件放在自己的 ZIP 里。程序扫描某个目录中的 ZIP，自动加载插件。
+
+每个插件是一个目录，里面有 `plugin.py`，并提供入口函数 `main()`。教程做了两个小插件：一个用浏览器显示消息，一个用 Tkinter 对话框。
+
+浏览器插件 `web_message/plugin.py`：
+
+```python
+"""A plugin that displays a message using webbrowser."""
+# web_message/plugin.py
+
+import tempfile
+import webbrowser
+
+def main(text, title="Alert"):
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".html", delete=False
+    ) as home:
+        html = f"""
+            <html>
+                <head>
+                    <title>{title}</title>
+                </head>
+                <body>
+                    <h1>
+                        {text}
+                    </h1>
+                </body>
+            </html>
+        """
+        home.write(html)
+        path = "file://" + home.name
+    webbrowser.open(path)
+```
+
+`main()` 接收正文和标题，写一个临时 HTML 文件，再用 `webbrowser.open()` 用默认浏览器打开。
+
+Tkinter 插件 `tk_message/plugin.py`：
+
+```python
+"""A plugin that displays a message using Tkinter."""
+# tk_message/plugin.py
+
+import tkinter
+from tkinter import messagebox
+
+def main(text, title="Alert"):
+    root = tkinter.Tk()
+    root.withdraw()
+    messagebox.showinfo(title, text)
+```
+
+这里创建一个 `Tk` 根窗口，用 `withdraw()` 藏起来，再用 `messagebox.showinfo()` 弹出对话框。
+
+在包含这两个目录的地方打包：
+
+```python
+>>> import zipfile
+
+>>> plugins = ("web_message", "tk_message")
+
+>>> for plugin in plugins:
+...     with zipfile.PyZipFile(f"{plugin}.zip", mode="w") as zip_plugin:
+...         zip_plugin.writepy(plugin)
+...
+```
+
+插件系统的目录：
+
+```text
+rp_plugins/
+├── plugins/
+│   ├── tk_message.zip
+│   └── web_message.zip
+└── main.py
+```
+
+`main.py`：
+
+```python
+# main.py
+
+import zipimport
+from pathlib import Path
+
+def load_plugins(path):
+    plugins = []
+    for zip_plugin in path.glob("*.zip"):
+        importer = zipimport.zipimporter(zip_plugin)
+        plugin_module = importer.load_module("plugin")
+        plugins.append(getattr(plugin_module, "main"))
+    return plugins
+
+if __name__ == "__main__":
+    path = Path("plugins/")
+    plugins = load_plugins(path)
+    for plugin in plugins:
+        plugin("Hello, World!", "Greeting!")
+```
+
+这段在做的事：
+
+- 导入 `zipimport`，用来从 ZIP 动态加载插件。
+- 导入 `pathlib`，处理路径。
+- `load_plugins()` 接收放着插件 ZIP 的目录。
+- 遍历该目录下的 `*.zip`。
+- 为每个 ZIP 建一个 `zipimporter`。
+- 从里面加载名为 `plugin` 的模块。
+- 取出该模块的 `main`，放进列表并返回。
+- 主程序调用 `load_plugins()`，再逐个执行插件。
+
+在 `rp_plugins` 目录运行 `python main.py` 后，会先弹出 Tkinter 对话框（正文 `Hello, World!`，标题 `Greeting!`）。关掉之后，浏览器会打开一页，显示同样的标题和正文。`glob("*.zip")` 的顺序取决于文件系统，先出现哪个对话框不保证和目录列表一致。
+
+
+Python 可以在 ZIP 位于模块搜索路径时，直接从里面导入代码。适合把模块和包打成单个归档来分发，也适合你经常收到别人打好的 ZIP、又想直接用里面的代码。
+
+教程覆盖了四件事：Zip 导入是什么、什么时候用、怎样用 `zipfile.PyZipFile` 做出可导入的 ZIP，以及怎样让导入机制找得到这些文件。最后用 `zipimport` 做了一个最小插件加载器，演示不经过 `sys.path`、直接从 ZIP 动态导入。
+
+
+这篇是 Real Python 的教程 [Python Modules and Packages – An Introduction](https://realpython.com/python-modules-packages/)（John Sturtz，2026-10-25 更新）。下面按原文章节，把机制和示例用中文讲清楚。代码按原文保留，方便对照运行。
+
+## [模块和包是干什么的](https://realpython.com/python-modules-packages/)
+
+模块和包是 Python 做模块化编程的两种机制。模块化就是把一个大任务拆成更小、更好管的子任务。拆开之后有四个好处：
+
+- **简单**：一个模块通常只处理问题的一小块，范围小，写起来更不容易出错。
+- **可维护**：模块之间划清边界、少互相依赖时，改一处不容易波及别处，也方便多人协作。
+- **可复用**：一块功能写在一个模块里，别的地方通过接口调用，不必复制代码。
+- **作用域**：每个模块有自己的命名空间，不同区域的名字不容易撞车。Python 之禅里有一句：命名空间是个绝妙的主意，我们应该多来点。
+
+函数、模块、包都是在推动代码拆分。
+
+### 模块概览
+
+Python 里定义模块有三种方式：
+
+1. 用 Python 自己写。
+2. 用 C 写，运行时动态加载，例如 `re`。
+3. 内建在解释器里，例如 `itertools`。
+
+三种都用 `import` 来用里面的内容。这篇主要讲用 Python 写的模块：建一个合法的 `.py` 文件就行，不需要额外语法。
+
+例如 `mod.py`：
+
+```python
+s = "If Comrade Napoleon says it, it must be right."
+a = [100, 200, 300]
+
+def foo(arg):
+    print(f'arg = {arg}')
+
+class Foo:
+    pass
+```
+
+里面定义了字符串 `s`、列表 `a`、函数 `foo()`、类 `Foo`。文件放在解释器能找到的位置后：
+
+```python
+>>> import mod
+>>> print(mod.s)
+If Comrade Napoleon says it, it must be right.
+>>> mod.a
+[100, 200, 300]
+>>> mod.foo(['quux', 'corge', 'grault'])
+arg = ['quux', 'corge', 'grault']
+>>> x = mod.Foo()
+>>> x
+<mod.Foo object at 0x03C181F0>
+```
+
+### 模块搜索路径
+
+执行 `import mod` 时，解释器按下面的来源拼出一份目录列表，再去找 `mod.py`：
+
+- 运行脚本所在的目录；如果是交互式启动，则是当前目录
+- 环境变量 `PYTHONPATH` 里的目录（格式跟系统的 `PATH` 一样，因操作系统而异）
+- 安装 Python 时配置的、随安装而定的目录
+
+这份列表在 `sys.path` 里：
+
+```python
+>>> import sys
+>>> sys.path
+['', 'C:\\Users\\john\\Documents\\Python\\doc', 'C:\\Python314\\Lib\\idlelib',
+'C:\\Python314\\python314.zip', 'C:\\Python314\\DLLs', 'C:\\Python314\\Lib',
+'C:\\Python314', 'C:\\Python314\\Lib\\site-packages']
+```
+
+具体内容跟你的安装有关，上面只是示例。
+
+要让模块被找到，可以：
+
+- 把 `mod.py` 放在脚本所在目录，或交互模式下的当前目录
+- 启动解释器之前，把 `mod.py` 所在目录加进 `PYTHONPATH`
+- 把 `mod.py` 放到 `PYTHONPATH` 里已经有的某个目录
+- 放到安装相关目录里（有没有写权限取决于系统）
+
+还可以在运行时改 `sys.path`。例如文件在 `C:\Users\john`：
+
+```python
+>>> sys.path.append(r'C:\Users\john')
+>>> sys.path
+['', 'C:\\Users\\john\\Documents\\Python\\doc', 'C:\\Python314\\Lib\\idlelib',
+'C:\\Python314\\python314.zip', 'C:\\Python314\\DLLs', 'C:\\Python314\\Lib',
+'C:\\Python314', 'C:\\Python314\\Lib\\site-packages', 'C:\\Users\\john']
+>>> import mod
+```
+
+导入之后，模块的 `__file__` 就是它被找到的位置，其目录部分应当是 `sys.path` 里的某一项：
+
+```python
+>>> import mod
+>>> mod.__file__
+'C:\\Users\\john\\mod.py'
+
+>>> import random
+>>> random.__file__
+'C:\\Python314\\Lib\\random.py'
+```
+
+### `import` 语句
+
+#### `import <module_name>`
+
+最简单的形式：
+
+```python
+import <module_name>
+```
+
+这不会把模块里的名字直接放进调用方。每个模块有自己的私有符号表，也就是模块里那些对象的全局符号表，所以模块会形成单独的命名空间。
+
+`import mod` 只把名字 `mod` 放进调用方的符号表。模块里定义的对象仍留在模块自己的符号表里，调用方要用点号加前缀才能访问：
+
+```python
+>>> import mod
+>>> mod
+<module 'mod' from 'C:\\Users\\john\\Documents\\Python\\doc\\mod.py'>
+
+>>> s
+NameError: name 's' is not defined
+>>> foo('quux')
+NameError: name 'foo' is not defined
+
+>>> mod.s
+'If Comrade Napoleon says it, it must be right.'
+>>> mod.foo('quux')
+arg = quux
+```
+
+一条语句可以导入多个模块：
+
+```python
+import <module_name>[, <module_name> ...]
+```
+
+#### `from <module_name> import <name(s)>`
+
+可以把模块里的个别对象直接放进调用方的符号表，之后不用写模块前缀：
+
+```python
+>>> from mod import s, foo
+>>> s
+'If Comrade Napoleon says it, it must be right.'
+>>> foo('quux')
+arg = quux
+
+>>> from mod import Foo
+>>> x = Foo()
+>>> x
+<mod.Foo object at 0x02E3AD50>
+```
+
+同名对象会被覆盖：
+
+```python
+>>> a = ['foo', 'bar', 'baz']
+>>> a
+['foo', 'bar', 'baz']
+
+>>> from mod import a
+>>> a
+[100, 200, 300]
+```
+
+也可以一次导入模块里几乎所有名字：
+
+```python
+from <module_name> import *
+```
+
+以下划线 `_` 开头的名字除外：
+
+```python
+>>> from mod import *
+>>> s
+'If Comrade Napoleon says it, it must be right.'
+>>> a
+[100, 200, 300]
+>>> foo
+<function foo at 0x03B449C0>
+>>> Foo
+<class 'mod.Foo'>
+```
+
+大型正式代码里不建议这样做。名字会成批进入本地符号表，不熟悉时很容易盖掉已有名字。交互式解释器里试功能、做探索时比较方便，少打字就能用到模块里的东西。
+
+#### `from <module_name> import <name> as <alt_name>`
+
+导入单个对象时可以换一个本地名字，避免和已有名字冲突：
+
+```python
+from <module_name> import <name> as <alt_name>[, <name> as <alt_name> …]
+```
+
+```python
+>>> s = 'foo'
+>>> a = ['foo', 'bar', 'baz']
+
+>>> from mod import s as string, a as alist
+>>> s
+'foo'
+>>> string
+'If Comrade Napoleon says it, it must be right.'
+>>> a
+['foo', 'bar', 'baz']
+>>> alist
+[100, 200, 300]
+```
+
+#### `import <module_name> as <alt_name>`
+
+整个模块也可以用别名导入：
+
+```python
+>>> import mod as my_module
+>>> my_module.a
+[100, 200, 300]
+>>> my_module.foo('qux')
+arg = qux
+```
+
+`import` 可以写在函数里面，这时要等到函数被调用才真正导入：
+
+```python
+>>> def bar():
+...     from mod import foo
+...     foo('corge')
+...
+
+>>> bar()
+arg = corge
+```
+
+Python 3 不允许在函数里写 `import *`：
+
+```python
+>>> def bar():
+...     from mod import *
+...
+SyntaxError: import * only allowed at module level
+```
+
+导入可能失败时，可以用 `try` / `except ImportError` 接住。模块不存在，或模块里没有那个对象，都会抛 `ImportError`：
+
+```python
+>>> try:
+...     # Non-existent module
+...     import baz
+... except ImportError:
+...     print('Module not found')
+...
+Module not found
+
+>>> try:
+...     # Existing module, but non-existent object
+...     from mod import baz
+... except ImportError:
+...     print('Object not found in module')
+...
+Object not found in module
+```
+
+### `dir()` 函数
+
+内建函数 `dir()` 返回某个命名空间里已定义的名字。不传参数时，返回当前本地符号表的名字，按字母排序：
+
+```python
+>>> dir()
+['__builtins__', '__doc__', '__loader__', '__name__', '__package__',
+'__spec__']
+
+>>> qux = [1, 2, 3, 4, 5]
+>>> dir()
+['__builtins__', '__doc__', '__loader__', '__name__', '__package__',
+'__spec__', 'qux']
+
+>>> class Bar():
+...     pass
+...
+>>> x = Bar()
+>>> dir()
+['Bar', '__builtins__', '__doc__', '__loader__', '__name__', '__package__',
+'__spec__', 'qux', 'x']
+```
+
+解释器启动时命名空间里已经有一批自动定义的名字。之后新定义的 `qux`、`Bar`、`x` 会出现在后续的 `dir()` 结果里。
+
+用它可以看出某次 `import` 往命名空间里加了什么：
+
+```python
+>>> import mod
+>>> dir()
+['__builtins__', '__doc__', '__loader__', '__name__', '__package__',
+'__spec__', 'mod']
+
+>>> from mod import a, Foo
+>>> dir()
+['Foo', '__builtins__', '__doc__', '__loader__', '__name__', '__package__',
+'__spec__', 'a', 'mod']
+
+>>> from mod import s as string
+>>> dir()
+['Foo', '__builtins__', '__doc__', '__loader__', '__name__', '__package__',
+'__spec__', 'a', 'mod', 'string', 'x']
+```
+
+参数是模块时，列出的是该模块里定义的名字：
+
+```python
+>>> import mod
+>>> dir(mod)
+['Foo', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
+'__name__', '__package__', '__spec__', 'a', 'foo', 's']
+```
+
+`from mod import *` 之后，这些名字（除了下划线开头的）会进入本地命名空间，`dir()` 里就能看到。
+
+### 把模块当脚本运行
+
+任何包含模块的 `.py` 文件本身也是脚本，可以直接执行。上面那个只定义对象、不做别的事的 `mod.py`，运行后没有输出，也没有报错。
+
+如果在文件末尾加上实际调用：
+
+```python
+s = "If Comrade Napoleon says it, it must be right."
+a = [100, 200, 300]
+
+def foo(arg):
+    print(f'arg = {arg}')
+
+class Foo:
+    pass
+
+print(s)
+print(a)
+foo('quux')
+x = Foo()
+print(x)
+```
+
+作为脚本运行会打印结果。问题是，`import mod` 时这些语句也会执行，导入模块时就会有输出。通常不希望这样。
+
+区分这两种情况靠特殊变量 `__name__`：
+
+- 文件被当作模块导入时，`__name__` 被设成模块名。
+- 文件被当作独立脚本运行时，`__name__` 被设成字符串 `'__main__'`。
+
+```python
+s = "If Comrade Napoleon says it, it must be right."
+a = [100, 200, 300]
+
+def foo(arg):
+    print(f'arg = {arg}')
+
+class Foo:
+    pass
+
+if (__name__ == '__main__'):
+    print('Executing as standalone script')
+    print(s)
+    print(a)
+    foo('quux')
+    x = Foo()
+    print(x)
+```
+
+作为脚本运行会有输出；`import mod` 则不会，之后仍可以调用 `mod.foo('grault')`。
+
+模块常会带上这种“当脚本跑”的能力，用来测试模块里的功能，也就是文中所说的单元测试用法。例如阶乘模块 `fact.py`：
+
+```python
+def fact(n):
+    return 1 if n == 1 else n * fact(n-1)
+
+if (__name__ == '__main__'):
+    import sys
+    if len(sys.argv) > 1:
+        print(fact(int(sys.argv[1])))
+```
+
+当模块用：
+
+```python
+>>> from fact import fact
+>>> fact(6)
+720
+```
+
+当脚本用，命令行传入整数：
+
+```text
+C:\Users\john\Documents>python fact.py 6
+720
+```
+
+### 重新加载模块
+
+为了效率，同一个解释器会话里，模块只加载一次。函数和类定义这样没问题。模块里也可以有可执行语句，通常用来做初始化，但这些语句只在第一次导入时执行。
+
+```python
+a = [100, 200, 300]
+print('a =', a)
+```
+
+```python
+>>> import mod
+a = [100, 200, 300]
+>>> import mod
+>>> import mod
+
+>>> mod.a
+[100, 200, 300]
+```
+
+后面再次 `import` 时，`print()` 不会再跑。赋值语句同样不会再执行，不过第一次赋的值还在，所以 `mod.a` 仍然是那个列表。
+
+改了模块又想重新加载，要么重启解释器，要么用 `importlib.reload()`：
+
+```python
+>>> import mod
+a = [100, 200, 300]
+
+>>> import importlib
+>>> importlib.reload(mod)
+a = [100, 200, 300]
+<module 'mod' from 'C:\\Users\\john\\Documents\\Python\\doc\\mod.py'>
+```
+
+### Python 包
+
+模块一多，全堆在一个目录里就难管，名字或功能相近时更麻烦。包用点号把模块命名空间做成层次结构。模块避免全局变量撞名，包避免模块撞名。
+
+建包就是利用操作系统已有的目录层次。例如目录 `pkg` 里有两个模块：
+
+`mod1.py`：
+
+```python
+def foo():
+    print('[mod1] foo()')
+
+class Foo:
+    pass
+```
+
+`mod2.py`：
+
+```python
+def bar():
+    print('[mod2] bar()')
+
+class Bar:
+    pass
+```
+
+`pkg` 所在位置能被 `sys.path` 找到时，可以用 `pkg.mod1`、`pkg.mod2` 这种点号引用，导入写法和普通模块一样：
+
+```python
+>>> import pkg.mod1, pkg.mod2
+>>> pkg.mod1.foo()
+[mod1] foo()
+>>> x = pkg.mod2.Bar()
+>>> x
+<pkg.mod2.Bar object at 0x033F7290>
+
+>>> from pkg.mod1 import foo
+>>> foo()
+[mod1] foo()
+
+>>> from pkg.mod2 import Bar as Qux
+>>> x = Qux()
+>>> x
+<pkg.mod2.Bar object at 0x036DFFD0>
+
+>>> from pkg import mod1
+>>> mod1.foo()
+[mod1] foo()
+
+>>> from pkg import mod2 as quux
+>>> quux.bar()
+[mod2] bar()
+```
+
+也可以导入包本身：
+
+```python
+>>> import pkg
+>>> pkg
+<module 'pkg' (namespace) from ['C:\\Users\\john\\Documents\\Python\\doc\\pkg']>
+```
+
+这样做几乎没什么用。语法上合法，但不会把 `pkg` 里的模块放进本地命名空间：
+
+```python
+>>> pkg.mod1
+AttributeError: module 'pkg' has no attribute 'mod1'
+>>> pkg.mod1.foo()
+AttributeError: module 'pkg' has no attribute 'mod1'
+>>> pkg.mod2.Bar()
+AttributeError: module 'pkg' has no attribute 'mod2'
+```
+
+要真正用到模块或里面的对象，还是得用前面那些导入形式。
+
+### 包的初始化
+
+包目录里如果有 `__init__.py`，导入这个包或包里的模块时会执行它。可以用来做包级初始化，例如准备包一级的数据。
+
+`__init__.py`：
+
+```python
+print(f'Invoking __init__.py for {__name__}')
+A = ['quux', 'corge', 'grault']
+```
+
+导入包时会初始化全局列表 `A`：
+
+```python
+>>> import pkg
+Invoking __init__.py for pkg
+>>> pkg.A
+['quux', 'corge', 'grault']
+```
+
+包里的模块可以再导入这个名字。把 `mod1.py` 改成：
+
+```python
+def foo():
+    from pkg import A
+    print('[mod1] foo() / A = ', A)
+
+class Foo:
+    pass
+```
+
+```python
+>>> from pkg import mod1
+Invoking __init__.py for pkg
+>>> mod1.foo()
+[mod1] foo() / A =  ['quux', 'corge', 'grault']
+```
+
+包已经在 `sys.modules` 里之后，再次导入不会再执行 `__init__.py`。
+
+`__init__.py` 也可以用来自动导入包里的模块。前面看到单独 `import pkg` 只会把名字 `pkg` 放进调用方，不会导入任何模块。如果 `__init__.py` 写成：
+
+```python
+print(f'Invoking __init__.py for {__name__}')
+import pkg.mod1, pkg.mod2
+```
+
+那么 `import pkg` 时会自动带上 `mod1` 和 `mod2`：
+
+```python
+>>> import pkg
+Invoking __init__.py for pkg
+>>> pkg.mod1.foo()
+[mod1] foo()
+>>> pkg.mod2.bar()
+[mod2] bar()
+```
+
+文档里很多地方说建包必须有 `__init__.py`。这曾经是对的：有这个文件，Python 才把目录当成包。文件可以有初始化代码，也可以是空的，但必须存在。
+
+从 Python 3.3 起有了隐式命名空间包（Implicit Namespace Packages），没有 `__init__.py` 也能构成包。需要初始化代码时仍可以放这个文件，但它不再是必需的。
+
+### 从包里 `import *`
+
+把前面的包扩成四个模块，`mod3.py`、`mod4.py` 的写法与前两个相同，分别提供 `baz()` / `Baz` 和 `qux()` / `Qux`。
+
+对单个模块使用 `import *` 时，除以下划线开头的名字外，模块里的对象都会进入本地符号表：
+
+```python
+>>> from pkg.mod3 import *
+>>> baz()
+[mod3] baz()
+>>> Baz
+<class 'pkg.mod3.Baz'>
+```
+
+对包写 `from pkg import *` 时，默认几乎什么都不导入，`dir()` 里不会多出那些模块名。Python 不会自动钻进包目录把找到的模块全部导入。
+
+约定是：如果包的 `__init__.py` 里有一个名为 `__all__` 的列表，`from <package_name> import *` 就只导入这个列表里的模块。
+
+`pkg/__init__.py`：
+
+```python
+__all__ = [
+        'mod1',
+        'mod2',
+        'mod3',
+        'mod4'
+        ]
+```
+
+```python
+>>> from pkg import *
+>>> dir()
+['__builtins__', '__doc__', '__loader__', '__name__', '__package__',
+'__spec__', 'mod1', 'mod2', 'mod3', 'mod4']
+>>> mod2.bar()
+[mod2] bar()
+>>> mod4.Qux
+<class 'pkg.mod4.Qux'>
+```
+
+对包使用 `import *` 同样不算好风格。至少包的作者可以控制这时导入什么。不定义 `__all__`，就等于不允许这种导入：包的默认行为是什么都不导入。
+
+模块里也可以定义 `__all__`，作用相同。例如 `pkg/mod1.py`：
+
+```python
+__all__ = ['foo']
+
+def foo():
+    print('[mod1] foo()')
+
+class Foo:
+    pass
+```
+
+```python
+>>> from pkg.mod1 import *
+>>> foo()
+[mod1] foo()
+>>> Foo
+NameError: name 'Foo' is not defined
+```
+
+`foo` 在 `__all__` 里，所以进来了；类 `Foo` 不在列表里，所以没有被导入。
+
+默认行为不同：
+
+- 包没有定义 `__all__` 时，`import *` 什么都不导入。
+- 模块没有定义 `__all__` 时，`import *` 导入除下划线开头以外的全部名字。
+
+### 子包
+
+包里可以嵌套任意深度的子包。四个模块不再都放在 `pkg` 下，而是拆进两个子包：
+
+```text
+pkg/
+├── sub_pkg1/
+│   ├── mod1.py
+│   └── mod2.py
+└── sub_pkg2/
+    ├── mod3.py
+    └── mod4.py
+```
+
+导入方式不变，只是用更多的点把包名和子包名分开：
+
+```python
+>>> import pkg.sub_pkg1.mod1
+>>> pkg.sub_pkg1.mod1.foo()
+[mod1] foo()
+
+>>> from pkg.sub_pkg1 import mod2
+>>> mod2.bar()
+[mod2] bar()
+
+>>> from pkg.sub_pkg2.mod3 import baz
+>>> baz()
+[mod3] baz()
+
+>>> from pkg.sub_pkg2.mod4 import qux as grault
+>>> grault()
+[mod4] qux()
+```
+
+一个子包里的模块可以引用兄弟子包里的对象。例如在 `mod3` 里调用 `mod1` 的 `foo()`。可以用绝对导入，`pkg/sub_pkg2/mod3.py`：
+
+```python
+def baz():
+    print('[mod3] baz()')
+
+class Baz:
+    pass
+
+from pkg.sub_pkg1.mod1 import foo
+foo()
+```
+
+```python
+>>> from pkg.sub_pkg2 import mod3
+[mod1] foo()
+>>> mod3.foo()
+[mod1] foo()
+```
+
+也可以用相对导入。`..` 表示上一层包。在 `sub_pkg2` 里的 `mod3.py` 中：
+
+- `..` 是父包 `pkg`
+- `..sub_pkg1` 是父包下的子包 `sub_pkg1`
+
+```python
+def baz():
+    print('[mod3] baz()')
+
+class Baz:
+    pass
+
+from .. import sub_pkg1
+print(sub_pkg1)
+
+from ..sub_pkg1.mod1 import foo
+foo()
+```
+
+```python
+>>> from pkg.sub_pkg2 import mod3
+<module 'pkg.sub_pkg1' (namespace) from ['C:\\Users\\john\\Documents\\Python\\doc\\pkg\\sub_pkg1']>
+[mod1] foo()
+```
+
+弄清这些之后，使用标准库和第三方模块会更有把握。自己写程序时，用模块和包把代码拆开，编写、维护和调试都会更轻松。
+
+[The import system](https://docs.python.org/3/reference/import.html) 和 [The Python Tutorial: Modules](https://docs.python.org/3/tutorial/modules.html)。
